@@ -504,16 +504,17 @@ class LeadController extends Controller
          * Required for every new customer status
          * except no_answer and not_interested.
          */
-        $requiresNextFollowUp = ! in_array(
-            (string) $status->code,
-            [
-                'new',
-                'no_answer',
-                'not_interested',
-                'execution',
-            ],
-            true
-        );
+        $requiresNextFollowUp = ($status->stage ? (bool) $status->stage->has_followups : true)
+            && ! in_array(
+                (string) $status->code,
+                [
+                    'new',
+                    'no_answer',
+                    'not_interested',
+                    'execution',
+                ],
+                true
+            );
 
         /* CRM CREATE REQUIRED NEXT DATE V3 END */
 

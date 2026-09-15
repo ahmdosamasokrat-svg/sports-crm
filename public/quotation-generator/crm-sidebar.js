@@ -126,6 +126,7 @@
 
  const setMenuOpen = (button, target, open) => {
   target.classList.toggle('open', open);
+  button.classList.toggle('is-open', open);
   button.setAttribute('aria-expanded', open ? 'true' : 'false');
  };
 

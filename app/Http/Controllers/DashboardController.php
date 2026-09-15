@@ -1135,6 +1135,7 @@ class DashboardController extends Controller
                 'category_id' => $status->stage?->pipeline_stage_category_id,
                 'category_name' => $status->stage?->category?->name_ar,
                 'category_color' => $status->stage?->category?->color,
+                'has_followups' => $status->stage ? (bool) $status->stage->has_followups : true,
                 'total_count' => $totalCount,
                 'no_date_count' => $noDateCount,
                 'scope_counts' => $scopeCounts,

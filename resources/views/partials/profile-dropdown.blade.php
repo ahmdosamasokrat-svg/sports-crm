@@ -17,8 +17,8 @@
         display: inline-grid;
         place-items: center;
         flex: 0 0 42px;
-        border: 1px solid var(--line, #e7e9ef);
-        border-radius: 14px;
+        border: 1px solid var(--line, #e5e7eb);
+        border-radius: 12px;
         background: var(--card, #fff);
         color: var(--dark, #182033);
         cursor: pointer;
@@ -27,13 +27,14 @@
         transition: background .2s ease, border-color .2s ease, color .2s ease, transform .2s ease;
         text-decoration: none;
         padding: 0;
+        box-shadow: none !important;
     }
 
     .crm-topbar-notification-btn:hover,
     .crm-topbar-notification-btn:focus-visible {
-        background: #fff5f6;
-        border-color: rgba(220, 38, 55, 0.35);
-        color: var(--red, #dc2637);
+        background: var(--selection-tint, rgba(239, 68, 68, 0.12));
+        border-color: rgba(239, 68, 68, 0.35);
+        color: var(--red, #ef4444);
         transform: translateY(-1px);
     }
 
@@ -47,12 +48,13 @@
         place-items: center;
         padding: 0 5px;
         border-radius: 999px;
-        background: var(--red, #dc2637);
+        background: var(--red, #ef4444);
         color: #fff;
         font-size: 10px;
         font-weight: 900;
         font-variant-numeric: tabular-nums;
-        box-shadow: 0 2px 6px rgba(220, 38, 55, .4), 0 0 0 2px var(--card, #fff);
+        border: 1.5px solid var(--card, #fff);
+        box-shadow: none !important;
         line-height: 1;
     }
 
@@ -64,7 +66,7 @@
         background: var(--bg-card, rgba(24, 24, 27, .75)) !important;
         border-color: var(--line, rgba(255, 255, 255, .1)) !important;
         color: var(--text-primary, #f4f4f5) !important;
-        box-shadow: var(--shadow-glass) !important;
+        box-shadow: none !important;
     }
 
     html.dark-mode .crm-topbar-notification-btn:hover,
@@ -75,7 +77,8 @@
     }
 
     html.dark-mode .crm-topbar-notification-btn .crm-notification-badge {
-        box-shadow: 0 2px 6px rgba(220, 38, 55, .4), 0 0 0 2px #18181b;
+        border-color: #18181b;
+        box-shadow: none !important;
     }
 
     /* Keep the profile menu anchored to its trigger and above page content. */
@@ -97,6 +100,8 @@
         max-height: min(560px, calc(100vh - 24px));
         overflow-y: auto;
         z-index: 10001 !important;
+        border: 1px solid var(--line, #e5e7eb) !important;
+        box-shadow: none !important;
     }
 
     .crm-profile-dropdown[hidden] {
@@ -106,8 +111,8 @@
     html.dark-mode .crm-profile-dropdown {
         background: rgba(9, 9, 11, 0.97) !important;
         background-color: #09090b !important;
-        border-color: var(--border-color) !important;
-        box-shadow: var(--shadow-dropdown) !important;
+        border-color: rgba(255, 255, 255, 0.08) !important;
+        box-shadow: none !important;
     }
 
     .top:has(.crm-profile),

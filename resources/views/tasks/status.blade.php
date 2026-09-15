@@ -26,12 +26,6 @@
 )
 
 @section('top-actions')
- <a
-  class="btn soft"
-  href="{{ route('v2.leads') }}"
- >
-  {{ __('crm.view_leads') }}
- </a>
 @endsection
 
 @push('styles')
@@ -1155,6 +1149,14 @@
       : __('بدون مرحلة')
      }}
     </span>
+
+    @if ($statusRecord->stage?->category)
+     <span class="task-pill stage" style="background: {{ $statusRecord->stage->category->color ? $statusRecord->stage->category->color.'18' : '#f1f5f9' }}; color: {{ $statusRecord->stage->category->color ?: '#475569' }}; border: 1px solid {{ $statusRecord->stage->category->color ? $statusRecord->stage->category->color.'33' : '#e2e8f0' }};">
+      <i class="bi {{ $statusRecord->stage->category->icon ?: 'bi-collection' }}"></i>
+      {{ __('crm.stage_category') }}:
+      {{ $statusRecord->stage->category->name_ar }}
+     </span>
+    @endif
    </div>
 
    <div class="task-work-date">
@@ -1392,6 +1394,23 @@
            ? __($lead->source)
            : __('غير محدد')
           }}
+         </strong>
+        </div>
+
+        <div class="task-card-detail">
+         <span class="task-card-detail-label">
+          {{ __('crm.stage_category') }}
+         </span>
+
+         <strong>
+          @if ($statusRecord->stage?->category)
+           <span style="display:inline-flex; align-items:center; gap:4px; color: {{ $statusRecord->stage->category->color ?: 'inherit' }};">
+            <i class="bi {{ $statusRecord->stage->category->icon ?: 'bi-collection' }}"></i>
+            {{ $statusRecord->stage->category->name_ar }}
+           </span>
+          @else
+           <span style="color: #94a3b8;">—</span>
+          @endif
          </strong>
         </div>
 

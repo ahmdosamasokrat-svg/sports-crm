@@ -6,20 +6,24 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ $employee->name }} — {{ __('crm.employee_drilldown') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
 <style>
 :root {
-  --red: #dc2637;
+  --red: #ef4444;
+  --red-dark: #dc2626;
   --dark: #182033;
   --text: #4b5568;
   --muted: #8b94a5;
   --line: #e7e9ef;
   --bg: #f6f8fb;
   --card: #fff;
-  --shadow: 0 12px 35px #1720330d;
+  --shadow: none;
 }
 
 * { box-sizing: border-box; }
@@ -31,7 +35,7 @@ body {
   max-width: 100vw;
   background: var(--bg);
   color: var(--dark);
-  font-family: Tajawal, Cairo, Tahoma, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 15px;
   overflow-x: clip;
 }
@@ -160,18 +164,28 @@ html.dark-mode .crm-dashboard-v2 {
 .kpi-card-icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--d-radius-sm);
-  display: grid;
-  place-items: center;
-  font-size: 19px;
-  background: var(--icon-bg, rgba(59, 130, 246, 0.1));
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   color: var(--card-accent, #3b82f6);
+}
+.kpi-card-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: auto;
 }
 .kpi-card-value {
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--d-text);
-  font-family: Arial, Tahoma, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   margin-bottom: 6px;
 }
@@ -219,9 +233,10 @@ html.dark-mode .crm-dashboard-v2 {
 }
 .pipeline-stage-chip strong {
   font-size: 14px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--d-text);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Section Card */
@@ -326,7 +341,9 @@ html.dark-mode .crm-dashboard-v2 {
             <div class="kpi-card-modern" style="--card-accent: #3b82f6; --icon-bg: rgba(59, 130, 246, 0.1);">
                 <div class="kpi-card-head">
                     <span class="kpi-card-label">{{ __('crm.assigned_leads') }}</span>
-                    <div class="kpi-card-icon"><i class="bi bi-people-fill"></i></div>
+                    <div class="kpi-card-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+                    </div>
                 </div>
                 <div>
                     <div class="kpi-card-value">{{ number_format($drilldown['metrics']['total_leads']) }}</div>
@@ -337,7 +354,9 @@ html.dark-mode .crm-dashboard-v2 {
             <div class="kpi-card-modern" style="--card-accent: #8b5cf6; --icon-bg: rgba(139, 92, 246, 0.1);">
                 <div class="kpi-card-head">
                     <span class="kpi-card-label">{{ __('crm.kpi_total_followups') }}</span>
-                    <div class="kpi-card-icon"><i class="bi bi-chat-left-text-fill"></i></div>
+                    <div class="kpi-card-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+                    </div>
                 </div>
                 <div>
                     <div class="kpi-card-value" style="color:#8b5cf6;">{{ number_format($drilldown['metrics']['total_followups']) }}</div>
@@ -348,7 +367,9 @@ html.dark-mode .crm-dashboard-v2 {
             <div class="kpi-card-modern" style="--card-accent: #dc2637; --icon-bg: rgba(220, 38, 55, 0.1);">
                 <div class="kpi-card-head">
                     <span class="kpi-card-label">{{ __('crm.kpi_overdue_followups') }}</span>
-                    <div class="kpi-card-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+                    <div class="kpi-card-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                    </div>
                 </div>
                 <div>
                     <div class="kpi-card-value" style="color:#dc2637;">{{ number_format($drilldown['metrics']['overdue_count']) }}</div>
@@ -359,7 +380,9 @@ html.dark-mode .crm-dashboard-v2 {
             <div class="kpi-card-modern" style="--card-accent: #10b981; --icon-bg: rgba(16, 185, 129, 0.1);">
                 <div class="kpi-card-head">
                     <span class="kpi-card-label">{{ __('crm.kpi_conversion_rate') }}</span>
-                    <div class="kpi-card-icon"><i class="bi bi-graph-up-arrow"></i></div>
+                    <div class="kpi-card-icon">
+                        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>
+                    </div>
                 </div>
                 <div>
                     <div class="kpi-card-value" style="color:#10b981;">{{ $drilldown['metrics']['conversion_rate'] }}%</div>

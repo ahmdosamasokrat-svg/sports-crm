@@ -10,18 +10,6 @@
    <i class="bi bi-calendar3"></i>
    {{ $todayDateFormatted }}
   </span>
-
-  @can('calendar.view')
-   <a class="btn soft" href="{{ route('v2.calendar.index') }}">
-    <i class="bi bi-calendar-event"></i>
-    {{ __('crm.view_calendar') }}
-   </a>
-  @endcan
-
-  <a class="btn soft" href="{{ route('v2.leads') }}">
-   <i class="bi bi-people"></i>
-   {{ __('crm.view_leads') }}
-  </a>
  </div>
 @endsection
 
@@ -126,26 +114,35 @@
  }
 
  .task-kpi-icon {
-  width: 46px;
-  height: 46px;
-  flex: 0 0 46px;
-  display: grid;
-  place-items: center;
-  border-radius: 12px;
-  font-size: 20px;
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border-radius: 0 !important;
+  padding: 0 !important;
  }
 
- .task-kpi-card.overdue { color: var(--task-red); }
- .task-kpi-card.overdue .task-kpi-icon { background: #fee2e2; color: var(--task-red); }
+ .task-kpi-icon svg {
+  display: block;
+  width: 28px;
+  height: 28px;
+  margin: auto;
+ }
 
- .task-kpi-card.today { color: var(--task-blue); }
- .task-kpi-card.today .task-kpi-icon { background: #dbeafe; color: var(--task-blue); }
+ .task-kpi-card.overdue { color: var(--task-red, #ef4444); }
+ .task-kpi-card.overdue .task-kpi-icon { background: transparent !important; color: var(--task-red, #ef4444); }
 
- .task-kpi-card.completed { color: var(--task-green); }
- .task-kpi-card.completed .task-kpi-icon { background: #dcfce7; color: var(--task-green); }
+ .task-kpi-card.today { color: var(--task-blue, #3b82f6); }
+ .task-kpi-card.today .task-kpi-icon { background: transparent !important; color: var(--task-blue, #3b82f6); }
 
- .task-kpi-card.no-date { color: var(--task-amber); }
- .task-kpi-card.no-date .task-kpi-icon { background: #fef3c7; color: var(--task-amber); }
+ .task-kpi-card.completed { color: var(--task-green, #10b981); }
+ .task-kpi-card.completed .task-kpi-icon { background: transparent !important; color: var(--task-green, #10b981); }
+
+ .task-kpi-card.no-date { color: var(--task-amber, #f59e0b); }
+ .task-kpi-card.no-date .task-kpi-icon { background: transparent !important; color: var(--task-amber, #f59e0b); }
 
  .task-kpi-info {
   min-width: 0;
@@ -157,6 +154,8 @@
   font-size: 22px;
   font-weight: 800;
   color: #1e293b;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1.2;
   overflow-wrap: anywhere;
  }
@@ -165,8 +164,9 @@
   display: block;
   margin-top: 4px;
   color: #64748b;
-  font-size: 11px;
+  font-size: 12px;
   font-weight: 600;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   line-height: 1.3;
   overflow-wrap: anywhere;
  }
@@ -591,6 +591,26 @@
   text-overflow: ellipsis;
  }
 
+ .task-card-top-pills {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+ }
+
+ .task-category-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border: 1px solid transparent;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 700;
+  white-space: nowrap;
+ }
+
  .task-status-pill {
   padding: 4px 10px;
   border: 1px solid transparent;
@@ -927,19 +947,22 @@
  .task-modal-close {
   width: 34px;
   height: 34px;
-  display: grid;
-  place-items: center;
-  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9px;
   border: 1px solid #e2e8f0;
   background: #f8fafc;
   color: #64748b;
-  font-size: 16px;
+  padding: 0;
   cursor: pointer;
+  transition: all .16s ease;
  }
 
  .task-modal-close:hover {
   background: #fee2e2;
   color: var(--task-red);
+  transform: scale(1.05);
  }
 
  .task-form-group {
@@ -1076,7 +1099,13 @@
  {{-- 1. KPI Cards Grid --}}
  <div class="task-kpis-grid">
   <a class="task-kpi-card overdue {{ $scope === 'overdue' ? 'active' : '' }}" href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'overdue'])) }}">
-   <div class="task-kpi-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+   <div class="task-kpi-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
+     <line x1="12" y1="9" x2="12" y2="13"></line>
+     <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+   </div>
    <div class="task-kpi-info">
     <strong>{{ number_format($overdueCount) }}</strong>
     <span>{{ __('crm.tasks_overdue') }}</span>
@@ -1084,7 +1113,15 @@
   </a>
 
   <a class="task-kpi-card today {{ $scope === 'today' ? 'active' : '' }}" href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'today'])) }}">
-   <div class="task-kpi-icon"><i class="bi bi-calendar-check-fill"></i></div>
+   <div class="task-kpi-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+     <line x1="16" y1="2" x2="16" y2="6"></line>
+     <line x1="8" y1="2" x2="8" y2="6"></line>
+     <line x1="3" y1="10" x2="21" y2="10"></line>
+     <path d="M9 16l2 2 4-4"></path>
+    </svg>
+   </div>
    <div class="task-kpi-info">
     <strong>{{ number_format($todayCount) }}</strong>
     <span>{{ __('crm.tasks_due_today') }}</span>
@@ -1092,7 +1129,12 @@
   </a>
 
   <a class="task-kpi-card completed {{ $scope === 'completed' ? 'active' : '' }}" href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'completed'])) }}">
-   <div class="task-kpi-icon"><i class="bi bi-check-circle-fill"></i></div>
+   <div class="task-kpi-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+     <polyline points="22 4 12 14.01 9 11.01"></polyline>
+    </svg>
+   </div>
    <div class="task-kpi-info">
     <strong>{{ number_format($completedTodayCount) }}</strong>
     <span>{{ __('crm.tasks_completed_today') }}</span>
@@ -1100,7 +1142,13 @@
   </a>
 
   <a class="task-kpi-card no-date {{ $scope === 'no_date' ? 'active' : '' }}" href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'no_date'])) }}">
-   <div class="task-kpi-icon"><i class="bi bi-question-circle-fill"></i></div>
+   <div class="task-kpi-icon">
+    <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <circle cx="12" cy="12" r="10"></circle>
+     <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+     <line x1="12" y1="17" x2="12.01" y2="17"></line>
+    </svg>
+   </div>
    <div class="task-kpi-info">
     <strong>{{ number_format($noDateCount) }}</strong>
     <span>{{ __('crm.tasks_without_date') }}</span>
@@ -1554,7 +1602,11 @@
  <div class="task-modal-content">
   <div class="task-modal-head">
    <h3><i class="bi bi-calendar-event"></i> {{ __('crm.reschedule_task') }}</h3>
-   <button class="task-modal-close" type="button" onclick="closeTaskModal('rescheduleModal')">&times;</button>
+   <button class="task-modal-close" type="button" onclick="closeTaskModal('rescheduleModal')" aria-label="{{ __('crm.close') }}" title="{{ __('crm.close') }}">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
+   </button>
   </div>
 
   <form id="rescheduleForm" method="POST" onsubmit="submitReschedule(event)">
@@ -1594,7 +1646,11 @@
  <div class="task-modal-content">
   <div class="task-modal-head">
    <h3><i class="bi bi-pencil-square"></i> {{ __('crm.quick_log_followup') }}</h3>
-   <button class="task-modal-close" type="button" onclick="closeTaskModal('quickFollowupModal')">&times;</button>
+   <button class="task-modal-close" type="button" onclick="closeTaskModal('quickFollowupModal')" aria-label="{{ __('crm.close') }}" title="{{ __('crm.close') }}">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
+   </button>
   </div>
 
   <form id="quickFollowupForm" method="POST" onsubmit="submitQuickFollowup(event)">

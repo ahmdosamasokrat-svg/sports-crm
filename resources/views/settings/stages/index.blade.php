@@ -48,6 +48,7 @@
                     <th>{{ __('crm.stage_name_col') }}</th>
                     <th>{{ __('crm.stage_category') }}</th>
                     <th>{{ __('crm.type_col') }}</th>
+                    <th>{{ __('crm.has_followups_col') }}</th>
                     <th>{{ __('crm.color_col') }}</th>
                     <th>{{ __('crm.leads_count_col') }}</th>
                     <th>{{ __('crm.status_th') }}</th>
@@ -92,6 +93,17 @@
                             @else
                                 <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff">
                                     <i class="bi bi-plus-circle"></i> {{ __('crm.additional_stage_badge') }}
+                                </span>
+                            @endif
+                        </td>
+                        <td>
+                            @if ($stage->has_followups)
+                                <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;" title="{{ __('crm.has_followups_yes_badge') }}">
+                                    <i class="bi bi-calendar-check"></i> {{ __('crm.has_followups_yes_badge') }}
+                                </span>
+                            @else
+                                <span class="badge" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;" title="{{ __('crm.has_followups_no_badge') }}">
+                                    <i class="bi bi-slash-circle"></i> {{ __('crm.has_followups_no_badge') }}
                                 </span>
                             @endif
                         </td>
@@ -243,6 +255,14 @@ $crmStageIcons = [
                     @endforeach
                 </select>
             </div>
+            <div style="margin-bottom:14px;">
+                <label>{{ __('crm.stage_has_followups_label') }} <span style="color:var(--red)">*</span></label>
+                <select name="has_followups" id="addStageHasFollowups" style="width:100%; padding:10px 14px; border:1px solid #dbe1e9; border-radius:10px; font-size:14px; background:#fff; color:var(--dark);">
+                    <option value="1" selected>{{ __('crm.stage_has_followups_yes') }}</option>
+                    <option value="0">{{ __('crm.stage_has_followups_no') }}</option>
+                </select>
+                <small style="color:var(--muted); display:block; margin-top:4px;">{{ __('crm.stage_has_followups_hint') }}</small>
+            </div>
             <div style="margin-bottom:18px;">
                 <label>{{ __('crm.description_optional') }}</label>
                 <textarea name="description_ar" rows="2" placeholder="{{ __('crm.description_optional') }}"></textarea>
@@ -330,6 +350,14 @@ $crmStageIcons = [
                         <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
                     @endforeach
                 </select>
+            </div>
+            <div style="margin-bottom:14px;">
+                <label>{{ __('crm.stage_has_followups_label') }} <span style="color:var(--red)">*</span></label>
+                <select name="has_followups" id="editStageHasFollowups" style="width:100%; padding:10px 14px; border:1px solid #dbe1e9; border-radius:10px; font-size:14px; background:#fff; color:var(--dark);">
+                    <option value="1">{{ __('crm.stage_has_followups_yes') }}</option>
+                    <option value="0">{{ __('crm.stage_has_followups_no') }}</option>
+                </select>
+                <small style="color:var(--muted); display:block; margin-top:4px;">{{ __('crm.stage_has_followups_hint') }}</small>
             </div>
             <div style="margin-bottom:18px;">
                 <label>{{ __('crm.description_optional') }}</label>
@@ -447,6 +475,10 @@ function openAddStageModal() {
     clearIconSelection('addStage');
     document.getElementById('stageColorPicker').value = '#7b61df';
     document.getElementById('stageColorInput').value = '#7b61df';
+    const addHasFollowups = document.getElementById('addStageHasFollowups');
+    if (addHasFollowups) {
+        addHasFollowups.value = '1';
+    }
     const modal = document.getElementById('addStageModal');
     modal._openedAt = Date.now();
     modal.style.display = 'flex';
@@ -461,6 +493,11 @@ function openEditModal(stage) {
     document.getElementById('editStageColorPicker').value = stage.color || '#3478f6';
     document.getElementById('editStageDescription').value = stage.description_ar || '';
     document.getElementById('editStageCategoryId').value = stage.pipeline_stage_category_id || '';
+
+    const editHasFollowups = document.getElementById('editStageHasFollowups');
+    if (editHasFollowups) {
+        editHasFollowups.value = (stage.has_followups !== false && stage.has_followups !== 0 && stage.has_followups !== '0') ? '1' : '0';
+    }
 
     // Handle Icon in edit modal
     if (stage.icon && stage.icon.trim() !== '') {

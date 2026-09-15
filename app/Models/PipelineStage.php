@@ -201,6 +201,7 @@ class PipelineStage extends Model
         'is_system',
         'is_default',
         'is_active',
+        'has_followups',
     ];
 
     protected function casts(): array
@@ -212,8 +213,14 @@ class PipelineStage extends Model
             'is_system' => 'boolean',
             'is_default' => 'boolean',
             'is_active' => 'boolean',
+            'has_followups' => 'boolean',
             'deleted_at' => 'datetime',
         ];
+    }
+
+    public function hasFollowups(): bool
+    {
+        return (bool) ($this->has_followups ?? true);
     }
 
     public function isPrimary(): bool

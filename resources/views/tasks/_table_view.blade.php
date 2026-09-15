@@ -72,6 +72,12 @@
       <small class="task-table-stage">
        {{ $lead->status?->stage?->name_ar ?? '-' }}
       </small>
+      @if ($lead->status?->stage?->category)
+       <small class="task-table-stage" style="color: {{ $lead->status->stage->category->color ?: '#64748b' }}; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+        <i class="bi {{ $lead->status->stage->category->icon ?: 'bi-collection' }}" style="font-size: 10px;"></i>
+        {{ $lead->status->stage->category->name_ar }}
+       </small>
+      @endif
      </td>
 
      <td>

@@ -31,7 +31,7 @@
    --support-shadow:0 10px 30px rgba(17,24,39,.05);
    --support-card-shadow:0 8px 24px rgba(17,24,39,.04);
    --support-card-hover-shadow:0 20px 45px rgba(17,24,39,.09);
-   --font-primary:'Tajawal',Tahoma,Arial,sans-serif;
+   --font-primary:'Plus Jakarta Sans','Cairo',sans-serif;
   }
   html.dark-mode{
    --support-ink:#f3f5f8;
@@ -65,20 +65,6 @@
   
   .support-shell{min-height:100vh;display:flex;flex-direction:row;max-width:100vw;overflow-x:clip}
   .support-main{flex:1;min-width:0;max-width:100%;padding:24px 30px 48px}
-  
-  /* Header */
-  .support-header, .crm-topbar, .topbar {display:flex;align-items:center;justify-content:space-between;gap:20px;margin-bottom:20px;flex-wrap:wrap;min-height:56px}
-  .support-heading, .crm-topbar-left, .topbar-left {display:flex;align-items:center;gap:12px;min-width:0}
-  .support-menu, .crm-topbar-menu-btn, .menu-button {
-   display:none;width:44px;height:44px;min-height:44px;min-width:44px;place-items:center;flex:0 0 44px;
-   border:1px solid var(--support-line);border-radius:12px;background:var(--support-panel);
-   color:var(--support-ink);font-size:20px;cursor:pointer;touch-action:manipulation;
-  }
-  .support-header h1, .crm-topbar-title h1, .topbar h1 {margin:0 0 4px;font-size:clamp(22px,2.5vw,28px);line-height:1.2;font-weight:900;letter-spacing:-.02em;display:flex;align-items:center;gap:8px}
-  html[dir="rtl"] .support-header h1, html[dir="rtl"] .crm-topbar-title h1, html[dir="rtl"] .topbar h1 {letter-spacing:0}
-  .support-header p, .crm-topbar-title p, .topbar p {margin:0;color:var(--support-muted);font-size:13.5px;line-height:1.5}
-  .support-header-actions, .crm-topbar-right, .top-actions {display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap}
-  .crm-topbar-actions {display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap}
   
   .btn-primary-add{
    min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:8px;
@@ -514,13 +500,9 @@
    .support-cards-grid{grid-template-columns:1fr}
    .form-row-2{grid-template-columns:1fr}
   }
-  @media(max-width:768px){
-   .support-header, .crm-topbar, .topbar {flex-direction:column;align-items:stretch;gap:14px}
-   .support-heading, .crm-topbar-left, .topbar-left {width:100%;justify-content:flex-start}
-   .support-header-actions, .crm-topbar-right, .top-actions {width:100%;justify-content:space-between;gap:8px}
-   .crm-topbar-actions {display:flex;flex:1 1 auto;gap:8px;flex-wrap:wrap}
-   .btn-primary-add, .btn-tailscale-net, .support-refresh {flex:1 1 auto;min-height:44px}
-  }
+   @media(max-width:768px){
+    .btn-primary-add, .btn-tailscale-net, .support-refresh {flex:1 1 auto;min-height:44px}
+   }
   @media(max-width:620px){
    .support-main{padding:14px 10px 28px}
    .support-kpi-bar{grid-template-columns:1fr}

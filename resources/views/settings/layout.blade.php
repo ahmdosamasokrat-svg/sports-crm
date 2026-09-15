@@ -6,23 +6,27 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', __('crm.settings')) — {{ config('app.name', 'SokratCRM') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-    <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+    <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
     <style>
         :root {
-            --red: #dc2637;
-            --red-hover: #b81829;
+            --red: #ef4444;
+            --red-hover: #dc2626;
             --dark: #182033;
             --ink: #182033;
             --muted: #64748b;
             --line: #e2e8f0;
             --bg: #f8fafc;
             --card: #ffffff;
-            --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+            --shadow: none;
             --radius: 16px;
-            --font-primary: var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+            --font-primary: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace;
         }
 
         html.dark-mode {
@@ -32,7 +36,7 @@
             --line: #334155;
             --bg: #0f172a;
             --card: #1e293b;
-            --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            --shadow: none;
         }
 
         * { box-sizing: border-box; }
@@ -41,7 +45,7 @@
             min-width: 320px;
             background: var(--bg);
             color: var(--dark);
-            font-family: var(--font-primary);
+            font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
             font-size: 14px;
             line-height: 1.5;
         }
@@ -77,57 +81,6 @@
 
         .settings-shell { display: flex; min-height: 100vh; max-width: 100vw; overflow-x: clip; }
         .settings-main { flex: 1; min-width: 0; max-width: 100%; padding: 24px 32px 60px; }
-        /* Topbar Unified */
-        .crm-topbar, .settings-top, .topbar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 18px;
-            margin-bottom: 22px;
-            flex-wrap: wrap;
-            min-height: 56px;
-        }
-        .crm-topbar-left, .settings-heading, .topbar-left {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            min-width: 0;
-        }
-        .crm-topbar-title h1, .settings-heading h1, .topbar h1 {
-            font-size: 24px;
-            font-weight: 900;
-            margin: 0;
-            color: var(--dark);
-            display: flex;
-            align-items: center;
-            gap: 8px;
-        }
-        .crm-topbar-title p, .settings-heading p, .topbar p {
-            margin: 4px 0 0;
-            color: var(--muted);
-            font-size: 13px;
-        }
-        .crm-topbar-right, .settings-user-tools, .top-actions {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .crm-topbar-actions {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            flex-wrap: wrap;
-        }
-        .crm-topbar-menu-btn, .menu-button {
-            display: none;
-            width: 44px;
-            height: 44px;
-            min-height: 44px;
-            min-width: 44px;
-            border-radius: 10px;
-            border: 1px solid var(--line);
-            background: var(--card);
             color: var(--dark);
             font-size: 20px;
             cursor: pointer;
@@ -534,21 +487,6 @@
         }
         @media(max-width: 768px) {
             .settings-main { padding: 14px 12px 36px; min-width: 0; width: 100%; max-width: 100vw; }
-            .crm-topbar, .settings-top, .topbar {
-                flex-direction: column;
-                align-items: stretch;
-                gap: 12px;
-                margin-bottom: 16px;
-            }
-            .crm-topbar-left, .topbar-left, .settings-heading {
-                width: 100%;
-                justify-content: flex-start;
-            }
-            .crm-topbar-right, .top-actions, .settings-user-tools {
-                width: 100%;
-                justify-content: space-between;
-                flex-wrap: wrap;
-                gap: 8px;
             }
             .crm-topbar-actions {
                 display: flex;

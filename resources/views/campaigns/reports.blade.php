@@ -1378,7 +1378,7 @@
     const isRTL = @json(app()->getLocale() === 'ar');
 
     Chart.defaults.color = textColor;
-    Chart.defaults.font.family = 'Tajawal, Cairo, Tahoma, Arial, sans-serif';
+    Chart.defaults.font.family = "'Plus Jakarta Sans', 'Cairo', sans-serif";
     Chart.defaults.font.size = 11.5;
 
     // Timeline Chart

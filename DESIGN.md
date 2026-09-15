@@ -1,16 +1,18 @@
 ---
 name: SokratCRM
-description: "Bilingual operational CRM interface for sales, administration, and technical status workflows."
+description: "Bilingual operational CRM interface aligned with Sokrat VoIP visual identity."
 colors:
-  primary-red: "#dc2637"
-  primary-red-dark: "#b81829"
+  primary-red: "#ef4444"
+  primary-red-dark: "#dc2626"
+  primary-red-hover: "#dc2626"
+  selection-tint: "rgba(239, 68, 68, 0.12)"
   page: "#f4f6fa"
   surface: "#ffffff"
   surface-soft: "#f8fafc"
   ink: "#172033"
   muted: "#596579"
-  border: "#e4e8ef"
-  success: "#0f7440"
+  border: "#e5e7eb"
+  success: "#10b981"
   success-surface: "#e9f8ef"
   neutral-state-surface: "#eef1f5"
   dark-page: "#151922"
@@ -18,33 +20,39 @@ colors:
   dark-surface-soft: "#272e3a"
   dark-ink: "#f3f5f8"
   dark-muted: "#aeb7c6"
-  dark-border: "#333b49"
-  dark-success: "#57d58c"
+  dark-border: "rgba(255, 255, 255, 0.08)"
+  dark-success: "#10b981"
   dark-success-surface: "#173c2a"
 typography:
   headline:
-    fontFamily: "Tajawal, Tahoma, Arial, sans-serif"
+    fontFamily: "'Plus Jakarta Sans', 'Cairo', sans-serif"
     fontSize: "clamp(25px, 3vw, 32px)"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "-0.02em"
   title:
-    fontFamily: "Tajawal, Tahoma, Arial, sans-serif"
+    fontFamily: "'Plus Jakarta Sans', 'Cairo', sans-serif"
     fontSize: "15px"
     fontWeight: 700
     lineHeight: 1.2
     letterSpacing: "normal"
   body:
-    fontFamily: "Tajawal, Tahoma, Arial, sans-serif"
+    fontFamily: "'Plus Jakarta Sans', 'Cairo', sans-serif"
     fontSize: "14px"
     fontWeight: 400
     lineHeight: 1.7
     letterSpacing: "normal"
   label:
-    fontFamily: "Tajawal, Tahoma, Arial, sans-serif"
+    fontFamily: "'Plus Jakarta Sans', 'Cairo', sans-serif"
     fontSize: "11px"
     fontWeight: 800
     lineHeight: 1.2
+    letterSpacing: "normal"
+  numeric:
+    fontFamily: "'JetBrains Mono', 'Plus Jakarta Sans', monospace"
+    fontSize: "13px"
+    fontWeight: 500
+    lineHeight: 1.4
     letterSpacing: "normal"
 rounded:
   xs: "6px"
@@ -116,67 +124,105 @@ components:
     height: "49px"
 ---
 
-# Design System: SokratCRM
+# Design System: SokratCRM (Aligned with Sokrat VoIP)
 
 ## Overview
 
-SokratCRM uses one shared bilingual operational interface across Arabic and English. The current system is defined by a fixed or collapsible sidebar, a light gray page canvas, white bordered surfaces, red interaction emphasis, compact controls, and green reserved for live or successful state.
-
-New operational surfaces extend this incumbent system locally. They retain the shared sidebar and Tajawal font foundation, use logical CSS properties so RTL and LTR layouts mirror correctly, and keep task-specific data ahead of decorative or disconnected summary content.
+SokratCRM strictly aligns with the Sokrat VoIP visual identity across Arabic and English. The design system is defined by an ultra-clean, tech-focused flat aesthetic with **zero box-shadows**, relying entirely on high-precision 1px borders and surface contrast, Electric Crimson Red interaction accents, and a three-tier typography hierarchy.
 
 **Key Characteristics:**
 
-- Tajawal is the shared Arabic and Latin interface family; technical addresses remain monospace.
-- White panels and soft-gray data regions sit on a pale-gray page canvas.
-- Red identifies active navigation, focus, selection, and primary action emphasis.
-- Green is limited to online, active, or successful state.
-- Controls are compact, bordered, and generally 40–44px high.
-- Light and dark modes preserve the same hierarchy and state roles.
+- **Electric Crimson Red (`#ef4444`)**: signature primary accent, with `#dc2626` for hover/pressed states and `rgba(239, 68, 68, 0.12)` for selection tints.
+- **Three-Tier Typography Stack**:
+  1. Latin UI & Headings: `'Plus Jakarta Sans', sans-serif`
+  2. Arabic UI & Headings: `'Cairo', sans-serif`
+  3. Numbers, Telemetry, Tables, Timestamps, Codes & IP Addresses: `'JetBrains Mono', monospace`
+- **Border-Led Flat Architecture (Strict Zero-Shadow Rule)**: all box-shadows, text-shadows, and glow filters are eliminated (`box-shadow: none !important`). Crisp 1px borders (`#e5e7eb` light, `rgba(255, 255, 255, 0.08)` dark) define visual hierarchy.
+- **Online / Success**: `#10b981` (Emerald) reserved strictly for live/positive states.
+- **Direction-Aware Layouts**: logical CSS properties (`inline-start`, `inline-end`) ensuring identical hierarchy across RTL and LTR.
 
 ## Colors
 
-The palette is role-based: one red interaction accent, neutral page and data surfaces, dark blue-gray text, and a separate green state channel. Dark mode remaps the neutral and success roles while retaining red emphasis.
+The palette is role-based: Electric Crimson Red interaction accent, neutral page and data surfaces, dark text, crisp 1px borders, and Emerald green state channel.
 
-### Primary
+### Primary Accent & Interaction
 
-- **Primary Red** (`primary-red`): active navigation, focus borders, selected filters, action emphasis, and brand text.
-- **Dark Primary Red** (`primary-red-dark`): red-on-light icon and compact label text where the base accent needs stronger contrast.
+- **Primary Accent** (`primary-red`): `#ef4444` (Electric Crimson Red) - active navigation, focus borders, selected filters, action emphasis.
+- **Accent Hover / Pressed** (`primary-red-dark` / `primary-red-hover`): `#dc2626`.
+- **Selection / Active Tint** (`selection-tint`): `rgba(239, 68, 68, 0.12)`.
 
-### Neutral
+### Neutral Surfaces & Borders
 
-- **Page** (`page`): default application canvas.
-- **Surface** (`surface`): cards, controls, navigation, and elevated containers.
-- **Soft Surface** (`surface-soft`): table headers, search fields, row hover, and grouped-control wells.
-- **Ink** (`ink`): headings and primary content.
-- **Muted** (`muted`): supporting copy, labels, timestamps, and inactive controls.
-- **Border** (`border`): panel, control, row, and section separation.
-- **Neutral State Surface** (`neutral-state-surface`): offline or unknown-state badges and device icons.
-- **Dark Page, Surface, Soft Surface, Ink, Muted, and Border** (`dark-*`): direct dark-mode role replacements, not an independent palette.
+- **Page** (`page`): default application canvas (`#f4f6fa`).
+- **Surface** (`surface`): cards, controls, navigation, and containers (`#ffffff`).
+- **Soft Surface** (`surface-soft`): table headers, search fields, row hover (`#f8fafc`).
+- **Ink** (`ink`): headings and primary content (`#172033`).
+- **Muted** (`muted`): supporting copy, labels, timestamps (`#596579`).
+- **Border** (`border`): crisp 1px boundary separation (`#e5e7eb`).
+- **Dark Borders & Surfaces** (`dark-*`): dark-page (`#151922`), dark-surface (`#202631`), dark-border (`rgba(255, 255, 255, 0.08)`).
 
-### Tertiary
+### State Channel
 
-- **Success** (`success`): online counts, active connections, live dots, and success text.
-- **Success Surface** (`success-surface`): online badges and device-icon containers.
-- **Dark Success and Dark Success Surface** (`dark-success`, `dark-success-surface`): dark-mode equivalents of the same state channel.
+- **Success / Online** (`success`): `#10b981` (Emerald) - online counts, active connections, live status indicators.
+- **Success Surface** (`success-surface`): `#e9f8ef`.
 
-**The State Color Rule.** Red communicates interaction or product emphasis; green communicates current positive state. Do not exchange those meanings.
+**The State Color Rule.** Red communicates interaction or product emphasis; emerald green communicates current positive/live state. Do not exchange those meanings.
 
 ## Typography
 
-**Interface Font:** Tajawal with Tahoma, Arial, and generic sans-serif fallbacks. Local Arabic and Latin font files provide weights 400, 500, 700, 800, and 900.
+Sokrat VoIP three-tier font stack:
 
-**Technical Font:** Native monospace stack for IP addresses and other machine-readable values.
+```html
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+```
 
-### Hierarchy
+### Font Hierarchy:
 
-- **Headline** (`typography.headline`): page titles; letter spacing resets to normal in RTL.
-- **Title** (`typography.title`): card identities, alerts, and compact entity names.
-- **Body** (`typography.body`): explanatory copy, with page-intro lines capped near 68 characters.
-- **Label** (`typography.label`): table headers, filters, metrics, state badges, and metadata.
-- **Numeric status values:** 20–23px with tabular numerals where counts must align while changing.
-- **Technical values:** 11px, weight 700, native monospace, LTR direction, and wrapping enabled for long addresses.
+1. **Latin UI & Headings**: `'Plus Jakarta Sans', sans-serif` (weights: 400, 500, 600, 700, 800)
+2. **Arabic UI & Headings**: `'Cairo', sans-serif` (weights: 200, 300 Light, 400 Regular, 500 Medium, 600 SemiBold) - calibrated for slender geometric balance with JetBrains Mono.
+3. **Data Fields, Tables & Telemetry**: `'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace`
 
-**The Script Rule.** Use Tajawal for both interface languages, remove Latin-specific negative tracking in RTL, and isolate IP addresses or machine values with LTR direction.
+### Application Rules:
+
+```css
+body {
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
+  font-weight: 400;
+}
+
+.font-mono, td, th, input, select, textarea, pre, code, .font-numeric, .badge-mono {
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace !important;
+}
+
+/* Sidebar Scrollbar Rule: Always hidden across browsers */
+.crm-side, #crmSidebar {
+  overflow-y: auto !important;
+  scrollbar-width: none !important;
+  -ms-overflow-style: none !important;
+}
+.crm-side::-webkit-scrollbar, #crmSidebar::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+}
+```
+
+## Strict Zero-Shadow Rule (Border-Led Flat Architecture)
+
+Sokrat VoIP strictly rejects pseudo-3D elevations and shadows in favor of crisp 1px borders and surface contrast.
+
+```css
+*, *::before, *::after {
+  box-shadow: none !important;
+  text-shadow: none !important;
+}
+```
+
+- **Sidebar Links & Active Indicators**: no glow (`0 12px 27px #dc26372c` removed); active items use `#ef4444` background with crisp borders.
+- **Topbar & Header Panels**: no drop-shadows (`box-shadow: none !important`), framed by 1px `#e5e7eb` (light) or `rgba(255, 255, 255, 0.08)` (dark).
+- **Cards, Tables, Modals & Dropdowns**: border-led flat surfaces.
 
 ## Layout
 
@@ -184,89 +230,41 @@ The application shell is a horizontal flex layout on desktop. The shared sidebar
 
 Surface hierarchy is linear: page header, one full-width status or context strip, then the primary searchable data panel. Panels use 18–22px internal spacing, while compact controls use 6–15px gaps and padding. Logical properties (`inline-start`, `inline-end`, and `text-align: start`) keep the same composition in RTL and LTR.
 
-Responsive rules are explicit:
-
-- At 1080px and below, status metrics and table columns tighten without changing the information order.
-- At 900px and below, the sidebar becomes an off-canvas drawer, the menu button appears, main padding reduces, the toolbar stacks, and data-table rows become two-column labeled cards.
-- At 620px and below, main padding reduces again, header actions become full-width, status metrics tighten, and each data row becomes a single-column card.
-- Overlays lock body scrolling while mobile navigation is open; focus moves into the drawer and returns to the menu control on close.
-
-**The Reading Order Rule.** Preserve the same semantic order across breakpoints; change the table's visual layout without duplicating or reordering its facts.
-
-## Elevation & Depth
-
-The system combines borders with low-amplitude shadows. Borders carry most separation; shadow is reserved for whole panels, the network strip, active segmented controls, dropdowns, and mobile drawers.
-
-### Shadow Vocabulary
-
-- **Panel:** `0 14px 38px rgba(17,24,39,.06)` for primary light-mode surfaces.
-- **Control:** `0 6px 18px rgba(17,24,39,.04)` for the refresh action.
-- **Selected filter:** `0 3px 12px rgba(17,24,39,.08)` to lift the active segment within a soft group.
-- **Active navigation:** `0 12px 27px #dc26372c` below the red navigation gradient.
-- **Dropdown:** `0 18px 45px rgba(15,23,42,.16)` for the profile menu.
-- **Dark panel:** `0 18px 42px rgba(0,0,0,.24)` on the Technical Support surface; shared dark glass surfaces may add an inset highlight.
-
-**The Border-First Rule.** Use the established one-pixel border for ordinary separation; add shadow only when a complete surface or temporary layer must separate from the page.
-
-## Shapes
-
-Corners use a compact rounded scale rather than one universal radius. Panels and full-width strips use the panel radius; alerts use the alert radius; controls use the control radius; icon containers sit between control and alert radii; compact internal segments use the small radius; status badges are pills. Borders remain one pixel and icons are usually contained in square rounded tiles rather than free-floating.
-
-Do not apply a panel radius to every child. Nested elements step down through `rounded.alert`, `rounded.icon`, `rounded.control`, `rounded.sm`, and `rounded.xs` so hierarchy remains visible.
-
 ## Components
 
 ### Buttons
 
-- **Secondary / Refresh:** a 44px white bordered control using `button-secondary`; hover changes the border and text to red and moves the control upward by 1px.
-- **Primary:** a red-filled, white-text variant is established in settings forms; it uses the same compact height and 10–11px control radius.
-- **Focus:** all keyboard-focusable controls receive a 3px translucent red outline with 3px offset; fields instead use a red border and a 3px low-opacity ring.
-- **Motion:** state transitions are 160–200ms; reduced-motion preference disables transitions.
+- **Secondary / Refresh**: a 44px white bordered control using `button-secondary`; hover changes the border and text to `#ef4444`. Zero shadow.
+- **Primary**: a crimson red-filled (`#ef4444`), white-text button; hover darkens to `#dc2626`.
+- **Focus**: all keyboard-focusable controls receive a 2px solid `#ef4444` outline.
 
-### Chips
+### Chips & Badges
 
-- **Filters:** three compact controls sit inside a soft-surface rounded group. The default state is transparent and muted; the active state switches to a white surface, red text, and the selected-filter shadow.
-- **Status:** online and offline states use pill badges with a 7px leading dot. Online uses the success channel; offline uses the neutral-state channel.
-
-### Cards / Containers
-
-- **Panels:** white surface, one-pixel border, panel radius, clipped overflow, and panel shadow.
-- **Status strip:** one continuous panel split by inline borders into a flexible identity region and fixed metric regions; it wraps into stacked identity and metrics rows below 900px.
-- **Internal regions:** soft surfaces distinguish table headers, row hover, search wells, and technical-value capsules without introducing additional cards.
+- **Filters**: compact controls inside a soft-surface group. Active state switches to white surface with `#ef4444` text and crisp 1px border.
+- **Status Badges**: online states use `#10b981` (Emerald) pill badges with leading dot.
 
 ### Inputs / Fields
 
-- **Search:** 44px high, soft-surface fill, one-pixel border, control radius, an inline-start search icon, and direction-aware padding.
-- **Focus:** red border, translucent red ring, and a surface background.
-- **Placeholder:** muted text with sufficient contrast in both themes.
+- **Search**: 44px high, soft-surface fill, 1px border (`#e5e7eb`), control radius, monospace/data font for input contents.
+- **Focus**: `#ef4444` border, zero shadow.
 
 ### Navigation
 
-- **Desktop:** 288px sticky sidebar with 49px items, 13px item corners, 32px icon tiles, 5px row gaps, and an optional 88px persisted collapsed state.
-- **Active:** red gradient, white content, red border, and shallow colored shadow.
-- **Hover:** pale red background and red text; desktop expanded items move 2px toward the logical inline start.
-- **Mobile:** an off-canvas drawer appears below 900px with a dimmed, slightly blurred overlay. LTR opens from the left and RTL opens from the right.
-
-### Data Table
-
-- **Desktop:** fixed-layout columns, soft-surface header, 11px heavy labels, 16px by 18px body-cell padding, and one-pixel row dividers.
-- **Responsive:** the header hides below 900px and each cell exposes its localized `data-label`; the first identity cell spans the row.
-- **Interaction:** row hover uses only the soft surface; search and status filtering happen in place, with a dedicated no-match state.
+- **Desktop**: 288px sticky sidebar with 49px items, 13px item corners, 32px icon tiles, 5px row gaps.
+- **Active**: `#ef4444` flat background, white content, 1px border, zero shadow.
+- **Hover**: pale crimson tint (`rgba(239, 68, 68, 0.12)`) and `#ef4444` text.
 
 ## Do's and Don'ts
 
 ### Do:
-
-- **Do** inherit the shared sidebar, profile controls, Tajawal font assets, light/dark theme behavior, and direction-aware layout.
-- **Do** lead operational pages with the primary task context and place the main data surface immediately after it.
-- **Do** use neutral surfaces and borders for structure, red for interaction emphasis, and green only for positive live state.
-- **Do** preserve visible empty, unavailable, and no-match states inside the main data region.
-- **Do** retain keyboard focus, Escape-to-close behavior, focus restoration, and reduced-motion support.
+- **Do** use Electric Crimson Red (`#ef4444`) for primary actions and active states.
+- **Do** use Emerald (`#10b981`) strictly for positive/live states.
+- **Do** enforce `Plus Jakarta Sans` for Latin, `Cairo` for Arabic, and `JetBrains Mono` for numbers, tables, inputs, codes, and timestamps.
+- **Do** enforce the zero-shadow rule globally (`box-shadow: none !important`).
+- **Do** separate components exclusively with crisp 1px borders and surface contrast.
 
 ### Don't:
-
-- **Don't** replace the continuous status strip with disconnected metric cards when the metrics describe one shared source.
-- **Don't** use green as decoration, navigation emphasis, or a general secondary accent.
-- **Don't** introduce a second interface font or apply the interface family to icons and technical monospace values.
-- **Don't** hard-code left/right alignment where logical inline properties can preserve Arabic and English layouts.
-- **Don't** add strong shadow to every nested region; ordinary hierarchy is border- and tone-led.
+- **Don't** add box-shadows, glow filters, or drop-shadows anywhere in the UI.
+- **Don't** use legacy red shades (`#dc2637`, `#b81829`).
+- **Don't** use Tajawal or Instrument Sans as the primary typography.
+- **Don't** format numeric data, timestamps, or IP addresses in proportional sans-serif fonts.

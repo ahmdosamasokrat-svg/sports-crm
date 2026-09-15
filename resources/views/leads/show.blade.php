@@ -6,9 +6,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ $lead->name }} — {{ __('crm.lead_details') }}</title>
     <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-    <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+    <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
     <script>
     (() => {
@@ -22,17 +25,11 @@
     </script>
     <style>
         *{box-sizing:border-box}
-        :root{--red:#dc2637;--dark:#182033;--muted:#7e899b;--line:#e4e8ef;--bg:#f4f6f9;--card:#fff;--blue:#3478f6}
-        body{margin:0;background:var(--bg);color:var(--dark);font-family:var(--font-primary)}
+        :root{--red:#ef4444;--red-dark:#dc2626;--dark:#182033;--muted:#7e899b;--line:#e4e8ef;--bg:#f4f6f9;--card:#fff;--blue:#3478f6}
+        body{margin:0;background:var(--bg);color:var(--dark);font-family:'Plus Jakarta Sans', 'Cairo', sans-serif !important;}
         .crm-app{min-height:100vh;display:flex}
         .crm-main{min-width:0;flex:1;padding:24px 30px 60px}
-        .topbar{display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-        .topbar-left{display:flex;align-items:center;gap:14px}
-        .topbar h1{margin:0;font-size:24px;font-weight:900;color:var(--dark)}
-        .topbar p{margin:4px 0 0;color:var(--muted);font-size:13px}
-        .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:44px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit;font-size:13px;transition:all .15s}
-        .topbar .btn{height:44px;min-height:44px;box-sizing:border-box}
-        .topbar-left .btn.small,.topbar .btn.small{width:44px;height:44px;min-height:44px;padding:0;display:inline-grid;place-items:center;border-radius:10px}
+        .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit;font-size:13px;transition:all .15s}
         .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
         .btn.primary:hover{background:#b81829;border-color:#b81829;color:#fff}
         .btn.soft{background:var(--card);color:var(--dark)}
@@ -243,7 +240,6 @@
         }
         @media(max-width:768px){
             .crm-main{padding:16px 12px 60px;min-width:0;width:100%;max-width:100%}
-            .topbar{flex-direction:column;align-items:stretch;gap:12px}
             .top-actions{width:100%;flex-wrap:wrap;gap:8px}
             .top-actions .btn{flex:1 1 auto;min-height:44px}
             .lead-header-top{flex-direction:column;align-items:stretch;gap:14px}

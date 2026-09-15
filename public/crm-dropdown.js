@@ -26,7 +26,7 @@
     const wrapper = document.createElement('div');
     wrapper.className = 'crm-dropdown';
     if (select.className) {
-      wrapper.className += ' ' + select.className.replace(/crm-custom-select/g, '').trim();
+      wrapper.className += ' ' + select.className.replace(/crm-custom-select/g, '').replace(/filter-control/g, '').trim();
     }
     if (select.id) {
       wrapper.dataset.selectId = select.id;
@@ -246,7 +246,7 @@
   }
 
   function initAllDropdowns(root = document) {
-    const selector = 'select.crm-custom-select, select[data-crm-dropdown]';
+    const selector = 'select:not([data-no-crm-dropdown]):not(.flatpickr-monthDropdown-months):not(.swal2-select):not(.fc-select)';
     root.querySelectorAll(selector).forEach(buildCustomDropdown);
   }
 
@@ -262,7 +262,7 @@
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
-          if (node.matches && node.matches('select.crm-custom-select, select[data-crm-dropdown]')) {
+          if (node.matches && node.matches('select:not([data-no-crm-dropdown]):not(.flatpickr-monthDropdown-months):not(.swal2-select):not(.fc-select)')) {
             buildCustomDropdown(node);
           } else if (node.querySelectorAll) {
             initAllDropdowns(node);

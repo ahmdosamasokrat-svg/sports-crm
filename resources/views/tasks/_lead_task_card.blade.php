@@ -38,7 +38,15 @@
      <small>{{ $lead->company_name ?: ($lead->job_title ?: __('crm.no_company')) }}</small>
     </div>
    </div>
-   <span class="task-status-pill" style="background: {{ $statusColor }}14; color: {{ $statusColor }}; border-color: {{ $statusColor }}33;">{{ $lead->status?->name_ar ?? '-' }}</span>
+   <div class="task-card-top-pills">
+    @if ($lead->status?->stage?->category)
+     <span class="task-category-pill" style="background: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'18' : '#f1f5f9' }}; color: {{ $lead->status->stage->category->color ?: '#475569' }}; border-color: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'33' : '#e2e8f0' }};" title="{{ __('crm.stage_category') }}: {{ $lead->status->stage->category->name_ar }}">
+      <i class="bi {{ $lead->status->stage->category->icon ?: 'bi-collection' }}"></i>
+      {{ $lead->status->stage->category->name_ar }}
+     </span>
+    @endif
+    <span class="task-status-pill" style="background: {{ $statusColor }}14; color: {{ $statusColor }}; border-color: {{ $statusColor }}33;">{{ $lead->status?->name_ar ?? '-' }}</span>
+   </div>
   </div>
   <div class="task-time-strip {{ $cardTimeClass }}">
    <span><i class="bi bi-clock"></i> {{ $lead->next_follow_up_at ? $lead->next_follow_up_at->format('d/m/Y - h:i A') : __('crm.without_followup_date') }}</span>
@@ -48,7 +56,21 @@
    <div class="task-meta-item"><span>{{ __('crm.phone') }}</span><strong>@if ($lead->phone)<a class="task-phone-link" href="tel:{{ $rawPhone }}">{{ $lead->phone }}</a>@else<span style="color:#94a3b8;">{{ __('crm.not_registered') }}</span>@endif</strong></div>
    <div class="task-meta-item"><span>{{ __('crm.lead_assigned_to') }}</span><strong>{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?: __('crm.unassigned') }}</strong></div>
    <div class="task-meta-item"><span>{{ __('crm.pipeline_stage') }}</span><strong>{{ $lead->status?->stage?->name_ar ?? '—' }}</strong></div>
+   <div class="task-meta-item">
+    <span>{{ __('crm.stage_category') }}</span>
+    <strong>
+     @if ($lead->status?->stage?->category)
+      <span style="display: inline-flex; align-items: center; gap: 4px; color: {{ $lead->status->stage->category->color ?: 'inherit' }};">
+       <i class="bi {{ $lead->status->stage->category->icon ?: 'bi-collection' }}" style="font-size: 11px;"></i>
+       {{ $lead->status->stage->category->name_ar }}
+      </span>
+     @else
+      <span style="color: #94a3b8;">—</span>
+     @endif
+    </strong>
+   </div>
    <div class="task-meta-item"><span>{{ __('crm.source') }}</span><strong>{{ $lead->source ?: __('crm.not_specified') }}</strong></div>
+   <div class="task-meta-item"><span>{{ __('crm.company') }}</span><strong>{{ $lead->company_name ?: ($lead->job_title ?: '—') }}</strong></div>
   </div>
   <div class="task-last-followup">
    <div class="task-last-followup-head">

@@ -10,8 +10,11 @@
   <title>{{ $isSaved ? ($quotation->quotation_no . ' - ' . $quotation->client_name) : __('crm.create_quotation') }} | CRM v2</title>
   <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}" />
   <meta name="csrf-token" content="{{ csrf_token() }}" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0" />
-  <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2" />
+  <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}" />
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
   <link rel="stylesheet" href="{{ asset('quotation-generator/crm-module.css') }}?v=mpc-v4-c1" />
   <link rel="stylesheet" href="{{ asset('quotation-generator/mpc-v4/styles.css') }}?v=mpc-v4-c1" />

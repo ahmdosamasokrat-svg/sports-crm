@@ -1,9 +1,89 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap');
 @import 'tailwindcss';
 
 @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
 @source '../../storage/framework/views/*.php';
 
 @theme {
-    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
-        'Segoe UI Symbol', 'Noto Color Emoji';
+    --font-sans: 'Plus Jakarta Sans', 'Cairo', ui-sans-serif, system-ui, sans-serif;
+    --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', monospace;
+    --color-primary-red: #ef4444;
+    --color-primary-red-hover: #dc2626;
+    --color-selection-tint: rgba(239, 68, 68, 0.12);
+    --color-online-success: #10b981;
+    --color-border-primary: #e5e7eb;
+    --color-border-dark: rgba(255, 255, 255, 0.08);
 }
+
+:root {
+    --font-primary: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+    --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', monospace;
+    --primary-red: #ef4444;
+    --red: #ef4444;
+    --red-dark: #dc2626;
+    --selection-tint: rgba(239, 68, 68, 0.12);
+    --online-success: #10b981;
+    --border-primary: #e5e7eb;
+    --border-dark: rgba(255, 255, 255, 0.08);
+    --shadow-card: none;
+    --shadow-dropdown: none;
+    --shadow: none;
+}
+
+*, *::before, *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+}
+
+body {
+    font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
+}
+
+.font-mono, td, th, input, select, textarea, pre, code, .font-numeric, .badge-mono {
+    font-family: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace !important;
+}
+
+* {
+    scrollbar-width: thin;
+    scrollbar-color: #ef4444 transparent;
+}
+
+::-webkit-scrollbar {
+    width: 5px;
+    height: 5px;
+}
+
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #ef4444;
+    border-radius: 999px;
+    border: 1px solid transparent;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #dc2626;
+}
+
+::-webkit-scrollbar-corner {
+    background: transparent;
+}
+
+.crm-side,
+.side,
+#crmSidebar {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+}
+
+.crm-side::-webkit-scrollbar,
+.side::-webkit-scrollbar,
+#crmSidebar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    background: transparent !important;
+}
+

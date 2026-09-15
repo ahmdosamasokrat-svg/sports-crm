@@ -4,6 +4,9 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SokratCRM — {{ __('crm.dashboard') }}</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-dropdown.css') }}?v=1.0.1">
@@ -12,14 +15,15 @@
    SOKRAT CRM BASE & LAYOUT STRUCTURE (Sidebar untouched, layout preserved)
    ========================================================================== */
 :root {
-  --red: #dc2637;
+  --red: #ef4444;
+  --red-dark: #dc2626;
   --dark: #182033;
   --text: #4b5568;
   --muted: #8b94a5;
   --line: #e7e9ef;
   --bg: #f6f8fb;
   --card: #fff;
-  --shadow: 0 12px 35px #1720330d;
+  --shadow: none;
 }
 
 * {
@@ -36,12 +40,29 @@ body {
   max-width: 100vw;
   background: var(--bg);
   color: var(--dark);
-  font-family: Tajawal, Cairo, Tahoma, Arial, sans-serif;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 15px;
   overflow-x: clip;
 }
 button, input, select {
   font: inherit;
+}
+
+.crm-dashboard-v2 .counter-num,
+.crm-dashboard-v2 .kpi-card-value,
+.crm-dashboard-v2 .pipeline-flow-info small,
+.crm-dashboard-v2 .donut-center-stat strong,
+.crm-dashboard-v2 .metric-sub-item strong,
+.crm-dashboard-v2 .stage-activity-time,
+.crm-dashboard-v2 .mini-cal-day-num,
+.crm-dashboard-v2 .event-time-badge,
+.crm-dashboard-v2 .dash-campaign-chip-count,
+.crm-dashboard-v2 [data-target],
+.crm-dashboard-v2 #stageActivityToday,
+.crm-dashboard-v2 #stageActivityOverdue,
+.crm-dashboard-v2 #stageActivityUpcoming {
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums !important;
 }
 
 a {
@@ -89,30 +110,6 @@ a {
   min-width: 0;
   padding: 24px clamp(16px, 2.5vw, 36px) 48px;
 }
-/* Sidebar original styles (preserved strictly for layout parity) */
-.brand { display: flex; align-items: center; gap: 11px; padding: 4px 8px 20px; margin-bottom: 17px; border-bottom: 1px solid var(--line); text-decoration: none; }
-.logo { width: 58px; height: 58px; display: block; flex: 0 0 58px; object-fit: contain; }
-.brand strong { display: block; color: var(--red); font: 900 22px Arial; }
-.brand small { display: block; margin-top: 5px; color: var(--muted); font-size: 12px; }
-.caption { margin: 0 12px 9px; color: #a0a7b4; font-size: 12px; font-weight: bold; }
-.nav { display: grid; gap: 6px; }
-.link, .toggle { width: 100%; min-height: 49px; display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid transparent; border-radius: 13px; background: transparent; color: #566175; text-decoration: none; text-align: right; cursor: pointer; transition: .2s; }
-.link:hover, .toggle:hover { color: var(--red); background: #fff5f6; transform: translateX(-2px); }
-.link.active { color: #fff; background: linear-gradient(135deg, #e83243, #c91d2e); box-shadow: 0 11px 25px #dc263737; }
-.ico { width: 32px; height: 32px; flex: 0 0 32px; display: grid; place-items: center; border-radius: 10px; background: #f0f2f6; font-size: 17px; }
-.active .ico { background: #ffffff2b; }
-.label { flex: 1; font-size: 15px; font-weight: 800; }
-.count { min-width: 24px; height: 24px; display: grid; place-items: center; padding: 0 6px; border-radius: 99px; background: #eef0f4; color: #7e8796; font: 800 10px Arial; }
-.active .count { color: #fff; background: #ffffff2b; }
-.arrow { font-size: 11px; color: #a2a9b5; transition: .2s; }
-.toggle[aria-expanded=true] .arrow { transform: rotate(180deg); }
-.sub { display: grid; grid-template-rows: 0fr; transition: .22s; }
-.sub.open { grid-template-rows: 1fr; }
-.sub > div { min-height: 0; overflow: hidden; }
-.sub nav { display: grid; gap: 2px; margin: 3px 28px 7px 0; padding-inline-end: 14px; border-inline-end: 1px solid var(--line); }
-.sub a { padding: 8px 10px; border-radius: 8px; color: #788294; text-decoration: none; font-size: 13px; font-weight: bold; }
-.sub a:hover { color: var(--red); background: #fff2f4; }
-.overlay { display: none; position: fixed; inset: 0; border: 0; background: rgba(15, 23, 42, 0.65); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); z-index: 99990 !important; cursor: pointer; }
 
 @media(max-width: 900px) {
   .app { display: block; }
@@ -431,7 +428,7 @@ html.dark-mode .crm-dashboard-v2 {
   box-shadow: none !important;
   padding-inline-start: 8px !important;
   padding-inline-end: 32px !important;
-  font-family: Tajawal, Tahoma, Arial, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   color: var(--d-text, #172033) !important;
@@ -636,13 +633,29 @@ html.dark-mode .crm-dashboard-v2 {
   width: 38px;
   height: 38px;
   flex: 0 0 38px;
-  border-radius: 9px;
-  display: grid;
-  place-items: center;
-  font-size: 18px;
-  background: var(--pill-bg, rgba(59, 130, 246, 0.1));
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 20px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   color: var(--pill-color, #3b82f6);
   transition: transform 0.2s ease;
+  padding: 0 !important;
+}
+.crm-dashboard-v2 .pipeline-flow-icon svg {
+  width: 22px;
+  height: 22px;
+  display: block;
+  margin: auto;
+}
+.crm-dashboard-v2 .pipeline-flow-icon i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .crm-dashboard-v2 .pipeline-flow-pill:hover .pipeline-flow-icon {
   transform: scale(1.05);
@@ -662,9 +675,10 @@ html.dark-mode .crm-dashboard-v2 {
 }
 .crm-dashboard-v2 .pipeline-flow-info small {
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 700;
   color: var(--d-text);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1.15;
 }
 
@@ -701,7 +715,12 @@ html.dark-mode .crm-dashboard-v2 {
   text-decoration: none;
   transition: all var(--d-transition);
   position: relative;
-  overflow: hidden;
+  overflow: visible !important;
+  z-index: 1;
+}
+.crm-dashboard-v2 .kpi-card-modern:has(.crm-dropdown.is-open),
+.crm-dashboard-v2 .kpi-card-modern:focus-within {
+  z-index: 1000 !important;
 }
 .crm-dashboard-v2 .kpi-card-modern:hover {
   transform: translateY(-3px);
@@ -722,18 +741,36 @@ html.dark-mode .crm-dashboard-v2 {
 .crm-dashboard-v2 .kpi-card-icon {
   width: 40px;
   height: 40px;
-  border-radius: var(--d-radius-sm);
-  display: grid;
-  place-items: center;
-  font-size: 19px;
-  background: var(--icon-bg, rgba(59, 130, 246, 0.1));
+  flex: 0 0 40px;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  font-size: 22px;
+  background: transparent !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: 0 !important;
   color: var(--card-accent, #3b82f6);
+  padding: 0 !important;
+}
+.crm-dashboard-v2 .kpi-card-icon svg {
+  width: 24px;
+  height: 24px;
+  display: block;
+  margin: auto;
+}
+.crm-dashboard-v2 .kpi-card-icon i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
 }
 .crm-dashboard-v2 .kpi-card-value {
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--d-text);
-  font-family: Arial, Tahoma, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   margin-bottom: 6px;
   letter-spacing: -0.5px;
@@ -1015,9 +1052,10 @@ html.dark-mode .dash-chart-dropdown-menu {
 .crm-dashboard-v2 .donut-center-stat strong {
   display: block;
   font-size: 18px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--d-text);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .crm-dashboard-v2 .donut-center-stat small {
@@ -1187,9 +1225,10 @@ html.dark-mode .dash-chart-dropdown-menu {
 .crm-dashboard-v2 .metric-sub-item strong {
   display: block;
   font-size: 16px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--d-text);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .crm-dashboard-v2 .metric-sub-item small {
@@ -1314,7 +1353,8 @@ html.dark-mode .dash-chart-dropdown-menu {
 .crm-dashboard-v2 .stage-activity-time {
   font-size: 10px;
   color: var(--d-text-muted);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 .crm-dashboard-v2 .stage-activity-empty {
   display: flex;
@@ -2032,7 +2072,8 @@ html.dark-mode .stage-activity-page-num {
   font-weight: 700;
   color: var(--d-text);
   line-height: 1;
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 .crm-dashboard-v2 .mini-cal-day.other-month { opacity: 0.3; }
 .crm-dashboard-v2 .mini-cal-day.today {
@@ -2107,7 +2148,8 @@ html.dark-mode .stage-activity-page-num {
   font-weight: 800;
   color: #3b82f6;
   font-size: 11px;
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   display: inline-flex;
   align-items: center;
   gap: 3px;
@@ -2450,6 +2492,52 @@ html.dark-mode .toast {
     </div>
   </form>
 
+@php
+  $renderStageVectorIcon = function(?string $iconName, ?string $code = null): string {
+      $icon = (string) $iconName;
+      if (str_contains($icon, 'person-plus') || in_array($code, ['new', 'start'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>';
+      }
+      if (str_contains($icon, 'thumbs-up') || in_array($code, ['interest', 'interested'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>';
+      }
+      if (str_contains($icon, 'thumbs-down') || in_array($code, ['not_interested', 'not-interested'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>';
+      }
+      if (str_contains($icon, 'telephone-x') || in_array($code, ['no_answer', 'no-answer'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="23" y1="1" x2="17" y2="7"/><line x1="17" y1="1" x2="23" y2="7"/></svg>';
+      }
+      if (str_contains($icon, 'clock-history') || in_array($code, ['postponed', 'delayed'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>';
+      }
+      if (str_contains($icon, 'calendar') || in_array($code, ['meeting', 'negotiation'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>';
+      }
+      if (str_contains($icon, 'file-earmark') || in_array($code, ['quotation', 'offer'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>';
+      }
+      if (str_contains($icon, 'chat-dots') || in_array($code, ['discussion', 'negotiation_call'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/></svg>';
+      }
+      if (str_contains($icon, 'check-circle') || in_array($code, ['contract', 'contract_closed', 'closing_execution'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+      }
+      if (str_contains($icon, 'gear') || in_array($code, ['execution', 'operations'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>';
+      }
+      if (str_contains($icon, 'funnel') || in_array($code, ['conversion', 'rate'])) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/></svg>';
+      }
+      if (str_contains($icon, 'people')) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>';
+      }
+      if (str_contains($icon, 'patch-check')) {
+          return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 3.26L19.5 5.5l1.24 4.24 3.26 3.09L20.74 16l-.24 4.26-4.24 1.24L12 22l-4.26-1.24L3.5 19.5l-1.24-4.24L2 12l1.24-4.26 1.26-4.24L8.74 2.26 12 2z"/><polyline points="9 12 11 14 15 10"/></svg>';
+      }
+      return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 14 14"/></svg>';
+  };
+@endphp
+
   <!-- ======================================================================
        CHANGE 2: DYNAMIC PIPELINE STAGES STRIP (Directly under filters)
        ====================================================================== -->
@@ -2469,16 +2557,16 @@ html.dark-mode .toast {
     <div class="dash-pipeline-strip">
       @foreach (($activePipelineStages ?? []) as $pStage)
         @can('leads.view')
-          <a href="{{ $pStage['filter_url'] }}" class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }}; --pill-bg: {{ $pStage['color'] }}1a;">
-            <div class="pipeline-flow-icon"><i class="{{ $pStage['icon'] }}"></i></div>
+          <a href="{{ $pStage['filter_url'] }}" class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }};">
+            <div class="pipeline-flow-icon">{!! $renderStageVectorIcon($pStage['icon'] ?? '', $pStage['code'] ?? '') !!}</div>
             <div class="pipeline-flow-info">
               <strong>{{ $pStage['name'] }}</strong>
               <small class="counter-num" data-target="{{ $pStage['count'] }}">{{ number_format($pStage['count']) }}</small>
             </div>
           </a>
         @else
-          <div class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }}; --pill-bg: {{ $pStage['color'] }}1a;">
-            <div class="pipeline-flow-icon"><i class="{{ $pStage['icon'] }}"></i></div>
+          <div class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }};">
+            <div class="pipeline-flow-icon">{!! $renderStageVectorIcon($pStage['icon'] ?? '', $pStage['code'] ?? '') !!}</div>
             <div class="pipeline-flow-info">
               <strong>{{ $pStage['name'] }}</strong>
               <small class="counter-num" data-target="{{ $pStage['count'] }}">{{ number_format($pStage['count']) }}</small>
@@ -2497,10 +2585,10 @@ html.dark-mode .toast {
     <div class="kpi-block-2x2">
       <!-- KPI 1: Total Leads -->
       @can('leads.view')
-        <a href="{{ route('v2.leads') }}" class="kpi-card-modern" style="--card-accent: #3b82f6; --icon-bg: rgba(59, 130, 246, 0.1);">
+        <a href="{{ route('v2.leads') }}" class="kpi-card-modern" style="--card-accent: #3b82f6;">
           <div class="kpi-card-head">
             <span class="kpi-card-label">{{ __('إجمالي العملاء') }}</span>
-            <div class="kpi-card-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="kpi-card-icon">{!! $renderStageVectorIcon('bi-people', 'people') !!}</div>
           </div>
           <div>
             <div class="kpi-card-value counter-num" data-target="{{ $totalLeads ?? 0 }}">{{ number_format($totalLeads ?? 0) }}</div>
@@ -2508,10 +2596,10 @@ html.dark-mode .toast {
           </div>
         </a>
       @else
-        <div class="kpi-card-modern" style="--card-accent: #3b82f6; --icon-bg: rgba(59, 130, 246, 0.1);">
+        <div class="kpi-card-modern" style="--card-accent: #3b82f6;">
           <div class="kpi-card-head">
             <span class="kpi-card-label">{{ __('إجمالي العملاء') }}</span>
-            <div class="kpi-card-icon"><i class="bi bi-people-fill"></i></div>
+            <div class="kpi-card-icon">{!! $renderStageVectorIcon('bi-people', 'people') !!}</div>
           </div>
           <div>
             <div class="kpi-card-value counter-num" data-target="{{ $totalLeads ?? 0 }}">{{ number_format($totalLeads ?? 0) }}</div>
@@ -2521,14 +2609,14 @@ html.dark-mode .toast {
       @endcan
 
       <!-- KPI 2: Dynamic Pipeline Stage-to-Stage Conversion Rate -->
-      <div class="kpi-card-modern" id="kpiCardConversion" style="--card-accent: {{ $conversionMetrics['color'] ?? '#8b5cf6' }}; --icon-bg: {{ $conversionMetrics['color'] ?? '#8b5cf6' }}1a;">
+      <div class="kpi-card-modern" id="kpiCardConversion" style="--card-accent: {{ $conversionMetrics['color'] ?? '#8b5cf6' }};">
         <div class="kpi-card-head">
           <div class="kpi-head-title-wrap">
             <span class="kpi-card-label">{{ __('crm.stage_conversion_rate') }}</span>
             <div class="kpi-stage-selectors-pair">
               <div class="kpi-stage-select-item">
                 <span class="kpi-stage-select-tag">{{ __('crm.from_stage_prefix') ?? 'من:' }}</span>
-                <select class="kpi-stage-select" id="conversionFromStageSelect" aria-label="{{ __('crm.from_stage_label') ?? 'من المرحلة' }}">
+                <select class="kpi-stage-select" id="conversionFromStageSelect" data-no-crm-dropdown aria-label="{{ __('crm.from_stage_label') ?? 'من المرحلة' }}">
                   @foreach(($activePipelineStages ?? []) as $pStage)
                     <option value="{{ $pStage['id'] }}" @selected(($conversionMetrics['from_stage_id'] ?? null) == $pStage['id'])>
                       {{ $pStage['name'] }}
@@ -2538,7 +2626,7 @@ html.dark-mode .toast {
               </div>
               <div class="kpi-stage-select-item">
                 <span class="kpi-stage-select-tag">{{ __('crm.to_stage_prefix') ?? 'إلى:' }}</span>
-                <select class="kpi-stage-select" id="conversionStageSelect" aria-label="{{ __('crm.to_stage_label') ?? 'إلى المرحلة' }}">
+                <select class="kpi-stage-select" id="conversionStageSelect" data-no-crm-dropdown aria-label="{{ __('crm.to_stage_label') ?? 'إلى المرحلة' }}">
                   @foreach(($activePipelineStages ?? []) as $pStage)
                     <option value="{{ $pStage['id'] }}" @selected(($conversionMetrics['to_stage_id'] ?? $conversionMetrics['stage_id'] ?? null) == $pStage['id'])>
                       {{ $pStage['name'] }}
@@ -2548,7 +2636,7 @@ html.dark-mode .toast {
               </div>
             </div>
           </div>
-          <div class="kpi-card-icon" id="conversionIcon"><i class="{{ $conversionMetrics['icon'] ?? 'bi bi-funnel-fill' }}"></i></div>
+          <div class="kpi-card-icon" id="conversionIcon">{!! $renderStageVectorIcon($conversionMetrics['icon'] ?? 'bi-funnel-fill', 'conversion') !!}</div>
         </div>
         <div>
           <div class="kpi-card-value counter-num" id="conversionValue" data-target="{{ $conversionMetrics['rate'] ?? 0 }}">
@@ -2562,11 +2650,11 @@ html.dark-mode .toast {
       </div>
 
       <!-- KPI 3: Dynamic Pipeline Stage 1 -->
-      <div class="kpi-card-modern" id="kpiCardStage1" style="--card-accent: {{ $stageKpi1['color'] ?? '#10b981' }}; --icon-bg: {{ $stageKpi1['color'] ?? '#10b981' }}1a;">
+      <div class="kpi-card-modern" id="kpiCardStage1" style="--card-accent: {{ $stageKpi1['color'] ?? '#10b981' }};">
         <div class="kpi-card-head">
           <div class="kpi-head-title-wrap">
             <span class="kpi-card-label" id="stageKpi1Label">{{ $stageKpi1['stage_name'] ?? __('crm.stage') }}</span>
-            <select class="kpi-stage-select" id="stageKpi1Select" aria-label="{{ __('crm.select_stage') }}">
+            <select class="kpi-stage-select" id="stageKpi1Select" data-no-crm-dropdown aria-label="{{ __('crm.select_stage') }}">
               @foreach(($activePipelineStages ?? []) as $pStage)
                 <option value="{{ $pStage['id'] }}" @selected(($stageKpi1['stage_id'] ?? null) == $pStage['id'])>
                   {{ $pStage['name'] }}
@@ -2574,7 +2662,7 @@ html.dark-mode .toast {
               @endforeach
             </select>
           </div>
-          <div class="kpi-card-icon" id="stageKpi1Icon"><i class="{{ $stageKpi1['icon'] ?? 'bi bi-patch-check-fill' }}"></i></div>
+          <div class="kpi-card-icon" id="stageKpi1Icon">{!! $renderStageVectorIcon($stageKpi1['icon'] ?? 'bi-patch-check-fill', 'kpi1') !!}</div>
         </div>
         <div>
           <div class="kpi-card-value counter-num" id="stageKpi1Value" data-target="{{ $stageKpi1['count'] ?? 0 }}">
@@ -2588,11 +2676,11 @@ html.dark-mode .toast {
       </div>
 
       <!-- KPI 4: Dynamic Pipeline Stage 2 -->
-      <div class="kpi-card-modern" id="kpiCardStage2" style="--card-accent: {{ $stageKpi2['color'] ?? '#f59e0b' }}; --icon-bg: {{ $stageKpi2['color'] ?? '#f59e0b' }}1a;">
+      <div class="kpi-card-modern" id="kpiCardStage2" style="--card-accent: {{ $stageKpi2['color'] ?? '#f59e0b' }};">
         <div class="kpi-card-head">
           <div class="kpi-head-title-wrap">
             <span class="kpi-card-label" id="stageKpi2Label">{{ $stageKpi2['stage_name'] ?? __('crm.stage') }}</span>
-            <select class="kpi-stage-select" id="stageKpi2Select" aria-label="{{ __('crm.select_stage') }}">
+            <select class="kpi-stage-select" id="stageKpi2Select" data-no-crm-dropdown aria-label="{{ __('crm.select_stage') }}">
               @foreach(($activePipelineStages ?? []) as $pStage)
                 <option value="{{ $pStage['id'] }}" @selected(($stageKpi2['stage_id'] ?? null) == $pStage['id'])>
                   {{ $pStage['name'] }}
@@ -2600,7 +2688,7 @@ html.dark-mode .toast {
               @endforeach
             </select>
           </div>
-          <div class="kpi-card-icon" id="stageKpi2Icon"><i class="{{ $stageKpi2['icon'] ?? 'bi bi-calendar2-check-fill' }}"></i></div>
+          <div class="kpi-card-icon" id="stageKpi2Icon">{!! $renderStageVectorIcon($stageKpi2['icon'] ?? 'bi-calendar2-check-fill', 'kpi2') !!}</div>
         </div>
         <div>
           <div class="kpi-card-value counter-num" id="stageKpi2Value" data-target="{{ $stageKpi2['count'] ?? 0 }}">
@@ -2891,7 +2979,7 @@ html.dark-mode .toast {
                     {{ $followup->employee_name ?: '—' }}
                   </span>
                 </td>
-                <td style="font-family: Arial, sans-serif; font-size: 12px;">
+                <td style="font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important; font-size: 12px; font-variant-numeric: tabular-nums;">
                   {{ $followup->followed_up_at?->format('d/m/Y H:i') ?? '—' }}
                 </td>
                 <td>
@@ -3244,6 +3332,7 @@ html.dark-mode .toast {
       const colors = getChartThemeColors(theme);
       if (window.Chart) {
         window.Chart.defaults.color = colors.textColor;
+        window.Chart.defaults.font.family = "'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', sans-serif";
       }
     if (perfChart) {
       if (perfChart.options.scales && perfChart.options.scales.y) {

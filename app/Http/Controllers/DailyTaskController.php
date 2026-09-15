@@ -139,7 +139,7 @@ class DailyTaskController extends Controller
         $leadsBase = Lead::query()
             ->accessibleTo($user)
             ->with([
-                'status.stage',
+                'status.stage.category',
                 'assignedUser:id,name',
                 'creator:id,name',
                 'latestFollowup' => static fn ($q) => $q->with(['user:id,name', 'fromStatus', 'toStatus']),
@@ -218,7 +218,7 @@ class DailyTaskController extends Controller
                 ->whereBetween('followed_up_at', [$todayStart, $todayEnd])
                 ->whereHas('lead', static fn (Builder $q): Builder => $q->accessibleTo($user))
                 ->with([
-                    'lead.status.stage',
+                    'lead.status.stage.category',
                     'lead.assignedUser:id,name',
                     'user:id,name',
                     'fromStatus',

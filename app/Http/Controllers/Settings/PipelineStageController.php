@@ -64,6 +64,7 @@ class PipelineStageController extends Controller
             'color' => ['nullable', 'string', 'regex:/^#[0-9a-fA-F]{6}$/'],
             'icon' => ['nullable', 'string', 'max:50'],
             'description_ar' => ['nullable', 'string', 'max:255'],
+            'has_followups' => ['nullable', 'boolean'],
         ], [
             'name_ar.required' => 'اسم المرحلة مطلوب.',
             'color.regex' => 'كود اللون يجب أن يكون بصيغة hex صحيحة مثل #3478f6.',
@@ -71,8 +72,9 @@ class PipelineStageController extends Controller
 
         $nextPosition = (int) (PipelineStage::query()->max('position') ?? 0) + 1;
         $color = $validated['color'] ?? '#7b61df';
+        $hasFollowups = $request->has('has_followups') ? $request->boolean('has_followups') : true;
 
-        DB::transaction(function () use ($validated, $nextPosition, $color): void {
+        DB::transaction(function () use ($validated, $nextPosition, $color, $hasFollowups): void {
             $code = 'stage_' . Str::lower(Str::random(8));
 
             PipelineStage::query()->create([
@@ -83,6 +85,7 @@ class PipelineStageController extends Controller
                 'position' => $nextPosition,
                 'color' => $color,
                 'icon' => ! empty($validated['icon']) ? trim($validated['icon']) : null,
+                'has_followups' => $hasFollowups,
                 'is_primary' => false,
                 'is_active' => true,
             ]);
@@ -107,12 +110,14 @@ class PipelineStageController extends Controller
             'position' => ['required', 'integer', 'min:1', 'max:255'],
             'description_ar' => ['nullable', 'string', 'max:255'],
             'is_active' => ['nullable', 'boolean'],
+            'has_followups' => ['nullable', 'boolean'],
         ], [
             'name_ar.required' => 'اسم المرحلة مطلوب.',
             'color.regex' => 'كود اللون يجب أن يكون بصيغة hex صحيحة.',
         ]);
 
         $isActive = $stage->isPrimary() ? true : ($request->has('is_active') ? $request->boolean('is_active') : false);
+        $hasFollowups = $request->has('has_followups') ? $request->boolean('has_followups') : (bool) $stage->has_followups;
 
         // Safety: If deactivating an optional stage that contains leads
         if (! $isActive && $stage->hasLeads()) {
@@ -123,7 +128,7 @@ class PipelineStageController extends Controller
                 ]);
         }
 
-        DB::transaction(function () use ($stage, $validated, $isActive): void {
+        DB::transaction(function () use ($stage, $validated, $isActive, $hasFollowups): void {
             $newPosition = (int) $validated['position'];
             $oldPosition = (int) $stage->position;
 
@@ -166,6 +171,7 @@ class PipelineStageController extends Controller
                 'position' => $newPosition,
                 'description_ar' => $validated['description_ar'] ?? null,
                 'is_active' => $isActive,
+                'has_followups' => $hasFollowups,
             ]);
 
             // Re-normalize all stages to contiguous positions

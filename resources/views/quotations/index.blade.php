@@ -8,32 +8,18 @@
  >
  <title>{{ __('crm.quotations') }} | CRM v2</title>
  <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+ <link rel="preconnect" href="https://fonts.googleapis.com">
+ <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+ <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
  <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
- <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+ <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
  <link
   rel="stylesheet"
   href="{{ asset('quotation-generator/crm-module.css') }}?v=crm-module-no-sidebar-v6"
  >
  <style>
-  .crm-list-head, .crm-topbar, .topbar { display:flex; align-items:center; justify-content:space-between; gap:16px; margin-bottom:20px; flex-wrap:wrap; min-height:56px; }
-  .crm-topbar-left, .topbar-left { display:flex; align-items:center; gap:12px; min-width:0; }
-  .crm-topbar-title h1, .topbar h1 { margin:0; font-size:26px; font-weight:900; display:flex; align-items:center; gap:8px; }
-  .crm-topbar-title p, .topbar p { margin:4px 0 0; color:#7d8798; font-size:13px; }
-  .crm-topbar-right, .top-actions { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .crm-topbar-actions { display:inline-flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .crm-topbar-menu-btn, .menu-button { display:none; width:44px; height:44px; min-height:44px; min-width:44px; border-radius:10px; border:1px solid #e4e8ee; background:#fff; color:#20283a; font-size:20px; cursor:pointer; align-items:center; justify-content:center; touch-action:manipulation; }
-
-  @media(max-width:900px){
-   .crm-topbar-menu-btn, .menu-button { display:inline-flex; }
-  }
-  @media(max-width:768px){
-   .crm-list-head, .crm-topbar, .topbar { flex-direction:column; align-items:stretch; gap:14px; margin-bottom:16px; }
-   .crm-topbar-left, .topbar-left { width:100%; justify-content:flex-start; }
-   .crm-topbar-right, .top-actions { width:100%; justify-content:space-between; gap:8px; }
-   .crm-topbar-actions { display:flex; flex:1 1 auto; gap:8px; flex-wrap:wrap; }
-   .crm-qbtn { flex:1 1 auto; min-height:44px; justify-content:center; }
-  }
+  .crm-qbtn { min-height:42px; justify-content:center; }
  </style>
 <body>
 @include('partials.page-loader')

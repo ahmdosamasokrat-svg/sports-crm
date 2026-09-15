@@ -6,25 +6,29 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ __('crm.view_leads') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-dropdown.css') }}?v=1.0.1">
+<link rel="stylesheet" href="{{ asset('crm-dropdown.css') }}?v={{ time() }}">
 <style>
 :root {
-  --red: #dc2637;
-  --red-hover: #b81829;
-  --primary: #4f46e5;
-  --primary-hover: #4338ca;
+  --red: #ef4444;
+  --red-hover: #dc2626;
+  --primary: #ef4444;
+  --primary-hover: #dc2626;
   --dark: #182033;
   --muted: #64748b;
   --line: #e2e8f0;
   --bg: #f8fafc;
   --card: #ffffff;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  --shadow: none;
   --radius: 16px;
-  --font-primary: var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  --font-primary: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace;
 }
 
 html.dark-mode {
@@ -33,7 +37,7 @@ html.dark-mode {
   --line: #334155;
   --bg: #0f172a;
   --card: #1e293b;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --shadow: none;
 }
 
 * { box-sizing: border-box; }
@@ -42,7 +46,7 @@ body {
   min-width: 320px;
   background: var(--bg);
   color: var(--dark);
-  font-family: var(--font-primary);
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -50,34 +54,8 @@ button, input, select, textarea { font: inherit; }
 a { color: inherit; text-decoration: none; }
 
 .crm-app { display: flex; min-height: 100vh; }
-.crm-main { flex: 1; min-width: 0; padding: 24px 32px 60px; }
+.crm-main { flex: 1; min-width: 0; padding: 20px 20px 60px; }
 
-/* Topbar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  min-width: 0;
-}
-.topbar h1 {
-  margin: 0;
-  font-size: 24px;
-  font-weight: 900;
-  color: var(--dark);
-}
-.topbar p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
 .top-actions {
   display: flex;
   align-items: center;
@@ -124,7 +102,7 @@ html.dark-mode .btn:hover {
   background: var(--red);
   border-color: var(--red);
   color: #fff;
-  box-shadow: 0 4px 14px rgba(220, 38, 55, 0.25);
+  box-shadow: none !important;
 }
 .btn.primary:hover {
   background: var(--red-hover);
@@ -155,166 +133,40 @@ html.dark-mode .btn.soft:hover {
 }
 
 /* Stats Summary Cards */
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 14px;
-  margin-bottom: 20px;
-}
-.stat-card {
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  padding: 14px 18px;
-  box-shadow: var(--shadow);
-  text-decoration: none;
-  color: inherit;
-  display: block;
-  transition: transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease;
-}
-.stat-card:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 12px 35px rgba(15, 23, 42, 0.08);
-}
-.stat-card.selected {
-  border-color: var(--status-color, var(--red));
-  background: color-mix(in srgb, var(--status-color, var(--red)) 6%, var(--card));
-}
-.stat-card span {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 12px;
-  color: var(--muted);
-  font-weight: 700;
-}
-.stat-card b {
-  display: block;
-  font-size: 20px;
-  font-weight: 900;
-  margin-top: 5px;
-  color: var(--dark);
-}
-.stat-card small {
-  display: inline-block;
-  margin-top: 4px;
-  font-size: 10px;
-  font-weight: 700;
-  color: var(--muted);
-}
-
-/* Hero Pipeline Banner */
-.hero-pipeline {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  flex-wrap: nowrap;
-  overflow-x: auto;
-  min-width: 0;
-  max-width: 100%;
-  padding: 12px 16px;
-  background: var(--card);
-  border: 1px solid var(--line);
-  border-radius: var(--radius);
-  margin-bottom: 20px;
-  box-shadow: var(--shadow);
-  scrollbar-width: thin;
-  scrollbar-color: var(--muted) var(--bg);
-  scroll-snap-type: inline proximity;
-  overscroll-behavior-inline: contain;
-  -webkit-overflow-scrolling: touch;
-  touch-action: pan-x;
-  cursor: grab;
-}
-.hero-pipeline:active {
-  cursor: grabbing;
-}
-.hero-pipeline:hover,
-.hero-pipeline:focus-within {
-  scrollbar-color: var(--red) var(--bg);
-}
-.hero-pipeline::-webkit-scrollbar {
-  height: 5px;
-}
-.hero-pipeline::-webkit-scrollbar-track {
-  background: var(--bg);
-  border-radius: 99px;
-}
-.hero-pipeline::-webkit-scrollbar-thumb {
-  background: var(--muted);
-  border-radius: 99px;
-}
-.hero-pipeline:hover::-webkit-scrollbar-thumb,
-.hero-pipeline:focus-within::-webkit-scrollbar-thumb {
-  background: var(--red);
-}
-.hero-stage {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 14px;
-  border-radius: 12px;
-  border: 1px solid var(--line);
-  background: var(--bg);
-  text-decoration: none;
-  color: var(--dark);
-  font-weight: 800;
-  font-size: 13px;
-  white-space: nowrap;
-  transition: all 0.15s ease;
-  flex: 0 0 auto;
-  scroll-snap-align: start;
-}
-.hero-stage:hover {
-  border-color: var(--stage-color, var(--red));
-  background: color-mix(in srgb, var(--stage-color, var(--red)) 10%, var(--card));
-}
-.hero-stage.is-selected {
-  border-color: var(--stage-color, var(--red));
-  background: var(--stage-color, var(--red));
-  color: #fff;
-}
-.hero-stage .stage-icon {
-  font-size: 14px;
-}
-.hero-pipe-arrow {
-  color: var(--muted);
-  font-size: 12px;
-  opacity: 0.6;
-  flex: 0 0 auto;
-}
-
 /* Filters Panel */
 .filter-panel {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 14px 16px;
-  box-shadow: 0 4px 14px rgba(15, 23, 42, 0.03);
-  margin-bottom: 20px;
+  border-radius: 12px;
+  padding: 10px 14px;
+  box-shadow: none !important;
+  margin-bottom: 16px;
 }
 .filter-form-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
-  gap: 10px 12px;
+  grid-template-columns: minmax(180px, 1.4fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr) minmax(150px, 1.1fr) minmax(120px, 0.9fr) minmax(110px, 0.8fr) minmax(150px, 1fr) auto;
+  gap: 8px 10px;
   align-items: end;
 }
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   min-width: 0;
+  width: 100%;
 }
 .filter-field.col-search {
-  grid-column: span 2;
-  min-width: 220px;
+  min-width: 180px;
+}
+.filter-field.col-employee {
+  min-width: 150px;
 }
 .filter-actions-col {
   display: flex;
   align-items: center;
   gap: 6px;
-  height: 44px;
-  min-height: 44px;
+  height: 38px;
+  min-height: 38px;
   justify-self: start;
   align-self: end;
   white-space: nowrap;
@@ -324,9 +176,10 @@ html.dark-mode .btn.soft:hover {
   align-items: center;
   gap: 4px;
   font-size: 11px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--muted);
   white-space: nowrap;
+  line-height: 1.2;
 }
 .filter-input-wrap {
   position: relative;
@@ -343,24 +196,25 @@ html.dark-mode .btn.soft:hover {
 }
 .filter-control {
   width: 100%;
-  height: 44px;
-  min-height: 44px;
+  height: 38px;
+  min-height: 38px;
   border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 0 12px;
+  border-radius: 9px;
+  padding: 0 10px;
   background: var(--card);
   color: var(--dark);
-  font-size: 13px;
+  font-size: 12.5px;
   font-weight: 600;
   outline: none;
-  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+  transition: border-color 0.15s ease;
+  box-sizing: border-box;
 }
 .filter-control.with-icon {
   padding-inline-start: 28px;
 }
 .filter-control:focus {
   border-color: var(--red);
-  box-shadow: 0 0 0 2px rgba(220, 38, 55, 0.12);
+  box-shadow: none !important;
 }
 html.dark-mode .filter-control {
   background: rgba(30, 41, 59, 0.7);
@@ -377,10 +231,10 @@ html.dark-mode .filter-control {
   height: 44px !important;
   min-height: 44px !important;
   background: var(--card, #ffffff) !important;
-  border: 1.5px solid var(--line, #e2e8f0) !important;
+  border: 1px solid var(--line, #e2e8f0) !important;
   border-radius: 11px !important;
-  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04) !important;
-  transition: border-color 0.16s ease, box-shadow 0.16s ease, background-color 0.16s ease !important;
+  box-shadow: none !important;
+  transition: border-color 0.16s ease, background-color 0.16s ease !important;
   cursor: pointer !important;
   box-sizing: border-box !important;
 }
@@ -391,9 +245,9 @@ html.dark-mode .filter-control {
 }
 
 .crm-select-wrap:focus-within {
-  border-color: var(--red, #dc2637) !important;
+  border-color: var(--red, #ef4444) !important;
   background-color: var(--card, #ffffff) !important;
-  box-shadow: 0 0 0 3px rgba(220, 38, 55, 0.15) !important;
+  box-shadow: none !important;
 }
 
 .crm-select-wrap .crm-select-icon {
@@ -425,7 +279,7 @@ html.dark-mode .filter-control {
   box-shadow: none !important;
   padding-inline-start: 8px !important;
   padding-inline-end: 32px !important;
-  font-family: Tajawal, Tahoma, Arial, sans-serif !important;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 13px !important;
   font-weight: 700 !important;
   color: var(--dark, #182033) !important;
@@ -463,7 +317,7 @@ html.dark-mode .filter-control {
 }
 
 .crm-select-wrap:focus-within .crm-select-chevron {
-  color: var(--red, #dc2637) !important;
+  color: var(--red, #ef4444) !important;
   transform: rotate(180deg) !important;
 }
 
@@ -522,23 +376,64 @@ html.dark-mode .crm-select-wrap select.crm-select option {
   flex: 0 0 auto;
 }
 .dynamic-field-picker-toggle {
-  min-width: 190px;
-  justify-content: space-between;
+  width: 100% !important;
+  height: 38px !important;
+  min-height: 38px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 0 10px !important;
+  border: 1px solid var(--line, #e2e8f0) !important;
+  border-radius: 9px !important;
+  background: var(--card, #ffffff) !important;
+  color: var(--dark, #172033) !important;
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
+  font-size: 12.5px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  outline: none !important;
+  transition: border-color 0.18s ease, background-color 0.18s ease !important;
+  box-shadow: none !important;
+  box-sizing: border-box !important;
+}
+.dynamic-field-picker-toggle:hover {
+  border-color: #cbd5e1 !important;
+  background-color: var(--bg, #f8fafc) !important;
+}
+.dynamic-field-picker-toggle:focus-visible,
+.dynamic-field-picker-toggle[aria-expanded="true"] {
+  border-color: var(--red, #ef4444) !important;
+  background-color: var(--card, #ffffff) !important;
+}
+html.dark-mode .dynamic-field-picker-toggle {
+  background: rgba(30, 41, 59, 0.7) !important;
+  border-color: var(--line, #334155) !important;
+  color: var(--dark, #f1f5f9) !important;
 }
 .dynamic-field-picker-count {
-  min-width: 24px;
-  height: 24px;
-  display: inline-grid;
-  place-items: center;
-  padding: 0 6px;
-  border-radius: 8px;
-  background: #fef2f2;
-  color: var(--red);
-  font-size: 11px;
-  font-weight: 900;
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  min-height: 20px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  border-radius: 999px !important;
+  background: var(--red, #ef4444) !important;
+  color: #ffffff !important;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  font-variant-numeric: tabular-nums !important;
+  line-height: 1 !important;
+  text-align: center !important;
+  box-sizing: border-box !important;
 }
 html.dark-mode .dynamic-field-picker-count {
-  background: rgba(220, 38, 55, 0.16);
+  background: var(--red, #ef4444) !important;
+  color: #ffffff !important;
 }
 .dynamic-field-picker-menu {
   position: absolute;
@@ -552,7 +447,7 @@ html.dark-mode .dynamic-field-picker-count {
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
-  box-shadow: 0 18px 45px rgba(15, 23, 42, 0.16);
+  box-shadow: none !important;
 }
 .dynamic-field-picker-menu[hidden] { display: none; }
 .dynamic-field-option {
@@ -722,19 +617,20 @@ html.dark-mode .bulk-clear-button {
 table {
   width: 100%;
   border-collapse: collapse;
-  min-width: 1000px;
+  min-width: 0;
 }
 th, td {
   text-align: start;
-  padding: 12px 16px;
+  padding: 7px 8px;
   border-bottom: 1px solid var(--line);
   vertical-align: middle;
+  font-size: 13.5px;
 }
 th {
   background: #f8fafc;
   color: var(--muted);
-  font-size: 12px;
-  font-weight: 800;
+  font-size: 12.5px;
+  font-weight: 700;
   white-space: nowrap;
 }
 html.dark-mode th {
@@ -749,41 +645,53 @@ html.dark-mode tr:hover td { background: rgba(255, 255, 255, 0.02); }
 .customer-name-cell {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
+  min-width: 0;
 }
 .customer-avatar {
-  width: 38px;
-  height: 38px;
-  border-radius: 12px;
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
   background: #fef2f2;
   color: var(--red);
   display: grid;
   place-items: center;
-  font-weight: 900;
-  font-size: 14px;
+  font-weight: 800;
+  font-size: 12px;
   flex-shrink: 0;
+}
+.customer-info {
+  min-width: 0;
+  overflow: hidden;
 }
 .customer-info strong {
   display: block;
-  font-size: 13px;
-  font-weight: 900;
+  font-size: 13.5px;
+  font-weight: 700;
   color: var(--dark);
+  max-width: 155px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .customer-info small {
   display: block;
   color: var(--muted);
   font-size: 11px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 /* Badges */
 .badge {
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 9px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 800;
+  gap: 4px;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
   background: #f1f5f9;
   color: #475569;
   white-space: nowrap;
@@ -795,19 +703,19 @@ html.dark-mode .badge {
 .status-badge {
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 4px 10px;
-  border-radius: 20px;
-  font-size: 11px;
-  font-weight: 800;
+  gap: 5px;
+  padding: 2.5px 8px;
+  border-radius: 6px;
+  font-size: 11.5px;
+  font-weight: 700;
   background: color-mix(in srgb, var(--status-color, #64748b) 12%, transparent);
   color: var(--status-color, #64748b);
   border: 1px solid color-mix(in srgb, var(--status-color, #64748b) 25%, transparent);
   white-space: nowrap;
 }
 .status-dot {
-  width: 7px;
-  height: 7px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
   background: var(--status-color, #64748b);
 }
@@ -815,30 +723,38 @@ html.dark-mode .badge {
   display: block;
   font-size: 11px;
   color: var(--muted);
-  margin-top: 3px;
+  margin-top: 2px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 110px;
 }
 
 /* Actions Cell */
 .actions-cell {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  gap: 3px;
+  white-space: nowrap;
 }
 .btn-action {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 38px;
-  height: 38px;
-  min-width: 38px;
-  min-height: 38px;
-  border-radius: 9px;
+  width: 27px;
+  height: 27px;
+  min-width: 27px;
+  min-height: 27px;
+  border-radius: 7px;
   background: #f1f5f9;
   border: 1px solid var(--line);
   color: var(--dark);
-  font-size: 14px;
+  font-size: 12.5px;
   cursor: pointer;
   transition: all 0.15s ease;
+  padding: 0;
+  box-sizing: border-box;
 }
 .btn-action:hover {
   background: #e2e8f0;
@@ -850,10 +766,16 @@ html.dark-mode .btn-action {
   border-color: var(--line);
   color: var(--dark);
 }
+.btn-action.whatsapp { color: #16a34a; }
+.btn-action.whatsapp:hover { background: #dcfce7; border-color: #86efac; }
 .btn-action.call { color: #2563eb; }
 .btn-action.call:hover { background: #eff6ff; border-color: #bfdbfe; }
-.btn-action.whatsapp { color: #15803d; }
-.btn-action.whatsapp:hover { background: #dcfce7; border-color: #bbf7d0; }
+.btn-action.followup { color: #d97706; }
+.btn-action.followup:hover { background: #fef3c7; border-color: #fde68a; }
+.btn-action.view { color: #475569; }
+.btn-action.view:hover { background: #e2e8f0; border-color: #94a3b8; color: #0f172a; }
+.btn-action.edit { color: #475569; }
+.btn-action.edit:hover { background: #fef2f2; border-color: #fca5a5; color: #ef4444; }
 
 /* Pagination */
 .pagination-wrap {
@@ -909,35 +831,29 @@ html.dark-mode .btn-action {
   color: #ffffff !important;
 }
 
-@media(max-width: 1200px) {
-  .stats-grid { grid-template-columns: repeat(3, 1fr); }
-  .filter-form-grid { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
-  .filter-field.col-search { grid-column: span 2; }
+@media(max-width: 1400px) {
+  .filter-form-grid {
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  }
 }
 @media(max-width: 900px) {
-  .stats-grid { grid-template-columns: repeat(2, 1fr); }
   .filter-form-grid { grid-template-columns: repeat(2, 1fr); }
-  .topbar { flex-direction: column; align-items: stretch; gap: 14px; }
   .top-actions { width: 100%; flex-wrap: wrap; gap: 8px; }
   .top-actions .btn { flex: 1 1 auto; min-height: 44px; }
 }
 @media(max-width: 600px) {
   .crm-main { padding: 16px 12px 60px; min-width: 0; width: 100%; max-width: 100%; }
-  .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .filter-form-grid { grid-template-columns: 1fr; }
   .filter-field.col-search { grid-column: span 1; }
   .filter-actions-col { width: 100%; justify-self: stretch; }
-  .filter-actions-col .btn { flex: 1; height: 44px; min-height: 44px; }
+  .filter-actions-col .btn { flex: 1; height: 38px; min-height: 38px; }
   .pagination-wrap { flex-direction: column; align-items: center; text-align: center; gap: 12px; }
   .crm-pagination-nav { flex-wrap: wrap; justify-content: center; }
-  .btn-action { width: 44px; height: 44px; min-width: 44px; min-height: 44px; font-size: 16px; }
+  .btn-action { width: 38px; height: 38px; min-width: 38px; min-height: 38px; font-size: 15px; }
   .dynamic-filter-builder { align-items: stretch; flex-direction: column; }
   .dynamic-field-picker, .dynamic-field-picker-toggle { width: 100%; }
   .dynamic-field-picker-menu { inset-inline: 0; width: 100%; }
   .dynamic-filter-fields { grid-template-columns: 1fr; }
-}
-@media(max-width: 380px) {
-  .stats-grid { grid-template-columns: 1fr; }
 }
 </style>
 </head>
@@ -946,24 +862,10 @@ html.dark-mode .btn-action {
     @include('partials.crm-sidebar')
 
     <main class="crm-main">
-        @php
-            $leadTopActions = '';
-            if (auth()->user()->can('leads.create')) {
-                $leadTopActions .= '<a href="' . route('v2.leads.create') . '" class="btn primary"><i class="bi bi-plus-lg"></i> ' . __('crm.create_lead') . '</a>';
-            }
-            if (auth()->user()->can('leads.import')) {
-                $leadTopActions .= '<a href="' . route('v2.leads.import') . '" class="btn soft"><i class="bi bi-file-earmark-arrow-up"></i> ' . __('crm.import') . '</a>';
-            }
-            if (auth()->user()->can('leads.export')) {
-                $leadTopActions .= '<a href="' . route('v2.leads.export') . '" class="btn soft"><i class="bi bi-file-earmark-arrow-down"></i> ' . __('crm.export') . '</a>';
-            }
-        @endphp
-
         @include('partials.topbar', [
             'title' => __('crm.view_leads'),
             'subtitle' => '<span>' . __('crm.total_leads') . ': ' . number_format($totalLeads) . '</span>',
             'icon' => 'bi-people-fill',
-            'actions' => $leadTopActions,
         ])
 
         @if (session('success'))
@@ -971,75 +873,6 @@ html.dark-mode .btn-action {
                 <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
             </div>
         @endif
-
-        <!-- HERO PIPELINE -->
-        <section class="hero-pipeline" id="heroPipelineSection">
-            @foreach ($pipelineStages as $index => $hStage)
-                @php
-                    $hColor = preg_match('/^#[0-9a-fA-F]{6}$/', (string) $hStage->color) ? $hStage->color : '#3478f6';
-                    $hIcon = !empty($hStage->icon) ? $hStage->icon : match ($hStage->code) {
-                        'start', 'new' => 'bi-person-plus-fill',
-                        'no_answer', 'no-answer' => 'bi-telephone-x-fill',
-                        'interest', 'interested' => 'bi-hand-thumbs-up-fill',
-                        'not_interested', 'not-interested' => 'bi-hand-thumbs-down-fill',
-                        'negotiation', 'meeting' => 'bi-calendar-event-fill',
-                        'quotation' => 'bi-file-earmark-text-fill',
-                        'discussion' => 'bi-chat-dots-fill',
-                        'closing_execution', 'contract_closed', 'contract' => 'bi-check-circle-fill',
-                        'execution' => 'bi-gear-fill',
-                        'donor' => 'bi-heart-fill',
-                        default => 'bi-diagram-3-fill',
-                    };
-                    $isHeroSelected = ((string) ($filters['stage'] ?? '') === (string) $hStage->id)
-                        || (isset($selectedStage) && $selectedStage?->id === $hStage->id);
-                    $heroStageQuery = $isHeroSelected
-                        ? $queryWithoutStatus
-                        : array_merge($queryWithoutStatus, ['stage' => $hStage->id]);
-                @endphp
-
-                @if ($index > 0)
-                    <span class="hero-pipe-arrow" aria-hidden="true"><i class="bi bi-chevron-right rtl-flip"></i></span>
-                @endif
-
-                <a
-                    class="hero-stage {{ $isHeroSelected ? 'is-selected' : '' }}"
-                    href="{{ route('v2.leads', $heroStageQuery) }}"
-                    style="--stage-color:{{ $hColor }};"
-                    data-stage-id="{{ $hStage->id }}"
-                    title="{{ $hStage->localizedName() }}"
-                >
-                    <span class="stage-icon"><i class="bi {{ $hIcon }}"></i></span>
-                    <span class="stage-label">{{ $hStage->localizedName() }}</span>
-                </a>
-            @endforeach
-        </section>
-
-        <!-- STAGES STATS CARDS -->
-        <section class="stats-grid">
-            <a href="{{ route('v2.leads', $queryWithoutStatus) }}" class="stat-card {{ empty($filters['stage']) && empty($filters['status']) ? 'selected' : '' }}">
-                <span><i class="bi bi-people-fill"></i> {{ __('crm.total_leads') }}</span>
-                <b>{{ number_format($totalLeads) }}</b>
-            </a>
-            @foreach ($pipelineStages as $stg)
-                @php
-                    $stgColor = preg_match('/^#[0-9a-fA-F]{6}$/', (string) $stg->color) ? $stg->color : '#3478f6';
-                    $isStgSelected = ((string) ($filters['stage'] ?? '') === (string) $stg->id)
-                        || (isset($selectedStage) && $selectedStage?->id === $stg->id)
-                        || (!empty($filters['status']) && in_array($filters['status'], $stg->statuses->pluck('code')->all(), true));
-                    $stgQuery = $isStgSelected
-                        ? $queryWithoutStatus
-                        : array_merge($queryWithoutStatus, ['stage' => $stg->id]);
-                @endphp
-                <a href="{{ route('v2.leads', $stgQuery) }}" class="stat-card {{ $isStgSelected ? 'selected' : '' }}" style="--status-color:{{ $stgColor }}">
-                    <span>
-                        <span style="display:inline-block;width:10px;height:10px;border-radius:50%;background:{{ $stgColor }};flex-shrink:0;"></span>
-                        {{ $stg->localizedName() }}
-                    </span>
-                    <b>{{ number_format($stg->leads_count ?? ($stg->scoped_leads_count ?? 0)) }}</b>
-                    <small>{{ $stg->isPrimary() ? __('crm.primary_stage_badge') : __('crm.additional_stage_badge') }}</small>
-                </a>
-            @endforeach
-        </section>
 
         <!-- FILTERS PANEL -->
         <section class="filter-panel">
@@ -1066,31 +899,35 @@ html.dark-mode .btn-action {
                 <!-- Status Filter -->
                 <div class="filter-field">
                     <label for="leadStatus"><i class="bi bi-tag"></i> {{ __('crm.status') }}</label>
-                    <select id="leadStatus" name="status" class="filter-control">
-                        <option value="">{{ __('crm.all_states') }}</option>
-                        @foreach ($statuses as $status)
-                            <option value="{{ $status->code }}" data-stage-id="{{ $status->pipeline_stage_id }}" @selected($filters['status'] === $status->code)>
-                                {{ $status->name_ar }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div style="width:100%;">
+                        <select id="leadStatus" name="status" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>'>
+                            <option value="">{{ __('crm.all_states') }}</option>
+                            @foreach ($statuses as $status)
+                                <option value="{{ $status->code }}" data-stage-id="{{ $status->pipeline_stage_id }}" @selected($filters['status'] === $status->code)>
+                                    {{ $status->name_ar }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Source Filter -->
                 <div class="filter-field">
                     <label for="leadSource"><i class="bi bi-diagram-2"></i> {{ __('crm.source') }}</label>
-                    <select id="leadSource" name="source" class="filter-control">
-                        <option value="">{{ __('crm.all_sources') }}</option>
-                        @foreach ($sources as $source)
-                            <option value="{{ $source }}" @selected($filters['source'] === $source)>
-                                {{ $source }}
-                            </option>
-                        @endforeach
-                    </select>
+                    <div style="width:100%;">
+                        <select id="leadSource" name="source" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.022c.416 0 .816.165 1.11.459l1.41 1.41c.294.294.458.694.458 1.11V12a1.5 1.5 0 0 1-1.5 1.5h-.5a2.5 2.5 0 0 1-4.996 0H6.496a2.5 2.5 0 0 1-4.996 0H1.5A1.5 1.5 0 0 1 0 12V3.5zM4 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>'>
+                            <option value="">{{ __('crm.all_sources') }}</option>
+                            @foreach ($sources as $source)
+                                <option value="{{ $source }}" @selected($filters['source'] === $source)>
+                                    {{ $source }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Employee Filter -->
-                <div class="filter-field">
+                <div class="filter-field col-employee">
                     <label for="leadEmployee"><i class="bi bi-person-check"></i> {{ __('crm.assigned_employee') }}</label>
                     <div style="width:100%;">
                         <select id="leadEmployee" name="employee" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10.02 12c.005-.184.02-.375.034-.555.056-.704.14-1.282.266-1.745A4.9 4.9 0 0 0 8 9c-1.378 0-2.496.53-2.92 1.077-.184.238-.309.522-.387.828a.5.5 0 0 0 .97.234c.05-.195.13-.38.252-.538C6.27 10.158 7.08 9.8 8 9.8c.92 0 1.73.358 2.085.801.074.092.127.202.164.321.037.119.06.252.073.403.014.16.023.325.027.475H3.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 .5-.5c0-.368-.008-.687-.02-1z"/></svg>'>
@@ -1107,24 +944,28 @@ html.dark-mode .btn-action {
                 <!-- Follow Up Filter -->
                 <div class="filter-field">
                     <label for="leadFollowUp"><i class="bi bi-calendar-event"></i> {{ __('crm.next_followup') }}</label>
-                    <select id="leadFollowUp" name="follow_up" class="filter-control">
-                        <option value="">{{ __('crm.all_appointments') }}</option>
-                        <option value="today" @selected($filters['follow_up'] === 'today')>{{ __('اليوم') }}</option>
-                        <option value="upcoming" @selected($filters['follow_up'] === 'upcoming')>{{ __('crm.upcoming') }}</option>
-                        <option value="overdue" @selected($filters['follow_up'] === 'overdue')>{{ __('crm.overdue') }}</option>
-                        <option value="none" @selected($filters['follow_up'] === 'none')>{{ __('crm.no_date') }}</option>
-                    </select>
+                    <div style="width:100%;">
+                        <select id="leadFollowUp" name="follow_up" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>'>
+                            <option value="">{{ __('crm.all_appointments') }}</option>
+                            <option value="today" @selected($filters['follow_up'] === 'today')>{{ __('اليوم') }}</option>
+                            <option value="upcoming" @selected($filters['follow_up'] === 'upcoming')>{{ __('crm.upcoming') }}</option>
+                            <option value="overdue" @selected($filters['follow_up'] === 'overdue')>{{ __('crm.overdue') }}</option>
+                            <option value="none" @selected($filters['follow_up'] === 'none')>{{ __('crm.no_date') }}</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Sort Filter -->
                 <div class="filter-field">
                     <label for="leadSort"><i class="bi bi-sort-down"></i> {{ __('crm.sort') }}</label>
-                    <select id="leadSort" name="sort" class="filter-control">
-                        <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('crm.newest_first') }}</option>
-                        <option value="oldest" @selected($filters['sort'] === 'oldest')>{{ __('crm.oldest_first') }}</option>
-                        <option value="name" @selected($filters['sort'] === 'name')>{{ __('crm.by_name') }}</option>
-                        <option value="followup" @selected($filters['sort'] === 'followup')>{{ __('crm.by_followup') }}</option>
-                    </select>
+                    <div style="width:100%;">
+                        <select id="leadSort" name="sort" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/></svg>'>
+                            <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('crm.newest_first') }}</option>
+                            <option value="oldest" @selected($filters['sort'] === 'oldest')>{{ __('crm.oldest_first') }}</option>
+                            <option value="name" @selected($filters['sort'] === 'name')>{{ __('crm.by_name') }}</option>
+                            <option value="followup" @selected($filters['sort'] === 'followup')>{{ __('crm.by_followup') }}</option>
+                        </select>
+                    </div>
                 </div>
 
                 <!-- Choose Fields / Column Chooser Dropdown -->
@@ -1132,15 +973,14 @@ html.dark-mode .btn-action {
                     <label for="chooseFieldsToggle" style="font-size:12px;"><i class="bi bi-layout-three-columns"></i> {{ __('تحديد الأعمدة والفلاتر') }}</label>
                     <button
                         id="chooseFieldsToggle"
-                        class="filter-control btn small soft dynamic-field-picker-toggle"
+                        class="dynamic-field-picker-toggle"
                         type="button"
                         data-dynamic-field-picker-toggle
                         aria-expanded="false"
                         aria-controls="dynamicFieldPickerMenu"
-                        style="width:100%; display:flex; align-items:center; justify-content:space-between; padding:0 12px; font-weight:700; background:var(--card);"
                     >
-                        <span style="pointer-events:none;"><i class="bi bi-ui-checks-grid" style="margin-inline-end:4px;"></i> {{ __('الأعمدة والحقول') }}</span>
-                        <span class="dynamic-field-picker-count badge" data-dynamic-field-count style="pointer-events:none; background:#6366f1; color:#fff; font-size:10px; padding:2px 6px;">{{ count($selectedStageFieldIds) }}</span>
+                        <span style="pointer-events:none; display:inline-flex; align-items:center; gap:6px;"><i class="bi bi-ui-checks-grid"></i> {{ __('الأعمدة والحقول') }}</span>
+                        <span class="dynamic-field-picker-count" data-dynamic-field-count style="pointer-events:none;">{{ count($selectedStageFieldIds) }}</span>
                     </button>
 
                     <div
@@ -1426,24 +1266,24 @@ html.dark-mode .btn-action {
                 <table>
                     <thead>
                         <tr>
-                            <th data-col="select" style="width:40px; text-align:center; padding:0 8px;">
-                                <input type="checkbox" id="selectAllLeads" title="تحديد الكل في هذه الصفحة" style="width:17px; height:17px; cursor:pointer;">
+                            <th data-col="select" style="width:32px; text-align:center; padding:0 4px;">
+                                <input type="checkbox" id="selectAllLeads" title="تحديد الكل في هذه الصفحة" style="width:15px; height:15px; cursor:pointer;">
                             </th>
-                            <th data-col="client" style="min-width:200px">{{ __('crm.client') }}</th>
-                            <th data-col="contact" style="min-width:140px">{{ __('crm.contact_data') }}</th>
-                            <th data-col="company_source" style="min-width:140px">{{ __('crm.company_source') }}</th>
-                            <th data-col="status" style="min-width:140px">{{ __('crm.current_status') }}</th>
-                            <th data-col="category" style="min-width:130px">{{ __('crm.stage_category') }}</th>
-                            <th data-col="employee" style="min-width:130px">{{ __('crm.responsible_employee') }}</th>
-                            <th data-col="followup" style="min-width:140px">{{ __('crm.next_followup') }}</th>
-                            <th data-col="created_date" style="min-width:110px">{{ __('crm.created_date') }}</th>
+                            <th data-col="client" style="min-width:160px">{{ __('crm.client') }}</th>
+                            <th data-col="contact" style="min-width:95px">{{ __('crm.contact_data') }}</th>
+                            <th data-col="company_source" style="min-width:105px">{{ __('crm.company_source') }}</th>
+                            <th data-col="status" style="min-width:95px">{{ __('crm.current_status') }}</th>
+                            <th data-col="category" style="min-width:85px">{{ __('crm.stage_category') }}</th>
+                            <th data-col="employee" style="min-width:85px">{{ __('crm.responsible_employee') }}</th>
+                            <th data-col="followup" style="min-width:105px">{{ __('crm.next_followup') }}</th>
+                            <th data-col="created_date" style="min-width:80px">{{ __('crm.created_date') }}</th>
                             @foreach ($availableStageFields as $sField)
-                                <th data-col="stage_field_{{ $sField->id }}" data-dynamic-stage-col="{{ $sField->id }}" style="min-width:140px;" @if(!in_array((int)$sField->id, $selectedStageFieldIds, true)) hidden @endif>
+                                <th data-col="stage_field_{{ $sField->id }}" data-dynamic-stage-col="{{ $sField->id }}" style="min-width:105px;" @if(!in_array((int)$sField->id, $selectedStageFieldIds, true)) hidden @endif>
                                     {{ $sField->localizedLabel() }}
                                     <small style="display:block;font-size:10px;color:var(--muted)">{{ $sField->stage?->localizedName() }}</small>
                                 </th>
                             @endforeach
-                            <th data-col="actions" style="min-width:140px;text-align:center">{{ __('crm.actions') }}</th>
+                            <th data-col="actions" style="min-width:135px;text-align:center">{{ __('crm.actions') }}</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1464,8 +1304,8 @@ html.dark-mode .btn-action {
                                 }
                             @endphp
                             <tr class="lead-row">
-                                <td data-col="select" style="width:40px; text-align:center; padding:0 8px;">
-                                    <input type="checkbox" class="lead-select-checkbox" value="{{ $lead->id }}" style="width:17px; height:17px; cursor:pointer;" onchange="handleRowSelectionChange()">
+                                <td data-col="select" style="width:32px; text-align:center; padding:0 4px;">
+                                    <input type="checkbox" class="lead-select-checkbox" value="{{ $lead->id }}" style="width:15px; height:15px; cursor:pointer;" onchange="handleRowSelectionChange()">
                                 </td>
 
                                 <td data-col="client">
@@ -1521,9 +1361,6 @@ html.dark-mode .btn-action {
                                         <i class="status-dot"></i>
                                         {{ $lead->status?->name_ar ? __($lead->status->name_ar) : __('crm.no_status') }}
                                     </span>
-                                    <span class="stage-name">
-                                        {{ $lead->status?->stage?->name_ar ? __($lead->status->stage->name_ar) : __('بدون مرحلة') }}
-                                    </span>
                                 </td>
 
                                 <td data-col="category">
@@ -1573,15 +1410,19 @@ html.dark-mode .btn-action {
                                         @endif
                                     </td>
                                 @endforeach
-                                <td data-col="actions">
-                                    <div class="actions-cell" style="justify-content:center">
-                                        <a
-                                            class="btn-action"
-                                            href="{{ route('v2.leads.show', array_merge(request()->query(), ['lead' => $lead->id])) }}"
-                                            title="{{ __('crm.view_lead') }}"
-                                        >
-                                            <i class="bi bi-eye"></i>
-                                        </a>
+                                <td data-col="actions" style="text-align:center; padding:4px 6px;">
+                                    <div class="actions-cell">
+                                        @if ($whatsappPhone)
+                                            <a
+                                                class="btn-action whatsapp"
+                                                href="https://wa.me/{{ $whatsappPhone }}"
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                title="{{ __('crm.whatsapp') }}"
+                                            >
+                                                <i class="bi bi-whatsapp"></i>
+                                            </a>
+                                        @endif
 
                                         @if ($callPhone)
                                             @can('leads.followups.view')
@@ -1602,7 +1443,7 @@ html.dark-mode .btn-action {
 
                                         @can('leads.followups.view')
                                             <a
-                                                class="btn-action"
+                                                class="btn-action followup"
                                                 href="{{ route('v2.leads.followups.index', $lead) }}"
                                                 title="{{ __('crm.log_new_followup') }}"
                                             >
@@ -1610,21 +1451,17 @@ html.dark-mode .btn-action {
                                             </a>
                                         @endcan
 
-                                        @if ($whatsappPhone)
-                                            <a
-                                                class="btn-action whatsapp"
-                                                href="https://wa.me/{{ $whatsappPhone }}"
-                                                target="_blank"
-                                                rel="noopener noreferrer"
-                                                title="{{ __('crm.whatsapp') }}"
-                                            >
-                                                <i class="bi bi-whatsapp"></i>
-                                            </a>
-                                        @endif
+                                        <a
+                                            class="btn-action view"
+                                            href="{{ route('v2.leads.show', array_merge(request()->query(), ['lead' => $lead->id])) }}"
+                                            title="{{ __('crm.view_lead') }}"
+                                        >
+                                            <i class="bi bi-eye"></i>
+                                        </a>
 
                                         @can('leads.update')
                                             <a
-                                                class="btn-action"
+                                                class="btn-action edit"
                                                 href="{{ route('v2.leads.edit', $lead) }}"
                                                 title="{{ __('crm.edit_data') }}"
                                             >
@@ -2054,7 +1891,7 @@ html.dark-mode .btn-action {
 </script>
 <script>
 (() => {
-  document.querySelectorAll('.dash-pipeline-strip, .hero-pipeline').forEach((strip) => {
+  document.querySelectorAll('.dash-pipeline-strip').forEach((strip) => {
     strip.addEventListener('wheel', (event) => {
       if (
         event.defaultPrevented
@@ -2083,6 +1920,6 @@ html.dark-mode .btn-action {
 })();
 </script>
 <script src="{{ asset('crm-notifications.js') }}?v=1.0.0"></script>
-<script src="{{ asset('crm-dropdown.js') }}?v=1.0.1"></script>
+<script src="{{ asset('crm-dropdown.js') }}?v={{ time() }}"></script>
 </body>
 </html>

@@ -26,7 +26,7 @@
    --support-green-bg:#e9f8ef;
    --support-gray-bg:#eef1f5;
    --support-shadow:0 14px 38px rgba(17,24,39,.06);
-   --font-primary:'Tajawal',Tahoma,Arial,sans-serif;
+   --font-primary:'Plus Jakarta Sans','Cairo',sans-serif;
   }
   html.dark-mode{
    --support-ink:#f3f5f8;
@@ -57,23 +57,6 @@
   .support-shell{min-height:100vh;display:flex;flex-direction:row;max-width:100vw;overflow-x:clip}
   .support-main{flex:1;min-width:0;max-width:100%;padding:24px 32px 52px}
   
-  .detail-topbar, .crm-topbar, .topbar{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px;flex-wrap:wrap;min-height:56px}
-  .crm-topbar-left, .topbar-left{display:flex;align-items:center;gap:12px;min-width:0}
-  .crm-topbar-title h1, .topbar h1{margin:0;font-size:22px;font-weight:900;display:flex;align-items:center;gap:8px;color:var(--support-ink)}
-  .crm-topbar-title p, .topbar p{margin:2px 0 0;color:var(--support-muted);font-size:13px}
-  .crm-topbar-right, .top-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
-  .support-menu, .crm-topbar-menu-btn, .menu-button{
-   display:none;width:44px;height:44px;min-height:44px;min-width:44px;place-items:center;flex:0 0 44px;
-   border:1px solid var(--support-line);border-radius:12px;background:var(--support-panel);
-   color:var(--support-ink);font-size:20px;cursor:pointer;touch-action:manipulation;
-  }
-  .crm-topbar-back-btn, .back-link{
-   width:44px;height:44px;min-height:44px;min-width:44px;border-radius:10px;
-   border:1px solid var(--support-line);background:var(--support-panel);
-   display:inline-flex;align-items:center;justify-content:center;
-   color:var(--support-ink);text-decoration:none;transition:all .15s;touch-action:manipulation;
-  }
-  .crm-topbar-back-btn:hover, .back-link:hover{border-color:var(--support-red);color:var(--support-red)}
   /* Header Card */
   .detail-header-panel{
    position:relative;overflow:hidden;border:1px solid var(--support-line);border-radius:16px;

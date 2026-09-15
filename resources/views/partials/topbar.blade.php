@@ -37,7 +37,7 @@ header.crm-topbar {
     background: var(--card, var(--bg-card, #ffffff));
     border: 1px solid var(--line, var(--border-color, #e5e7eb));
     border-radius: 16px;
-    box-shadow: var(--shadow, var(--shadow-card, 0 10px 30px rgba(17, 24, 39, .04)));
+    box-shadow: none !important;
     margin-bottom: 20px;
     position: relative;
     z-index: 50;
@@ -73,9 +73,9 @@ header.crm-topbar {
 
 .crm-topbar-menu-btn:hover,
 .crm-topbar-menu-btn:focus-visible {
-    background: #fff5f6;
-    border-color: rgba(220, 38, 55, 0.35);
-    color: var(--red, #dc2637);
+    background: var(--selection-tint, rgba(239, 68, 68, 0.12));
+    border-color: rgba(239, 68, 68, 0.35);
+    color: var(--red, #ef4444);
     transform: translateY(-1px);
 }
 
@@ -99,9 +99,9 @@ header.crm-topbar {
 
 .crm-topbar-back-btn:hover,
 .crm-topbar-back-btn:focus-visible {
-    background: #fff5f6;
-    border-color: rgba(220, 38, 55, 0.35);
-    color: var(--red, #dc2637);
+    background: var(--selection-tint, rgba(239, 68, 68, 0.12));
+    border-color: rgba(239, 68, 68, 0.35);
+    color: var(--red, #ef4444);
     transform: translateY(-1px);
 }
 
@@ -127,7 +127,7 @@ header.crm-topbar {
 }
 
 .crm-topbar-title h1 i {
-    color: var(--red, #dc2637);
+    color: var(--red, #ef4444);
     font-size: 20px;
     flex-shrink: 0;
 }
@@ -160,36 +160,59 @@ header.crm-topbar {
 .crm-topbar-actions .btn,
 .crm-topbar-actions .btn-primary,
 .crm-topbar-actions .btn-soft,
-.crm-topbar-actions .btn-ghost {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    min-height: 42px;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-size: 14px;
-    font-weight: 700;
-    text-decoration: none;
-    border: 1px solid transparent;
-    cursor: pointer;
-    transition: all .2s ease;
-    white-space: nowrap;
-    box-sizing: border-box;
+.crm-topbar-actions .btn-ghost,
+.crm-topbar-actions a,
+.crm-topbar-actions button {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 7px !important;
+    min-height: 42px !important;
+    height: 42px !important;
+    padding: 0 16px !important;
+    border-radius: 12px !important;
+    font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
+    font-size: 13.5px !important;
+    font-weight: 700 !important;
+    text-decoration: none !important;
+    border: 1px solid var(--line, #e5e7eb) !important;
+    background: #f4f6f9 !important;
+    color: var(--dark, #182033) !important;
+    box-shadow: none !important;
+    cursor: pointer !important;
+    transition: all .2s ease !important;
+    white-space: nowrap !important;
+    box-sizing: border-box !important;
+}
+
+.crm-topbar-actions .btn:hover,
+.crm-topbar-actions a:hover,
+.crm-topbar-actions button:hover {
+    background: var(--selection-tint, rgba(239, 68, 68, 0.12)) !important;
+    border-color: rgba(239, 68, 68, 0.35) !important;
+    color: var(--red, #ef4444) !important;
+    transform: translateY(-1px) !important;
 }
 
 .crm-topbar-actions .btn.primary,
-.crm-topbar-actions .btn-primary {
-    background: linear-gradient(135deg, #e83243, #c91d2e);
-    color: #fff;
-    border-color: #c91d2e;
-    box-shadow: 0 4px 14px rgba(220, 38, 55, 0.25);
+.crm-topbar-actions .btn-primary,
+.crm-topbar-actions a.primary,
+.crm-topbar-actions button.primary {
+    background: var(--red, #ef4444) !important;
+    color: #fff !important;
+    border-color: var(--red-dark, #dc2626) !important;
+    box-shadow: none !important;
 }
 
 .crm-topbar-actions .btn.primary:hover,
-.crm-topbar-actions .btn-primary:hover {
-    background: linear-gradient(135deg, #f03e4f, #d62537);
-    transform: translateY(-1px);
-    box-shadow: 0 6px 18px rgba(220, 38, 55, 0.35);
+.crm-topbar-actions .btn-primary:hover,
+.crm-topbar-actions a.primary:hover,
+.crm-topbar-actions button.primary:hover {
+    background: var(--red-dark, #dc2626) !important;
+    border-color: var(--red-dark, #dc2626) !important;
+    color: #fff !important;
+    transform: translateY(-1px) !important;
+    box-shadow: none !important;
 }
 
 .crm-topbar-actions .btn.soft,
@@ -201,9 +224,9 @@ header.crm-topbar {
 
 .crm-topbar-actions .btn.soft:hover,
 .crm-topbar-actions .btn-soft:hover {
-    background: #fff5f6;
-    border-color: rgba(220, 38, 55, 0.35);
-    color: var(--red, #dc2637);
+    background: var(--selection-tint, rgba(239, 68, 68, 0.12));
+    border-color: rgba(239, 68, 68, 0.35);
+    color: var(--red, #ef4444);
     transform: translateY(-1px);
 }
 
@@ -216,9 +239,9 @@ header.crm-topbar {
 
 .crm-topbar-actions .btn.ghost:hover,
 .crm-topbar-actions .btn-ghost:hover {
-    background: #fff5f6;
-    border-color: rgba(220, 38, 55, 0.25);
-    color: var(--red, #dc2637);
+    background: var(--selection-tint, rgba(239, 68, 68, 0.12));
+    border-color: rgba(239, 68, 68, 0.25);
+    color: var(--red, #ef4444);
     transform: translateY(-1px);
 }
 
@@ -306,7 +329,7 @@ html.dark-mode .topbar.crm-topbar,
 html.dark-mode header.crm-topbar {
     background: var(--bg-card, rgba(24, 24, 27, .75)) !important;
     border-color: var(--border-color, rgba(255, 255, 255, .08)) !important;
-    box-shadow: var(--shadow-card, 0 10px 30px rgba(0, 0, 0, .5)) !important;
+    box-shadow: none !important;
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
 }

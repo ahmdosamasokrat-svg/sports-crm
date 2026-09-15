@@ -87,7 +87,7 @@ class TaskStatusController extends Controller
         $statusRecord =
             LeadStatus::query()
                 ->visibleTo($user)
-                ->with('stage')
+                ->with('stage.category')
                 ->where(
                     'code',
                     self::STATUS_MAP[
@@ -106,7 +106,7 @@ class TaskStatusController extends Controller
             Lead::query()
                 ->accessibleTo($user)
                 ->with([
-                    'status.stage',
+                    'status.stage.category',
                     'assignedUser:id,name',
                 ])
                 ->where(

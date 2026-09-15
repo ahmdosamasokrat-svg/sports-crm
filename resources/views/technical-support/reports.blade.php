@@ -13,7 +13,7 @@
    --report-red:#dc2637;--report-red-dark:#b81829;--report-bg:#f4f6fa;--report-panel:#fff;
    --report-soft:#f8fafc;--report-ink:#172033;--report-muted:#596579;--report-line:#e4e8ef;
    --report-green:#0f7440;--report-green-bg:#e9f8ef;--report-warning:#986800;--report-warning-bg:#fff6d8;
-   --report-shadow:0 14px 38px rgba(17,24,39,.06);--font-primary:'Tajawal',Tahoma,Arial,sans-serif;
+   --report-shadow:none;--font-primary:'Plus Jakarta Sans','Cairo',sans-serif;
   }
   html.dark-mode{
    --report-bg:#151922;--report-panel:#202631;--report-soft:#272e3a;--report-ink:#f3f5f8;
@@ -27,13 +27,6 @@
   :focus-visible{outline:3px solid rgba(220,38,55,.28);outline-offset:3px}
   .report-shell{display:flex;min-height:100vh;max-width:100vw;overflow-x:clip}
   .report-main{min-width:0;flex:1;max-width:100%;padding:24px 30px 48px}
-  .report-header, .crm-topbar, .topbar{display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:20px;flex-wrap:wrap;min-height:56px}
-  .report-heading, .crm-topbar-left, .topbar-left{display:flex;align-items:center;gap:12px;min-width:0}
-  .report-menu, .crm-topbar-menu-btn, .menu-button{display:none;width:44px;height:44px;min-height:44px;min-width:44px;place-items:center;flex:0 0 44px;border:1px solid var(--report-line);border-radius:12px;background:var(--report-panel);color:var(--report-ink);font-size:20px;cursor:pointer;touch-action:manipulation}
-  .report-heading h1, .crm-topbar-title h1, .topbar h1{margin:0 0 4px;font-size:28px;line-height:1.25;font-weight:900;display:flex;align-items:center;gap:8px}
-  .report-heading p, .crm-topbar-title p, .topbar p{max-width:72ch;margin:0;color:var(--report-muted);font-size:13px;line-height:1.65}
-  .report-header-actions, .crm-topbar-right, .top-actions{display:flex;align-items:center;gap:10px;flex:0 0 auto;flex-wrap:wrap}
-  .crm-topbar-actions{display:inline-flex;align-items:center;gap:8px;flex-wrap:wrap}
   .report-back{min-height:44px;display:inline-flex;align-items:center;gap:8px;padding:0 15px;border:1px solid var(--report-line);border-radius:11px;background:var(--report-panel);color:var(--report-ink);font-size:13px;font-weight:800;text-decoration:none;transition:border-color .16s,color .16s,transform .16s;touch-action:manipulation}
   .report-back:hover{border-color:var(--report-red);color:var(--report-red);transform:translateY(-1px)}
   .report-stack{display:grid;gap:18px}
@@ -410,7 +403,7 @@ FINISH: unreviewed and undocumented is unfinished; this build ends with the fini
   const textColor = dark ? '#aeb7c6' : '#596579';
   const gridColor = dark ? 'rgba(255,255,255,.08)' : 'rgba(228,232,239,.85)';
   Chart.defaults.color = textColor;
-  Chart.defaults.font.family = 'Tajawal, Tahoma, Arial, sans-serif';
+  Chart.defaults.font.family = "'Plus Jakarta Sans', 'Cairo', sans-serif";
 
   const sharedOptions = {
    indexAxis: 'y',

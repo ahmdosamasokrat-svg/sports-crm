@@ -35,7 +35,7 @@
    --team-shadow:0 1px 3px rgba(15,23,42,.04),0 6px 20px rgba(15,23,42,.04);
    --team-card-shadow:0 1px 3px rgba(15,23,42,.04),0 4px 14px rgba(15,23,42,.03);
    --team-card-hover:0 12px 30px rgba(15,23,42,.08);
-   --font-primary:'Tajawal',Tahoma,Arial,sans-serif;
+   --font-primary:'Plus Jakarta Sans','Cairo',sans-serif;
   }
   html.dark-mode{
    --team-ink:#f8fafc;

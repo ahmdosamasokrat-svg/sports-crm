@@ -6,18 +6,21 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ __('crm.leads') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
  <style>
   :root{
-   --red:#dc2637;
+   --red:#ef4444;
    --dark:#182033;
    --muted:#818b9c;
    --line:#e5e8ee;
    --bg:#f5f6f9;
    --card:#fff;
-   --shadow:0 15px 42px #17203310
+   --shadow:none;
   }
 
   html.dark-mode{
@@ -27,7 +30,7 @@
    --line:rgba(255,255,255,.08);
    --bg:#121214;
    --card:rgba(24,24,27,.75);
-   --shadow:0 10px 30px rgba(0,0,0,.5)
+   --shadow:none;
   }
 
   *{box-sizing:border-box}
@@ -35,11 +38,9 @@
   body{
    margin:0;
    min-width:320px;
-   background:
-    radial-gradient(circle at 8% 0,#dc26370d,transparent 28rem),
-    var(--bg);
+   background:var(--bg);
    color:var(--dark);
-   font-family:var(--font-primary);
+   font-family:'Plus Jakarta Sans', 'Cairo', sans-serif !important;
    font-size:15px
   }
 
@@ -49,177 +50,6 @@
   .crm-app{
    display:flex;
    min-height:100vh
-  }
-
-  .crm-side{
-   position:sticky;
-   top:0;
-   flex:0 0 288px;
-   width:288px;
-   height:100vh;
-   overflow:auto;
-   padding:24px 17px;
-   border-inline-end:1px solid var(--line);
-   background:#fff;
-   z-index:80
-  }
-
-  .crm-side-brand{
-   display:flex;
-   align-items:center;
-   gap:11px;
-   padding:4px 8px 20px;
-   margin-bottom:17px;
-   border-bottom:1px solid var(--line);
-   text-decoration:none
-  }
-
-  .crm-side-brand .logo{
-   width:58px;
-   height:58px;
-   flex:0 0 58px;
-   object-fit:contain
-  }
-
-  .crm-side-brand strong{
-   display:block;
-   color:var(--red);
-   font:900 22px var(--font-primary)
-  }
-
-  .crm-side-brand small{
-   display:block;
-   margin-top:5px;
-   color:var(--muted);
-   font-size:12px
-  }
-
-  .crm-side-caption{
-   margin:0 10px 10px;
-   color:#9aa2b0;
-   font-size:13px;
-   font-weight:bold
-  }
-
-  .crm-side-nav{
-   display:grid;
-   gap:6px
-  }
-
-  .crm-link,
-  .crm-toggle{
-   width:100%;
-   min-height:49px;
-   display:flex;
-   align-items:center;
-   gap:10px;
-   padding:8px 10px;
-   border:1px solid transparent;
-   border-radius:13px;
-   background:transparent;
-   color:#566175;
-   text-decoration:none;
-   text-align:start;
-   cursor:pointer;
-   transition:.2s
-  }
-
-  .crm-link:hover,
-  .crm-toggle:hover{
-   color:var(--red);
-   background:#fff5f6;
-   transform:translateX(-2px)
-  }
-
-  .crm-link.active,
-  .crm-toggle.active{
-   color:#fff;
-   background:linear-gradient(135deg,#e83243,#c91d2e);
-   box-shadow:0 11px 25px #dc263737
-  }
-
-  .crm-ico{
-   width:32px;
-   height:32px;
-   flex:0 0 32px;
-   display:grid;
-   place-items:center;
-   border-radius:10px;
-   background:#f0f2f6;
-   font-size:17px
-  }
-
-  .crm-link.active .crm-ico,
-  .crm-toggle.active .crm-ico{
-   background:#ffffff2b
-  }
-
-  .crm-label{
-   flex:1;
-   font-size:16px;
-   font-weight:800
-  }
-
-  .crm-count{
-   min-width:24px;
-   height:24px;
-   display:grid;
-   place-items:center;
-   padding:0 6px;
-   border-radius:99px;
-   background:#eef0f4;
-   color:#7e8796;
-   font:800 11px var(--font-primary)
-  }
-
-  .crm-toggle.active .crm-count{
-   color:#fff;
-   background:#ffffff2b
-  }
-
-  .crm-arrow{
-   color:#a2a9b5;
-   transition:.2s
-  }
-
-  .crm-toggle[aria-expanded=true] .crm-arrow{
-   transform:rotate(180deg)
-  }
-
-  .crm-sub{
-   display:grid;
-   grid-template-rows:0fr;
-   transition:.22s
-  }
-
-  .crm-sub.open{grid-template-rows:1fr}
-
-  .crm-sub-inner{
-   min-height:0;
-   overflow:hidden
-  }
-
-  .crm-sub nav{
-   display:grid;
-   gap:2px;
-   margin:3px 28px 7px 0;
-   padding-inline-start:14px;
-   border-inline-start:1px solid var(--line)
-  }
-
-  .crm-sub a{
-   padding:8px 10px;
-   border-radius:8px;
-   color:#788294;
-   text-decoration:none;
-   font-size:14px;
-   font-weight:bold
-  }
-
-  .crm-sub a:hover,
-  .crm-sub a.active{
-   color:var(--red);
-   background:#fff2f4
   }
 
   .crm-main{

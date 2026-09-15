@@ -10,6 +10,7 @@ use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\Permission;
 use App\Models\PipelineStage;
+use App\Models\PipelineStageCategory;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -297,6 +298,54 @@ class DailyTasksTest extends TestCase
         $responseStatus->assertSee('Target Beta');
         $responseStatus->assertDontSee('Target Alpha');
     }
+
+    public function test_daily_tasks_displays_stage_category_on_card_and_omits_calendar_header(): void
+    {
+        $user = $this->userWithPermissions(['tasks.view', 'leads.view', 'leads.scope.all', 'calendar.view']);
+
+        $category = PipelineStageCategory::query()->create([
+            'name_ar' => 'فئة مبيعات VIP',
+            'name_en' => 'Sales VIP Category',
+            'color' => '#dc2637',
+            'icon' => 'bi-stars',
+            'position' => 1,
+            'is_active' => true,
+        ]);
+
+        $stage = PipelineStage::query()->create([
+            'name_ar' => 'مرحلة العقود المميزة',
+            'code' => 'stage_vip_contracts',
+            'pipeline_stage_category_id' => $category->id,
+            'position' => 99,
+        ]);
+
+        $status = LeadStatus::query()->create([
+            'pipeline_stage_id' => $stage->id,
+            'code' => 'status_vip_contract',
+            'name_ar' => 'جاهز للتعاقد',
+            'position' => 99,
+            'color' => '#16a34a',
+        ]);
+
+        $lead = Lead::query()->create([
+            'lead_status_id' => $status->id,
+            'name' => 'VIP Category Customer',
+            'phone' => '01099998888',
+            'assigned_user_id' => $user->id,
+            'next_follow_up_at' => now()->addHour(),
+        ]);
+
+        $response = $this->actingAs($user)->get(route('v2.tasks.daily'));
+        $response->assertOk();
+
+        // Ensure category is rendered on card
+        $response->assertSee('فئة مبيعات VIP');
+
+        // Ensure "View Calendar" is not present in top-actions
+        $response->assertDontSee(__('crm.view_calendar'));
+        $response->assertDontSee('task-top-actions" href="'.route('v2.calendar.index'), false);
+    }
+
     private function userWithPermissions(array $permissionCodes): User
     {
         $group = Group::query()->create([

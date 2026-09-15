@@ -6,31 +6,35 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ __('crm.employee_reports_title') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
 <style>
 /* ==========================================================================
    SOKRAT CRM EXECUTIVE DASHBOARD BASE & DESIGN TOKENS
    ========================================================================== */
 :root {
-  --red: #dc2637;
-  --red-hover: #b81829;
-  --red-soft: rgba(220, 38, 55, 0.08);
+  --red: #ef4444;
+  --red-hover: #dc2626;
+  --red-soft: rgba(239, 68, 68, 0.08);
   --dark: #172033;
   --text: #334155;
   --muted: #64748b;
   --line: #e2e8f0;
   --bg: #f7f8fa;
   --card: #ffffff;
-  --shadow: 0 1px 3px rgba(15, 23, 42, 0.04), 0 6px 18px rgba(15, 23, 42, 0.03);
-  --shadow-hover: 0 10px 25px -3px rgba(15, 23, 42, 0.07), 0 4px 6px -2px rgba(15, 23, 42, 0.03);
+  --shadow: none;
+  --shadow-hover: none;
   --radius-sm: 10px;
   --radius-md: 14px;
   --radius-lg: 18px;
   --transition: 180ms cubic-bezier(0.16, 1, 0.3, 1);
-  --font-family: Tajawal, Cairo, Tahoma, Arial, sans-serif;
+  --font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace;
 }
 
 html.dark-mode,
@@ -42,8 +46,8 @@ html.dark,
   --line: #1e293b;
   --bg: #0b0f19;
   --card: #111827;
-  --shadow: 0 4px 20px rgba(0, 0, 0, 0.35);
-  --shadow-hover: 0 12px 30px rgba(0, 0, 0, 0.5);
+  --shadow: none;
+  --shadow-hover: none;
 }
 
 * { box-sizing: border-box; }
@@ -55,7 +59,7 @@ body {
   max-width: 100vw;
   background: var(--bg);
   color: var(--dark);
-  font-family: var(--font-family);
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 14px;
   line-height: 1.5;
   overflow-x: clip;
@@ -346,9 +350,24 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   gap: 10px;
   overflow-x: auto;
-  padding: 4px 2px 8px;
+  overflow-y: hidden;
+  padding: 4px 2px 10px;
   scrollbar-width: thin;
+  scrollbar-color: var(--red, #ef4444) transparent;
   -webkit-overflow-scrolling: touch;
+}
+.exec-stages-strip::-webkit-scrollbar {
+  height: 5px;
+}
+.exec-stages-strip::-webkit-scrollbar-track {
+  background: transparent;
+}
+.exec-stages-strip::-webkit-scrollbar-thumb {
+  background: var(--red, #ef4444);
+  border-radius: 999px;
+}
+.exec-stages-strip::-webkit-scrollbar-thumb:hover {
+  background: var(--red-dark, #dc2626);
 }
 .exec-stage-pill {
   flex: 0 0 auto;
@@ -402,15 +421,17 @@ a { color: inherit; text-decoration: none; }
 }
 .exec-stage-pill-pct {
   font-size: 10px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--muted);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 .exec-stage-pill-count {
   font-size: 15px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--dark);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1.2;
 }
 .exec-stage-pill-flows {
@@ -496,9 +517,10 @@ a { color: inherit; text-decoration: none; }
 }
 .kpi-main-number {
   font-size: 28px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--dark);
-  font-family: Arial, Tahoma, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
   letter-spacing: -0.5px;
   margin-bottom: 8px;
@@ -542,9 +564,10 @@ a { color: inherit; text-decoration: none; }
 }
 .kpi-split-val {
   font-size: 15px;
-  font-weight: 800;
+  font-weight: 700;
   color: var(--dark);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
 }
 
 /* ==========================================================================
@@ -620,9 +643,10 @@ a { color: inherit; text-decoration: none; }
 .donut-center-metric strong {
   display: block;
   font-size: 22px;
-  font-weight: 900;
+  font-weight: 800;
   color: var(--dark);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   line-height: 1;
 }
 .donut-center-metric small {
@@ -691,7 +715,8 @@ a { color: inherit; text-decoration: none; }
 }
 .funnel-stage-metrics strong {
   color: var(--dark);
-  font-family: Arial, sans-serif;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+  font-variant-numeric: tabular-nums;
   font-size: 13px;
 }
 .funnel-bar-track {
@@ -992,35 +1017,26 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
             $upcomingTotalCount = $followupPerformance['upcoming_total'] ?? $upcomingItems->count();
         @endphp
 
-        <!-- 1. EXECUTIVE HEADER -->
-        <section class="exec-header-panel" aria-label="{{ __('crm.employee_reports_title') }}">
-            <div class="exec-header-left">
-                <div class="exec-header-title-row">
-                    <h1 class="exec-header-title">
-                        <i class="bi bi-bar-chart-line-fill"></i>
-                        {{ __('crm.employee_reports_title') }}
-                    </h1>
-                    <span class="exec-scope-badge">
-                        <i class="bi bi-person-badge"></i>
-                        {{ $selectedEmployee ? $selectedEmployee->name : (__('crm.all_employees') ?? 'كل الموظفين') }}
-                    </span>
-                </div>
-                <p class="exec-header-desc">
-                    {{ __('crm.employee_reports_subtitle') }} — {{ __('تحليل أداء الموظفين ومعدلات التحويل والمتابعات والحملات خلال الفترة المحددة') }}
-                </p>
-            </div>
-
-            <div class="exec-header-actions">
-                <a href="{{ route('v2.reports.employees.export', request()->query()) }}" class="btn-exec btn-exec-soft">
-                    <i class="bi bi-file-earmark-spreadsheet"></i>
-                    <span>{{ __('crm.export_csv') }}</span>
-                </a>
-                <button type="button" class="btn-exec btn-exec-soft" onclick="resetFilters()">
-                    <i class="bi bi-arrow-clockwise"></i>
-                    <span>{{ __('crm.refresh_data') }}</span>
-                </button>
-            </div>
-        </section>
+        @php
+            ob_start();
+        @endphp
+            <a href="{{ route('v2.reports.employees.export', request()->query()) }}" class="btn soft">
+                <i class="bi bi-file-earmark-spreadsheet"></i>
+                <span>{{ __('crm.export_csv') }}</span>
+            </a>
+            <button type="button" class="btn soft" onclick="resetFilters()">
+                <i class="bi bi-arrow-clockwise"></i>
+                <span>{{ __('crm.refresh_data') }}</span>
+            </button>
+        @php
+            $reportTopActions = ob_get_clean();
+        @endphp
+        @include('partials.topbar', [
+            'title' => __('crm.employee_reports_title'),
+            'subtitle' => __('crm.employee_reports_subtitle') . ' — ' . __('تحليل أداء الموظفين ومعدلات التحويل والمتابعات'),
+            'icon' => 'bi-bar-chart-line-fill',
+            'actions' => $reportTopActions
+        ])
 
         <!-- 2. COMPACT FILTER BAR (No Team/Group, Dynamic Time Filter) -->
         <section class="exec-filter-bar" aria-label="{{ __('crm.filter_results') }}">
@@ -1590,24 +1606,24 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                                         <span style="color:var(--muted);">—</span>
                                     @endif
                                 </td>
-                                <td><strong style="font-family:Arial,sans-serif;">{{ number_format($empRow['assigned_leads']) }}</strong></td>
-                                <td style="font-family:Arial,sans-serif;">{{ number_format($empRow['new_leads']) }}</td>
-                                <td style="font-family:Arial,sans-serif;">{{ number_format($empRow['total_followups']) }}</td>
-                                <td style="font-family:Arial,sans-serif;">
+                                <td><strong style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">{{ number_format($empRow['assigned_leads']) }}</strong></td>
+                                <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">{{ number_format($empRow['new_leads']) }}</td>
+                                <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">{{ number_format($empRow['total_followups']) }}</td>
+                                <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">
                                     @if ($empRow['overdue_followups'] > 0)
-                                        <span style="color:#dc2637;font-weight:800;">{{ number_format($empRow['overdue_followups']) }}</span>
+                                        <span style="color:#ef4444;font-weight:800;">{{ number_format($empRow['overdue_followups']) }}</span>
                                     @else
                                         0
                                     @endif
                                 </td>
                                 <td>
-                                    <strong style="color:#10b981;font-family:Arial,sans-serif;">{{ $empRow['conversion_rate'] }}%</strong>
+                                    <strong style="color:#10b981;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">{{ $empRow['conversion_rate'] }}%</strong>
                                 </td>
                                 @if (!empty($kpis['voip_enabled']))
-                                    <td style="font-family:Arial,sans-serif;">
+                                    <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">
                                         @if (!empty($empRow['voip_extension']))
                                             <div style="display:inline-flex;align-items:center;gap:5px;">
-                                                <span class="badge active" style="font-size:10.5px;padding:2px 6px;font-family:monospace;display:inline-flex;align-items:center;gap:3px;" title="{{ __('crm.on_extension') }} {{ $empRow['voip_extension'] }}">
+                                                <span class="badge active" style="font-size:10.5px;padding:2px 6px;font-family:'JetBrains Mono',monospace;display:inline-flex;align-items:center;gap:3px;" title="{{ __('crm.on_extension') }} {{ $empRow['voip_extension'] }}">
                                                     <svg width="10" height="10" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/></svg>
                                                     {{ $empRow['voip_extension'] }}
                                                 </span>
@@ -1618,7 +1634,7 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                                             <span style="color:var(--muted);font-size:11px;">—</span>
                                         @endif
                                     </td>
-                                    <td style="font-family:Arial,sans-serif;">
+                                    <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">
                                         @if (!empty($empRow['voip_extension']) && $empRow['voip_talk_seconds'] > 0)
                                             <span style="color:#0284c7;font-weight:700;">{{ $empRow['voip_talk_time_formatted'] }}</span>
                                         @else
@@ -1627,7 +1643,7 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                                     </td>
                                 @endif
                                 @foreach ($stages as $stage)
-                                    <td style="font-family:Arial,sans-serif;">
+                                    <td style="font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">
                                         {{ number_format($empRow['stage_counts'][$stage->id] ?? 0) }}
                                     </td>
                                 @endforeach
@@ -1766,19 +1782,19 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                         borderWidth: 1,
                         padding: 10,
                         usePointStyle: true,
-                        bodyFont: { family: 'Tajawal, sans-serif' },
-                        titleFont: { family: 'Tajawal, sans-serif', weight: 'bold' }
+                        bodyFont: { family: "'Plus Jakarta Sans', 'Cairo', sans-serif" },
+                        titleFont: { family: "'Plus Jakarta Sans', 'Cairo', sans-serif", weight: 'bold' }
                     }
                 },
                 scales: {
                     x: {
                         grid: { display: false },
-                        ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Tajawal, sans-serif', size: 11 } }
+                        ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: "'Plus Jakarta Sans', 'Cairo', sans-serif", size: 11 } }
                     },
                     y: {
                         beginAtZero: true,
                         grid: { color: isDark ? 'rgba(255,255,255,0.06)' : 'rgba(0,0,0,0.05)' },
-                        ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: 'Arial, sans-serif', size: 11 }, precision: 0 }
+                        ticks: { color: isDark ? '#94a3b8' : '#64748b', font: { family: "'JetBrains Mono', monospace", size: 11 }, precision: 0 }
                     }
                 }
             }
@@ -1815,7 +1831,7 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                         borderColor: isDark ? '#334155' : '#e2e8f0',
                         borderWidth: 1,
                         padding: 10,
-                        bodyFont: { family: 'Tajawal, sans-serif' }
+                        bodyFont: { family: "'Plus Jakarta Sans', 'Cairo', sans-serif" }
                     }
                 },
                 cutout: '72%'
@@ -1974,7 +1990,7 @@ function renderFollowupsModalList(items) {
                 ${item.company_name ? `<div style="font-size:11px;color:var(--muted);">${item.company_name}</div>` : ''}
             </td>
             <td>
-                ${item.phone ? `<a href="tel:${item.phone}" style="color:var(--muted);font-family:Arial,sans-serif;">${item.phone}</a>` : '<span style="color:var(--muted);">—</span>'}
+                ${item.phone ? `<a href="tel:${item.phone}" style="color:var(--muted);font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${item.phone}</a>` : '<span style="color:var(--muted);">—</span>'}
             </td>
             <td>
                 <span style="display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;">
@@ -1986,7 +2002,7 @@ function renderFollowupsModalList(items) {
                 <span style="font-size:12px;color:var(--dark);font-weight:600;">${item.assigned_user || '—'}</span>
             </td>
             <td>
-                <span style="font-size:12px;font-family:Arial,sans-serif;color:var(--dark);font-weight:700;">${item.next_follow_up_at || '—'}</span>
+                <span style="font-size:12px;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;color:var(--dark);font-weight:700;">${item.next_follow_up_at || '—'}</span>
                 ${item.time_diff ? `<div style="font-size:10.5px;color:var(--muted);">${item.time_diff}</div>` : ''}
             </td>
             <td>
@@ -2073,19 +2089,19 @@ async function openDrilldown(userId) {
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:20px;">
                 <div style="padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);text-align:center;">
                     <span style="font-size:11px;font-weight:700;color:var(--muted);display:block;">${@json(__('crm.assigned_leads'))}</span>
-                    <strong style="font-size:20px;font-weight:900;color:var(--dark);font-family:Arial,sans-serif;">${d.metrics.total_leads}</strong>
+                    <strong style="font-size:20px;font-weight:800;color:var(--dark);font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.metrics.total_leads}</strong>
                 </div>
                 <div style="padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);text-align:center;">
                     <span style="font-size:11px;font-weight:700;color:var(--muted);display:block;">${@json(__('crm.kpi_total_followups'))}</span>
-                    <strong style="font-size:20px;font-weight:900;color:#3b82f6;font-family:Arial,sans-serif;">${d.metrics.total_followups}</strong>
+                    <strong style="font-size:20px;font-weight:800;color:#3b82f6;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.metrics.total_followups}</strong>
                 </div>
                 <div style="padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);text-align:center;">
                     <span style="font-size:11px;font-weight:700;color:var(--muted);display:block;">${@json(__('crm.kpi_overdue_followups'))}</span>
-                    <strong style="font-size:20px;font-weight:900;color:var(--red);font-family:Arial,sans-serif;">${d.metrics.overdue_count}</strong>
+                    <strong style="font-size:20px;font-weight:800;color:var(--red);font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.metrics.overdue_count}</strong>
                 </div>
                 <div style="padding:14px;border:1px solid var(--line);border-radius:var(--radius-sm);background:var(--bg);text-align:center;">
                     <span style="font-size:11px;font-weight:700;color:var(--muted);display:block;">${@json(__('crm.kpi_conversion_rate'))}</span>
-                    <strong style="font-size:20px;font-weight:900;color:#10b981;font-family:Arial,sans-serif;">${d.metrics.conversion_rate}%</strong>
+                    <strong style="font-size:20px;font-weight:800;color:#10b981;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.metrics.conversion_rate}%</strong>
                 </div>
             </div>
 
@@ -2096,20 +2112,20 @@ async function openDrilldown(userId) {
                             <svg width="14" height="14" viewBox="0 0 16 16" fill="#0284c7" aria-hidden="true"><path d="M3.654 1.328a.678.678 0 0 0-1.015-.063L1.605 2.3c-.483.484-.661 1.169-.45 1.77a17.6 17.6 0 0 0 4.168 6.608 17.6 17.6 0 0 0 6.608 4.168c.601.211 1.286.033 1.77-.45l1.034-1.034a.678.678 0 0 0-.063-1.015l-2.307-1.794a.68.68 0 0 0-.58-.122l-2.19.547a1.75 1.75 0 0 1-1.657-.459L5.482 8.062a1.75 1.75 0 0 1-.46-1.657l.548-2.19a.68.68 0 0 0-.122-.58z"/></svg>
                             ${@json(__('crm.voip_pbx_activity'))}
                         </h4>
-                        <span class="badge active" style="font-size:11px;font-family:monospace;">${@json(__('crm.on_extension'))} ${d.voip.extension}</span>
+                        <span class="badge active" style="font-size:11px;font-family:'JetBrains Mono',monospace;">${@json(__('crm.on_extension'))} ${d.voip.extension}</span>
                     </div>
                     <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center;">
                         <div style="padding:10px;background:var(--card);border:1px solid var(--line);border-radius:6px;">
                             <span style="font-size:11px;color:var(--muted);display:block;">${@json(__('crm.voip_total_calls'))}</span>
-                            <strong style="font-size:16px;color:#0284c7;font-family:Arial,sans-serif;">${d.voip.total_calls}</strong>
+                            <strong style="font-size:16px;color:#0284c7;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.voip.total_calls}</strong>
                         </div>
                         <div style="padding:10px;background:var(--card);border:1px solid var(--line);border-radius:6px;">
                             <span style="font-size:11px;color:var(--muted);display:block;">${@json(__('crm.voip_answered'))}</span>
-                            <strong style="font-size:16px;color:#10b981;font-family:Arial,sans-serif;">${d.voip.answered_calls}</strong>
+                            <strong style="font-size:16px;color:#10b981;font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.voip.answered_calls}</strong>
                         </div>
                         <div style="padding:10px;background:var(--card);border:1px solid var(--line);border-radius:6px;">
                             <span style="font-size:11px;color:var(--muted);display:block;">${@json(__('crm.voip_talk_time'))}</span>
-                            <strong style="font-size:16px;color:var(--dark);font-family:Arial,sans-serif;">${d.voip.talk_time_formatted}</strong>
+                            <strong style="font-size:16px;color:var(--dark);font-family:'JetBrains Mono','Plus Jakarta Sans',monospace;font-variant-numeric:tabular-nums;">${d.voip.talk_time_formatted}</strong>
                         </div>
                     </div>
                 </div>
@@ -2207,6 +2223,35 @@ document.addEventListener('keydown', (e) => {
         closeDrilldown();
     }
 });
+
+(() => {
+    document.querySelectorAll('.exec-stages-strip').forEach((strip) => {
+        strip.addEventListener('wheel', (event) => {
+            if (
+                event.defaultPrevented
+                || event.shiftKey
+                || Math.abs(event.deltaY) <= Math.abs(event.deltaX)
+                || strip.scrollWidth <= strip.clientWidth
+            ) {
+                return;
+            }
+
+            const beforeScrollLeft = strip.scrollLeft;
+            const direction = getComputedStyle(strip).direction === 'rtl' ? -1 : 1;
+
+            strip.scrollBy({
+                left: event.deltaY * direction,
+                behavior: 'auto',
+            });
+
+            if (strip.scrollLeft === beforeScrollLeft) {
+                return;
+            }
+
+            event.preventDefault();
+        }, { passive: false });
+    });
+})();
 </script>
 </body>
 </html>

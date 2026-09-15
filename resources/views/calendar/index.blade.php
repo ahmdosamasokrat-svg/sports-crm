@@ -6,21 +6,25 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ __('crm.calendar_and_events') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
 <style>
 :root {
-  --red: #dc2637;
+  --red: #ef4444;
   --dark: #182033;
   --text: #4b5568;
   --muted: #8b94a5;
   --line: #e7e9ef;
   --bg: #f5f6f9;
   --card: #fff;
-  --shadow: 0 12px 35px rgba(23, 32, 51, 0.05);
-  --font-primary: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --shadow: none;
+  --font-primary: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace;
 }
 
 html.dark-mode {
@@ -30,16 +34,16 @@ html.dark-mode {
   --line: rgba(255, 255, 255, 0.08);
   --bg: #121214;
   --card: rgba(24, 24, 27, 0.75);
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  --shadow: none;
 }
 
 * { box-sizing: border-box; }
 body {
   margin: 0;
   min-width: 320px;
-  background: radial-gradient(circle at 8% 0, rgba(220, 38, 55, 0.05), transparent 25rem), var(--bg);
+  background: var(--bg);
   color: var(--dark);
-  font-family: var(--font-primary);
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
 }
 html.dark-mode body {
   background: radial-gradient(circle at 8% 0, rgba(255, 255, 255, 0.03), transparent 28rem), var(--bg);
@@ -405,16 +409,35 @@ html.dark-mode .modal-head h3 {
   color: #f4f4f5;
 }
 .modal-close {
-  background: none;
-  border: none;
-  font-size: 20px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--line, #e2e8f0);
   color: var(--muted);
   cursor: pointer;
-  transition: color .2s;
+  padding: 0;
+  transition: all .16s ease;
 }
-.modal-close:hover { color: var(--red); }
-html.dark-mode .modal-close { color: #a1a1aa; }
-html.dark-mode .modal-close:hover { color: #ef4444; }
+.modal-close:hover {
+  color: var(--red, #ef4444);
+  background: rgba(239, 68, 68, 0.08);
+  border-color: rgba(239, 68, 68, 0.35);
+  transform: scale(1.05);
+}
+html.dark-mode .modal-close {
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: #a1a1aa;
+}
+html.dark-mode .modal-close:hover {
+  color: #ef4444;
+  border-color: rgba(239, 68, 68, 0.45);
+  background: rgba(239, 68, 68, 0.18);
+}
 
 .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
 .form-group { display: flex; flex-direction: column; gap: 6px; }
@@ -1220,7 +1243,11 @@ html.dark-mode .stage-quick-btn:hover {
   <div class="modal-dialog">
     <div class="modal-head">
       <h3 id="modalTitleText">{{ __('crm.add_event') }}</h3>
-      <button class="modal-close" id="closeModalBtn" type="button">&times;</button>
+      <button class="modal-close" id="closeModalBtn" type="button" aria-label="{{ __('crm.close') }}">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 4L4 12M4 4l8 8" />
+        </svg>
+      </button>
     </div>
 
     <form id="eventForm">
@@ -1334,7 +1361,11 @@ html.dark-mode .stage-quick-btn:hover {
         <i class="bi bi-calendar-event" style="color:var(--red);"></i>
         <span>إعادة جدولة موعد المتابعة</span>
       </h3>
-      <button class="modal-close" id="closeLeadRescheduleModalBtn" type="button">&times;</button>
+      <button class="modal-close" id="closeLeadRescheduleModalBtn" type="button" aria-label="{{ __('crm.close') }}">
+        <svg width="14" height="14" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <path d="M12 4L4 12M4 4l8 8" />
+        </svg>
+      </button>
     </div>
 
     <form id="leadRescheduleForm">

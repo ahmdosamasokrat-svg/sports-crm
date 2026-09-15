@@ -142,4 +142,41 @@ class PipelineStageOrderKanbanSyncTest extends TestCase
         $this->assertNotNull($col2);
         $this->assertTrue($col2['has_followups']);
     }
+
+    public function test_kanban_renders_followup_toolbar_only_for_stages_with_followups(): void
+    {
+        // 1. Create a stage with follow-ups (like "مهتم")
+        $this->actingAs($this->admin)->post(route('v2.settings.stages.store'), [
+            'name_ar' => 'مرحلة بمتابعات تجريبية',
+            'color' => '#3b82f6',
+            'has_followups' => true,
+        ]);
+        $stageWithFollowups = PipelineStage::query()->where('name_ar', 'مرحلة بمتابعات تجريبية')->firstOrFail();
+
+        // 2. Create a stage without follow-ups (like "غير مهتم")
+        $this->actingAs($this->admin)->post(route('v2.settings.stages.store'), [
+            'name_ar' => 'مرحلة بدون متابعات تجريبية',
+            'color' => '#ef4444',
+            'has_followups' => false,
+        ]);
+        $stageWithoutFollowups = PipelineStage::query()->where('name_ar', 'مرحلة بدون متابعات تجريبية')->firstOrFail();
+
+        // 3. Request Kanban page
+        $response = $this->actingAs($this->admin)->get(route('v2.leads.kanban'));
+        $response->assertOk();
+
+        $content = $response->getContent();
+
+        // Assert stage with followups renders kanban-followup-toolbar and data-kanban-column
+        $this->assertStringContainsString('data-kanban-column="' . $stageWithFollowups->code . '"', $content);
+        $this->assertStringContainsString('data-kanban-column="' . $stageWithoutFollowups->code . '"', $content);
+
+        // Check columns in view data
+        $columns = $response->viewData('kanbanColumns');
+        $colWith = collect($columns)->firstWhere('stage_id', $stageWithFollowups->id);
+        $colWithout = collect($columns)->firstWhere('stage_id', $stageWithoutFollowups->id);
+
+        $this->assertTrue($colWith['has_followups']);
+        $this->assertFalse($colWithout['has_followups']);
+    }
 }

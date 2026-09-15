@@ -20,18 +20,11 @@
         * { box-sizing: border-box; }
         body { margin: 0; background: var(--bg); color: var(--dark); font-family: var(--font-primary, system-ui, -apple-system, sans-serif); }
         .crm-app { min-height: 100vh; display: flex; max-width: 100vw; overflow-x: clip; }
-        .crm-main { flex: 1; min-width: 0; max-width: 100%; display: flex; flex-direction: column; min-height: 100vh; text-align: start; }
-        .top-bar, .crm-topbar, .topbar { background: #fff; border-bottom: 1px solid var(--line); padding: 16px 24px; display: flex; align-items: center; justify-content: space-between; gap: 16px; flex-wrap: wrap; text-align: start; min-height: 56px; }
-        .top-bar-info, .crm-topbar-left, .topbar-left { display: flex; align-items: center; gap: 12px; text-align: start; min-width: 0; }
-        .top-bar h1, .crm-topbar-title h1, .topbar h1 { font-size: 20px; margin: 0; display: flex; align-items: center; gap: 10px; text-align: start; font-weight: 900; }
-        .top-bar p, .crm-topbar-title p, .topbar p { margin: 4px 0 0; color: var(--muted); font-size: 13px; text-align: start; }
-        .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #dc2637; display: inline-block; box-shadow: 0 0 0 3px rgba(220,38,55,0.2); flex-shrink: 0; }
-        .top-bar-actions, .crm-topbar-right, .top-actions { display: flex; align-items: center; gap: 12px; margin-inline-start: auto; flex-wrap: wrap; }
-        .crm-topbar-actions { display: inline-flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+        .crm-main { flex: 1; min-width: 0; max-width: 100%; display: flex; flex-direction: column; min-height: 100vh; text-align: start; padding: 20px 24px 48px; }
+        .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #10b981; display: inline-block; box-shadow: none !important; flex-shrink: 0; }
         .role-badge { background: #e0e7ff; color: #3730a3; padding: 6px 12px; border-radius: 20px; font-size: 12px; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
         .role-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #4f46e5; }
-        .btn-back { background: #fff; border: 1px solid var(--line); min-height: 42px; padding: 8px 14px; border-radius: 10px; text-decoration: none; color: var(--dark); font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; touch-action: manipulation; }
-        .crm-topbar-menu-btn, .menu-button { display: none; width: 44px; height: 44px; min-height: 44px; min-width: 44px; border-radius: 10px; border: 1px solid var(--line); background: #fff; color: var(--dark); font-size: 20px; cursor: pointer; align-items: center; justify-content: center; touch-action: manipulation; }
+        .btn-back { min-height: 42px; padding: 0 14px; border-radius: 12px; text-decoration: none; font-weight: bold; font-size: 13px; display: inline-flex; align-items: center; gap: 6px; touch-action: manipulation; }
 
         .monitor-container { padding: 24px; display: flex; flex-direction: column; gap: 24px; max-width: 1400px; margin: 0 auto; width: 100%; text-align: start; }
 
@@ -98,7 +91,6 @@
             .crm-topbar-menu-btn, .menu-button { display: inline-flex; }
         }
         @media (max-width: 768px) {
-            .top-bar, .crm-topbar, .topbar { padding: 14px 16px; flex-direction: column; align-items: stretch; gap: 12px; }
             .top-bar-info, .crm-topbar-left, .topbar-left { width: 100%; justify-content: flex-start; }
             .top-bar-actions, .crm-topbar-right, .top-actions { width: 100%; justify-content: space-between; margin-inline-start: 0; flex-wrap: wrap; gap: 8px; }
             .crm-topbar-actions { display: flex; flex: 1 1 auto; gap: 8px; flex-wrap: wrap; }

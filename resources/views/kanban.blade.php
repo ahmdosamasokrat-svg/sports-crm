@@ -6,45 +6,33 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>SokratCRM — {{ __('crm.kanban_view') }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
 <link rel="stylesheet" href="{{ asset('crm-dropdown.css') }}?v=1.0.1">
 <style>
 :root{
- --red:#dc2637;
+ --red:#ef4444;
+ --red-dark:#dc2626;
  --dark:#182033;
  --muted:#8b94a5;
  --line:#e7e9ef;
  --bg:#f5f6f9;
- --shadow:0 12px 35px #1720330d
+ --shadow:none;
 }
 *{box-sizing:border-box}
 body{
  margin:0;
  min-width:320px;
- background:
-  radial-gradient(circle at 8% 0,#dc26370c,transparent 25rem),
-  var(--bg);
+ background:var(--bg);
  color:var(--dark);
- font-family:var(--font-primary)
+ font-family:'Plus Jakarta Sans', 'Cairo', sans-serif !important;
 }
 a{color:inherit}
-.topbar{
- position:sticky;
- top:0;
- z-index:20;
- display:flex;
- align-items:center;
- gap:16px;
- min-height:78px;
- padding:12px clamp(16px,3vw,38px);
- border-bottom:1px solid var(--line);
- background:#ffffffed;
- backdrop-filter:blur(12px);
- box-shadow:0 8px 30px #1720330a
-}
 .brand{
  display:flex;
  align-items:center;
@@ -87,7 +75,7 @@ a{color:inherit}
  text-decoration:none;
  font-size:13px;
  font-weight:900;
- box-shadow:0 10px 22px #dc26372b;
+ box-shadow:none !important;
  cursor:pointer
 }
 .btn.light{
@@ -213,7 +201,7 @@ a{color:inherit}
 }
 .kanban-column.no-answer{--column-color:#e59b16}
 .kanban-column.interested{--column-color:#169a64}
-.kanban-column.not-interested{--column-color:#dc2637}
+.kanban-column.not-interested{--column-color:#ef4444}
 .kanban-column.meeting{--column-color:#7b61df}
 .kanban-column.quotation{--column-color:#e59b16}
 .kanban-column.discussion{--column-color:#5865f2}
@@ -622,7 +610,7 @@ a{color:inherit}
  data-kanban-lead-scope="overdue"
 ]{
  --card-stage-color:
-  #dc2637!important
+  #ef4444!important
 }
 
 .kanban-card[
@@ -642,20 +630,20 @@ a{color:inherit}
 .kanban-scope-btn[
  data-kanban-scope="overdue"
 ]{
- --followup-scope-color:#dc2637;
+ --followup-scope-color:#ef4444;
  border-color:
   color-mix(
    in srgb,
-   #dc2637 28%,
+   #ef4444 28%,
    #e5e8ef
   );
  background:
   color-mix(
    in srgb,
-   #dc2637 5%,
+   #ef4444 5%,
    white
   );
- color:#dc2637
+ color:#ef4444
 }
 
 .kanban-scope-btn[
@@ -841,19 +829,28 @@ a{color:inherit}
 }
 
 .kanban-followup-close{
- width:44px;
- height:44px;
- min-width:44px;
- min-height:44px;
- display:grid;
- place-items:center;
- flex:0 0 44px;
+ width:36px;
+ height:36px;
+ min-width:36px;
+ min-height:36px;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
  border:1px solid #e1e5eb;
  border-radius:10px;
  background:#f8f9fb;
  color:#606b7e;
- font:900 20px var(--font-primary);
- cursor:pointer
+ padding:0;
+ cursor:pointer;
+ transition:all .18s ease;
+ box-shadow:none !important
+}
+
+.kanban-followup-close:hover{
+ color:var(--red, #ef4444);
+ border-color:rgba(239, 68, 68, 0.35);
+ background:rgba(239, 68, 68, 0.08);
+ transform:scale(1.05)
 }
 
 .kanban-followup-frame{
@@ -962,8 +959,8 @@ body.kanban-modal-open{
 }
 
 .kanban-filter-control:focus-within{
- border-color:var(--red,#dc2637);
- box-shadow:0 0 0 3px rgba(220,38,55,0.15)
+ border-color:var(--red,#ef4444);
+ box-shadow:none !important
 }
 
 .kanban-filter-control .filter-icon{
@@ -1242,14 +1239,6 @@ html.dark body,
 [data-theme="dark"] body{
  background:#0f172a;
  color:#f1f5f9
-}
-
-html.dark-mode .topbar,
-html.dark .topbar,
-[data-theme="dark"] .topbar{
- border-color:rgba(255,255,255,.08);
- background:rgba(15,23,42,.9);
- box-shadow:0 8px 30px rgba(0,0,0,.25)
 }
 
 html.dark-mode .btn.light,
@@ -1695,8 +1684,9 @@ html.dark .kanban-followup-frame,
    )
     <!-- CRM KANBAN DIRECT STATUS COLUMNS V4 START -->
     @php
-     $kanbanDirectStatus =
-      in_array(
+     $hasFollowups = isset($column['has_followups'])
+      ? (bool) $column['has_followups']
+      : ! in_array(
        $column['code'],
        [
         'start',
@@ -1705,7 +1695,8 @@ html.dark .kanban-followup-frame,
         'execution',
        ],
        true
-      ) || request('scope') === 'all';
+      );
+     $kanbanDirectStatus = ! $hasFollowups || request('scope') === 'all';
     @endphp
 
      <article
@@ -2013,7 +2004,9 @@ html.dark .kanban-followup-frame,
     aria-label="{{ __('crm.close') }}"
     title="{{ __('crm.close') }}"
    >
-    ×
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
    </button>
   </header>
 
@@ -2056,7 +2049,9 @@ html.dark .kanban-followup-frame,
     aria-label="{{ __('crm.close') }}"
     title="{{ __('crm.close') }}"
    >
-    ×
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
    </button>
   </header>
 
@@ -2099,7 +2094,9 @@ html.dark .kanban-followup-frame,
     aria-label="{{ __('crm.cancel_and_close') }}"
     title="{{ __('crm.close') }}"
    >
-    ×
+    <svg width="15" height="15" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+     <path d="M12 4L4 12M4 4l8 8" />
+    </svg>
    </button>
   </header>
 

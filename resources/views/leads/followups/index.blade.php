@@ -6,9 +6,12 @@
 <meta name="csrf-token" content="{{ csrf_token() }}">
 <title>{{ __('crm.app_name', ['default' => 'SokratCRM']) }} — {{ __('crm.followup_for_lead', ['name' => $lead->name]) }}</title>
 <link rel="icon" type="image/png" href="{{ asset('favicon.png') }}">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
 <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
-<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v=crm-sidebar-collapse-v2">
+<link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
 <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
 <script>
 (() => {
@@ -23,16 +26,17 @@
 
 <style>
 :root {
-  --red: #dc2637;
-  --red-hover: #b81829;
+  --red: #ef4444;
+  --red-hover: #dc2626;
   --dark: #182033;
   --muted: #64748b;
   --line: #e2e8f0;
   --bg: #f8fafc;
   --card: #ffffff;
-  --shadow: 0 10px 30px rgba(15, 23, 42, 0.05);
+  --shadow: none;
   --radius: 16px;
-  --font-primary: var(--font-primary, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif);
+  --font-primary: 'Plus Jakarta Sans', 'Cairo', sans-serif;
+  --font-mono: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace;
 }
 
 html.dark-mode {
@@ -41,7 +45,7 @@ html.dark-mode {
   --line: #334155;
   --bg: #0f172a;
   --card: #1e293b;
-  --shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  --shadow: none;
 }
 
 * { box-sizing: border-box; }
@@ -50,7 +54,7 @@ body {
   min-width: 320px;
   background: var(--bg);
   color: var(--dark);
-  font-family: var(--font-primary);
+  font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
   font-size: 14px;
   line-height: 1.5;
 }
@@ -60,31 +64,6 @@ a { color: inherit; text-decoration: none; }
 .crm-app { display: flex; min-height: 100vh; }
 .crm-main { flex: 1; min-width: 0; padding: 24px 32px 60px; }
 
-/* Topbar */
-.topbar {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 18px;
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-.topbar-left {
-  display: flex;
-  align-items: center;
-  gap: 14px;
-}
-.topbar h1 {
-  margin: 0;
-  font-size: 22px;
-  font-weight: 900;
-  color: var(--dark);
-}
-.topbar p {
-  margin: 4px 0 0;
-  color: var(--muted);
-  font-size: 13px;
-}
 .top-actions {
   display: flex;
   align-items: center;
@@ -598,7 +577,6 @@ body.kanban-followup-popup .client-actions {
 }
 @media(max-width: 768px) {
   .crm-main { padding: 16px 12px 60px; min-width: 0; width: 100%; max-width: 100%; }
-  .topbar { flex-direction: column; align-items: stretch; gap: 12px; }
   .top-actions { width: 100%; flex-wrap: wrap; gap: 8px; }
   .top-actions .btn { flex: 1 1 auto; min-height: 44px; }
   .form-grid, .followup-editor-grid { grid-template-columns: 1fr; }

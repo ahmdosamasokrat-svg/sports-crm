@@ -65,12 +65,23 @@
  })();
 </script>
 @endonce
+@once
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+@endonce
 @unless($crmSidebarAssetsLoaded ?? false)
 @once
 
 <link
  rel="stylesheet"
  href="{{ asset('crm-sidebar-shared.css') . '?v=' . time() }}"
+>
+@endonce
+@once
+<link
+ rel="stylesheet"
+ href="{{ asset('crm-dropdown.css') . '?v=' . time() }}"
 >
 @endonce
 @once
@@ -160,7 +171,11 @@
     </span>
     @endcan
 
-    <span class="crm-arrow arrow">⌄</span>
+    <span class="crm-arrow arrow">
+     <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 2L6.5 5L3.5 8" />
+     </svg>
+    </span>
    </button>
 
    <div
@@ -234,7 +249,11 @@
     </span>
 
     <span class="crm-count count">{{ number_format($crmSidebarTaskCount) }}</span>
-    <span class="crm-arrow arrow">⌄</span>
+    <span class="crm-arrow arrow">
+     <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 2L6.5 5L3.5 8" />
+     </svg>
+    </span>
    </button>
 
    <div
@@ -278,7 +297,11 @@
      {{ __('crm.campaigns') }}
     </span>
 
-    <span class="crm-arrow arrow">⌄</span>
+    <span class="crm-arrow arrow">
+     <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 2L6.5 5L3.5 8" />
+     </svg>
+    </span>
    </button>
 
    <div
@@ -334,7 +357,11 @@
      {{ __('crm.price_quotation') }}
     </span>
 
-    <span class="crm-arrow arrow">⌄</span>
+    <span class="crm-arrow arrow">
+     <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 2L6.5 5L3.5 8" />
+     </svg>
+    </span>
    </button>
 
    <div
@@ -403,7 +430,7 @@
   @endcan
   @endif
 
-  @can('technical_support.view')
+  @if(auth()->user()?->can('technical_support.view') || auth()->user()?->can('technical_support.reports') || auth()->user()?->can('technical_support.tasks.manage') || request()->routeIs('v2.technical-support.*'))
   <div>
    <button
     class="crm-toggle toggle {{ $crmSidebarTechnicalSupportActive ? 'active' : '' }}"
@@ -415,7 +442,11 @@
    >
     <span class="crm-ico ico"><i class="bi bi-headset"></i></span>
     <span class="crm-label label">{{ __('crm.technical_support') }}</span>
-    <span class="crm-arrow arrow">⌄</span>
+    <span class="crm-arrow arrow">
+     <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+      <path d="M3.5 2L6.5 5L3.5 8" />
+     </svg>
+    </span>
    </button>
 
    <div
@@ -424,6 +455,7 @@
    >
     <div class="crm-sub-inner">
      <nav>
+      @can('technical_support.view')
       <a
        class="{{ request()->routeIs('v2.technical-support.index', 'v2.technical-support.cards.*', 'v2.technical-support.tickets.*', 'v2.technical-support.ips.*', 'v2.technical-support.devices.*') ? 'active' : '' }}"
        href="{{ route('v2.technical-support.index') }}"
@@ -436,6 +468,7 @@
       >
        {{ __('crm.support_team') }}
       </a>
+      @endcan
       @can('technical_support.reports')
       <a
        class="{{ request()->routeIs('v2.technical-support.reports') ? 'active' : '' }}"
@@ -454,7 +487,7 @@
     </div>
    </div>
   </div>
-  @endcan
+  @endif
 
 
   @can('settings.access')
@@ -477,7 +510,7 @@
 
 @once
 <script src="{{ asset('quotation-generator/crm-sidebar.js') }}?v=crm-sidebar-drawer-v2"></script>
-<script src="{{ asset('crm-dropdown.js') }}?v=1.0.1"></script>
+<script src="{{ asset('crm-dropdown.js') }}?v={{ time() }}"></script>
 @endonce
 <!-- CRM TASK SIDEBAR ACTIVE STATUS START -->
 <style>
@@ -492,13 +525,24 @@
   color:var(--red)!important;
   background:#ffe8ec!important
  }
+ .crm-sidebar-collapse-btn i {
+  display: inline-block !important;
+  transition: transform 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+  transform-origin: center center !important;
+ }
  html[dir="ltr"] .crm-sidebar-collapse-btn i,
- html:not([dir="rtl"]) .crm-sidebar-collapse-btn i,
- .ltr\:rotate-180 {
+ html:not([dir="rtl"]) .crm-sidebar-collapse-btn i {
   transform: rotate(180deg);
  }
+ html[dir="ltr"].crm-sidebar-collapsed .crm-sidebar-collapse-btn i,
+ html:not([dir="rtl"]).crm-sidebar-collapsed .crm-sidebar-collapse-btn i {
+  transform: rotate(0deg) !important;
+ }
  html[dir="rtl"] .crm-sidebar-collapse-btn i {
-  transform: none;
+  transform: rotate(0deg);
+ }
+ html[dir="rtl"].crm-sidebar-collapsed .crm-sidebar-collapse-btn i {
+  transform: rotate(180deg) !important;
  }
 </style>
 <!-- CRM TASK SIDEBAR ACTIVE STATUS END -->
