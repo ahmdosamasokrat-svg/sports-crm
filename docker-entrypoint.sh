@@ -3,6 +3,9 @@ set -e
 
 echo "=== Sokrat CRM V2 Container Starting ==="
 
+# Allow git operations in mounted working directory
+git config --global --add safe.directory /var/www/html 2>/dev/null || true
+
 # Initialize .env if missing
 if [ ! -f /var/www/html/.env ]; then
     echo "Creating .env from .env.example..."

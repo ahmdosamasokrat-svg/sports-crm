@@ -32,6 +32,9 @@ services:
       db:
         condition: service_healthy
     volumes:
+      - ./:/var/www/html
+      - /var/www/html/vendor
+      - /var/www/html/public/build
       - crm_v2_storage:/var/www/html/storage
 
   db:
