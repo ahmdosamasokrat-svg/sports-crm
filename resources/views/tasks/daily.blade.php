@@ -212,10 +212,10 @@
 
  /* Filters and control bar */
  .task-filters-card {
-  margin-bottom: 24px;
-  padding: 16px 20px;
+  margin-bottom: 14px;
+  padding: 10px 14px;
   border: 1px solid var(--task-border);
-  border-radius: 16px;
+  border-radius: 12px;
   background: #fff;
   box-shadow: var(--task-card-shadow);
  }
@@ -223,18 +223,18 @@
  .task-filters-form {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 8px;
  }
 
  .task-filters-row {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 10px;
+  gap: 8px;
  }
 
  .task-search-input-wrap {
-  flex: 1 1 280px;
+  flex: 1 1 220px;
   position: relative;
  }
 
@@ -243,26 +243,26 @@
   top: 50%;
   transform: translateY(-50%);
   color: #94a3b8;
-  font-size: 15px;
+  font-size: 13px;
  }
 
- [dir="rtl"] .task-search-input-wrap i { right: 12px; }
- [dir="ltr"] .task-search-input-wrap i { left: 12px; }
+ [dir="rtl"] .task-search-input-wrap i { right: 10px; }
+ [dir="ltr"] .task-search-input-wrap i { left: 10px; }
 
  .task-search-input {
   width: 100%;
-  height: 44px;
+  height: 36px;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f8fafc;
   color: #1e293b;
-  font-size: 13px;
+  font-size: 12.5px;
   outline: none;
   transition: border-color .18s, background .18s;
  }
 
- [dir="rtl"] .task-search-input { padding: 0 38px 0 14px; }
- [dir="ltr"] .task-search-input { padding: 0 14px 0 38px; }
+ [dir="rtl"] .task-search-input { padding: 0 32px 0 10px; }
+ [dir="ltr"] .task-search-input { padding: 0 10px 0 32px; }
 
  .task-search-input:focus {
   border-color: #3b82f6;
@@ -270,15 +270,26 @@
   box-shadow: 0 0 0 3px #3b82f61a;
  }
 
- .task-select-filter {
-  height: 44px;
-  min-width: 140px;
+ .task-search-btn {
+  height: 36px;
+  min-height: 36px !important;
   padding: 0 12px;
+  border-radius: 8px;
+  font-size: 12px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+ }
+
+ .task-select-filter {
+  height: 36px;
+  min-width: 125px;
+  padding: 0 10px;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: 8px;
   background: #f8fafc;
   color: #334155;
-  font-size: 13px;
+  font-size: 12px;
   outline: none;
   cursor: pointer;
  }
@@ -288,27 +299,50 @@
   background: #fff;
  }
 
+ .task-filters-card .crm-dropdown {
+  min-width: 125px;
+  width: auto;
+  flex: 0 1 auto;
+ }
+
+ .task-filters-card .crm-dropdown-trigger {
+  height: 36px !important;
+  min-height: 36px !important;
+  padding: 0 10px !important;
+  font-size: 12px !important;
+  border-radius: 8px !important;
+  gap: 6px !important;
+ }
+
+ .task-filters-card .crm-dropdown-text {
+  font-size: 12px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 130px;
+ }
+
  .task-scope-pills {
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 5px;
   padding-top: 6px;
   border-top: 1px dashed #e2e8f0;
  }
 
  .task-scope-pill {
-  min-height: 38px;
+  min-height: 28px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  padding: 6px 14px;
+  gap: 5px;
+  padding: 3px 10px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
   background: #f8fafc;
   color: #475569;
   text-decoration: none;
-  font-size: 12px;
+  font-size: 11.5px;
   font-weight: 700;
   transition: all .16s;
  }
@@ -356,11 +390,11 @@
 
  .task-pill-badge {
   display: inline-block;
-  padding: 2px 7px;
+  padding: 1px 6px;
   border-radius: 999px;
   background: #e2e8f0;
   color: #1e293b;
-  font-size: 11px;
+  font-size: 10.5px;
   font-weight: 800;
   line-height: 1.2;
  }
@@ -399,14 +433,15 @@
   display: inline-flex;
   align-items: center;
   border: 1px solid #cbd5e1;
-  border-radius: 10px;
+  border-radius: 8px;
   overflow: hidden;
   background: #f8fafc;
+  height: 36px;
  }
 
  .task-view-btn {
-  height: 40px;
-  padding: 0 12px;
+  height: 34px;
+  padding: 0 10px;
   display: inline-flex;
   align-items: center;
   gap: 6px;
@@ -1191,7 +1226,7 @@
      >
     </div>
 
-    <button class="btn soft" type="submit" style="min-height: 42px;" title="{{ __('crm.search') }}">
+    <button class="btn soft task-search-btn" type="submit" title="{{ __('crm.search') }}">
      <i class="bi bi-search"></i>
      <span>{{ __('crm.search') }}</span>
     </button>
