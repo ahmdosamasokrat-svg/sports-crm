@@ -463,7 +463,7 @@
 					<div class="campaign-card-header">
 						<div class="campaign-card-brand">
 							@if ($campaign->image_path)
-								<img class="campaign-card-thumb" src="{{ Storage::disk('local')->url($campaign->image_path) }}" alt="{{ $campaign->name }}">
+								<img class="campaign-card-thumb" src="{{ Storage::disk('local')->url($campaign->image_path) }}" alt="{{ $campaign->name }}" onerror="this.onerror=null; this.src='{{ asset('images/sokrat-pro-tech.png') }}';">
 							@else
 								<div class="campaign-card-icon">
 									<i class="bi bi-megaphone"></i>

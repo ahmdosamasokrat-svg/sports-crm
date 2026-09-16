@@ -29,24 +29,18 @@
 @endphp
 
 <article class="task-item-card task-ticket {{ $cardTimeClass }}" data-lead-id="{{ $lead->id }}" data-lead-name="{{ $lead->name }}" data-status-id="{{ $lead->lead_status_id ?? '' }}" data-next-followup="{{ $lead->next_follow_up_at ? $lead->next_follow_up_at->toISOString() : '' }}">
-    {{-- Tier 1: Header Line (Status Dot + Time + Lead Name + Company + Status & Agent Pills) --}}
-    <div class="task-ticket-header">
-        <div class="task-ticket-lead">
-            <span class="task-ticket-dot {{ $cardTimeClass }}" title="{{ $cardUrgencyText }}"></span>
-            <span class="task-ticket-time {{ $cardTimeClass }}" title="{{ $cardUrgencyText }}">
+    {{-- 1. Top Badges & Timing Row --}}
+    <div class="task-ticket-top">
+        <div class="task-ticket-urgency">
+            <span class="task-ticket-dot {{ $cardTimeClass }}"></span>
+            <span class="task-ticket-time {{ $cardTimeClass }}">
                 <i class="bi bi-clock"></i>
-                {{ $lead->next_follow_up_at ? $lead->next_follow_up_at->format('h:i A') : __('crm.without_followup_date') }}
+                {{ $lead->next_follow_up_at ? $lead->next_follow_up_at->format('d/m • h:i A') : __('crm.without_followup_date') }}
             </span>
-            <strong class="task-ticket-name">
-                <a href="{{ route('v2.leads.show', $lead) }}" title="{{ $lead->name }}">{{ $lead->name }}</a>
-            </strong>
-            @if ($lead->company_name)
-                <span class="task-ticket-sep">•</span>
-                <span class="task-ticket-company" title="{{ $lead->company_name }}">{{ $lead->company_name }}</span>
-            @endif
+            <span class="task-urgency-pill {{ $cardTimeClass }}">{{ $cardUrgencyText }}</span>
         </div>
 
-        <div class="task-ticket-badges">
+        <div class="task-ticket-pills">
             @if ($lead->status?->stage?->category)
                 <span class="task-category-pill" style="background: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'18' : '#f1f5f9' }}; color: {{ $lead->status->stage->category->color ?: '#475569' }}; border-color: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'33' : '#e2e8f0' }};" title="{{ __('crm.stage_category') }}: {{ $lead->status->stage->category->name_ar }}">
                     <i class="bi {{ $lead->status->stage->category->icon ?: 'bi-collection' }}"></i>
@@ -56,36 +50,24 @@
             <span class="task-status-pill" style="background: {{ $statusColor }}18; color: {{ $statusColor }}; border-color: {{ $statusColor }}33;">
                 {{ $lead->status?->name_ar ?? '-' }}
             </span>
-            @if ($lead->assignedUser || $lead->assigned_employee)
-                <span class="task-ticket-user" title="{{ __('crm.lead_assigned_to') }}: {{ $lead->assignedUser?->name ?? $lead->assigned_employee }}">
-                    <i class="bi bi-person-fill"></i>
-                    <span>{{ $lead->assignedUser?->name ?? $lead->assigned_employee }}</span>
-                </span>
-            @endif
         </div>
     </div>
 
-    {{-- Tier 2: Note / Context Preview (1 Line) --}}
-    <div class="task-ticket-body">
-        <div class="task-ticket-note">
-            <i class="bi bi-chat-left-text"></i>
-            @if ($lastFollowup && !empty($lastFollowup->outcome))
-                <span class="task-note-text" title="{{ $lastFollowup->outcome }}">{{ $lastFollowup->outcome }}</span>
-                <span class="task-note-meta">
-                    ({{ $lastFollowup->followed_up_at ? $lastFollowup->followed_up_at->diffForHumans() : '' }}@if ($lastFollowup->user?->name || $lastFollowup->employee_name) • {{ $lastFollowup->user?->name ?? $lastFollowup->employee_name }}@endif)
-                </span>
-            @else
-                <span class="task-note-empty">{{ __('crm.no_previous_followups') }}</span>
+    {{-- 2. Lead Identity & Meta Row --}}
+    <div class="task-ticket-main">
+        <div class="task-ticket-lead-header">
+            <h3 class="task-ticket-name">
+                <a href="{{ route('v2.leads.show', $lead) }}">{{ $lead->name }}</a>
+            </h3>
+            @if ($lead->company_name)
+                <span class="task-ticket-company"><i class="bi bi-building"></i> {{ $lead->company_name }}</span>
             @endif
         </div>
-    </div>
 
-    {{-- Tier 3: Contact Details & Quick Actions --}}
-    <div class="task-ticket-footer">
-        <div class="task-ticket-contact">
+        <div class="task-ticket-submeta">
             @if ($lead->phone)
                 <a class="task-phone-link" href="tel:{{ $rawPhone }}" title="{{ __('crm.phone') }}: {{ $lead->phone }}">
-                    <i class="bi bi-telephone"></i>
+                    <i class="bi bi-telephone-fill"></i>
                     <span>{{ $lead->phone }}</span>
                 </a>
             @else
@@ -95,39 +77,68 @@
                 </span>
             @endif
 
+            @if ($lead->assignedUser || $lead->assigned_employee)
+                <span class="task-ticket-meta-tag" title="{{ __('crm.lead_assigned_to') }}">
+                    <i class="bi bi-person"></i>
+                    <span>{{ $lead->assignedUser?->name ?? $lead->assigned_employee }}</span>
+                </span>
+            @endif
+
             @if ($lead->source)
-                <span class="task-ticket-source" title="{{ __('crm.source') }}: {{ $lead->source }}">
+                <span class="task-ticket-meta-tag" title="{{ __('crm.source') }}">
                     <i class="bi bi-tag"></i>
                     <span>{{ $lead->source }}</span>
                 </span>
             @endif
         </div>
+    </div>
 
-        <div class="task-ticket-actions">
-            @if ($lead->phone)
-                <a class="task-action-btn primary" href="tel:{{ $rawPhone }}" data-task-action="call-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }}, 'call');" title="{{ __('crm.call_and_followup') }}">
-                    <i class="bi bi-telephone-fill"></i>
-                    <span>{{ __('crm.call_and_log') }}</span>
-                </a>
-                <a class="task-action-btn whatsapp" href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener noreferrer" title="{{ __('crm.quick_whatsapp') }}">
-                    <i class="bi bi-whatsapp"></i>
-                </a>
-            @else
-                <button class="task-action-btn primary disabled" disabled title="{{ __('crm.no_phone_abbr') }}">
-                    <i class="bi bi-telephone-x"></i>
-                    <span>{{ __('crm.no_phone_abbr') }}</span>
-                </button>
-            @endif
-
-            <button class="task-action-btn icon" type="button" data-task-action="quick-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }})" title="{{ __('crm.quick_log_followup') }}">
-                <i class="bi bi-pencil-square"></i>
-            </button>
-            <button class="task-action-btn icon" type="button" data-task-action="reschedule" onclick="openRescheduleModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', '{{ $lead->next_follow_up_at ? $lead->next_follow_up_at->toISOString() : '' }}')" title="{{ __('crm.reschedule_task') }}">
-                <i class="bi bi-calendar-plus"></i>
-            </button>
-            <a class="task-action-btn icon" href="{{ route('v2.leads.show', $lead) }}" title="{{ __('crm.view_lead') }}">
-                <i class="bi bi-eye"></i>
-            </a>
+    {{-- 3. Last Followup Note --}}
+    @if ($lastFollowup && !empty($lastFollowup->outcome))
+        <div class="task-ticket-note">
+            <i class="bi bi-chat-left-text"></i>
+            <div class="task-note-content">
+                <p class="task-note-text" title="{{ $lastFollowup->outcome }}">{{ $lastFollowup->outcome }}</p>
+                <span class="task-note-meta">
+                    {{ $lastFollowup->followed_up_at ? $lastFollowup->followed_up_at->diffForHumans() : '' }}
+                    @if ($lastFollowup->user?->name || $lastFollowup->employee_name)
+                        • {{ $lastFollowup->user?->name ?? $lastFollowup->employee_name }}
+                    @endif
+                </span>
+            </div>
         </div>
+    @else
+        <div class="task-ticket-note empty">
+            <i class="bi bi-chat-left-dots"></i>
+            <span class="task-note-empty">{{ __('crm.no_previous_followups') }}</span>
+        </div>
+    @endif
+
+    {{-- 4. Action Buttons Bar --}}
+    <div class="task-ticket-actions-bar">
+        @if ($lead->phone)
+            <a class="task-action-btn primary" href="tel:{{ $rawPhone }}" data-task-action="call-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }}, 'call');" title="{{ __('crm.call_and_followup') }}">
+                <i class="bi bi-telephone-fill"></i>
+                <span>{{ __('crm.call_and_log') }}</span>
+            </a>
+            <a class="task-action-btn whatsapp" href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener noreferrer" title="{{ __('crm.quick_whatsapp') }}">
+                <i class="bi bi-whatsapp"></i>
+            </a>
+        @else
+            <button class="task-action-btn primary disabled" disabled title="{{ __('crm.no_phone_abbr') }}">
+                <i class="bi bi-telephone-x"></i>
+                <span>{{ __('crm.no_phone_abbr') }}</span>
+            </button>
+        @endif
+
+        <button class="task-action-btn icon" type="button" data-task-action="quick-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }})" title="{{ __('crm.quick_log_followup') }}">
+            <i class="bi bi-pencil-square"></i>
+        </button>
+        <button class="task-action-btn icon" type="button" data-task-action="reschedule" onclick="openRescheduleModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', '{{ $lead->next_follow_up_at ? $lead->next_follow_up_at->toISOString() : '' }}')" title="{{ __('crm.reschedule_task') }}">
+            <i class="bi bi-calendar-plus"></i>
+        </button>
+        <a class="task-action-btn icon" href="{{ route('v2.leads.show', $lead) }}" title="{{ __('crm.view_lead') }}">
+            <i class="bi bi-eye"></i>
+        </a>
     </div>
 </article>

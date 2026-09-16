@@ -1130,7 +1130,7 @@
           <div class="cr-card-top">
             <span class="cr-card-icon">
               @if ($camp->image_path)
-                <img src="{{ asset('storage/'.$camp->image_path) }}" alt="">
+                <img src="{{ asset('storage/'.$camp->image_path) }}" alt="" onerror="this.onerror=null; this.src='{{ asset('images/sokrat-pro-tech.png') }}';">
               @else
                 <i class="bi bi-megaphone-fill" aria-hidden="true"></i>
               @endif

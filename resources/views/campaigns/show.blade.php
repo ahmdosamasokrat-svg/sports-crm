@@ -556,7 +556,7 @@
 	<div class="campaign-hero">
 		<div class="campaign-hero-copy">
 			@if ($campaign->image_path)
-				<img class="campaign-hero-image" src="{{ asset('storage/'.$campaign->image_path) }}" alt="{{ $campaign->name }}">
+				<img class="campaign-hero-image" src="{{ asset('storage/'.$campaign->image_path) }}" alt="{{ $campaign->name }}" onerror="this.onerror=null; this.src='{{ asset('images/sokrat-pro-tech.png') }}';">
 			@else
 				<div class="campaign-hero-image" style="display:grid;place-items:center;background:color-mix(in srgb, var(--red) 10%, var(--bg));color:var(--red);font-size:26px;">
 					<i class="bi bi-megaphone-fill"></i>
