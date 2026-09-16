@@ -210,140 +210,48 @@
   background: linear-gradient(90deg, #10b981, #059669);
  }
 
- /* Filters and control bar */
+ /* Filters and control bar - SINGLE COMPACT ROW */
  .task-filters-card {
-  margin-bottom: 14px;
-  padding: 10px 14px;
+  margin-bottom: 12px;
+  padding: 6px 10px;
   border: 1px solid var(--task-border);
-  border-radius: 12px;
+  border-radius: 10px;
   background: #fff;
   box-shadow: var(--task-card-shadow);
  }
 
  .task-filters-form {
   display: flex;
-  flex-direction: column;
-  gap: 8px;
- }
-
- .task-filters-row {
-  display: flex;
+  flex-direction: row;
   align-items: center;
+  justify-content: space-between;
+  gap: 8px;
   flex-wrap: wrap;
-  gap: 8px;
- }
-
- .task-search-input-wrap {
-  flex: 1 1 220px;
-  position: relative;
- }
-
- .task-search-input-wrap i {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  color: #94a3b8;
-  font-size: 13px;
- }
-
- [dir="rtl"] .task-search-input-wrap i { right: 10px; }
- [dir="ltr"] .task-search-input-wrap i { left: 10px; }
-
- .task-search-input {
-  width: 100%;
-  height: 36px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #1e293b;
-  font-size: 12.5px;
-  outline: none;
-  transition: border-color .18s, background .18s;
- }
-
- [dir="rtl"] .task-search-input { padding: 0 32px 0 10px; }
- [dir="ltr"] .task-search-input { padding: 0 10px 0 32px; }
-
- .task-search-input:focus {
-  border-color: #3b82f6;
-  background: #fff;
-  box-shadow: 0 0 0 3px #3b82f61a;
- }
-
- .task-search-btn {
-  height: 36px;
-  min-height: 36px !important;
-  padding: 0 12px;
-  border-radius: 8px;
-  font-size: 12px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
- }
-
- .task-select-filter {
-  height: 36px;
-  min-width: 125px;
-  padding: 0 10px;
-  border: 1px solid #cbd5e1;
-  border-radius: 8px;
-  background: #f8fafc;
-  color: #334155;
-  font-size: 12px;
-  outline: none;
-  cursor: pointer;
- }
-
- .task-select-filter:focus {
-  border-color: #3b82f6;
-  background: #fff;
- }
-
- .task-filters-card .crm-dropdown {
-  min-width: 125px;
-  width: auto;
-  flex: 0 1 auto;
- }
-
- .task-filters-card .crm-dropdown-trigger {
-  height: 36px !important;
-  min-height: 36px !important;
-  padding: 0 10px !important;
-  font-size: 12px !important;
-  border-radius: 8px !important;
-  gap: 6px !important;
- }
-
- .task-filters-card .crm-dropdown-text {
-  font-size: 12px !important;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 130px;
  }
 
  .task-scope-pills {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  flex-wrap: wrap;
-  gap: 5px;
-  padding-top: 6px;
-  border-top: 1px dashed #e2e8f0;
+  gap: 4px;
+  padding: 0;
+  border: none;
+  flex: 0 1 auto;
  }
 
  .task-scope-pill {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
-  gap: 5px;
-  padding: 3px 10px;
+  gap: 4px;
+  padding: 2px 8px;
   border: 1px solid #e2e8f0;
   border-radius: 999px;
   background: #f8fafc;
   color: #475569;
   text-decoration: none;
-  font-size: 11.5px;
+  font-size: 11px;
   font-weight: 700;
+  white-space: nowrap;
   transition: all .16s;
  }
 
@@ -390,11 +298,11 @@
 
  .task-pill-badge {
   display: inline-block;
-  padding: 1px 6px;
+  padding: 1px 5px;
   border-radius: 999px;
   background: #e2e8f0;
   color: #1e293b;
-  font-size: 10.5px;
+  font-size: 10px;
   font-weight: 800;
   line-height: 1.2;
  }
@@ -429,26 +337,137 @@
   color: #15803d;
  }
 
+ .task-filters-row {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1 1 auto;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+ }
+
+ .task-search-input-wrap {
+  flex: 1 1 140px;
+  max-width: 190px;
+  position: relative;
+ }
+
+ .task-search-input-wrap i {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #94a3b8;
+  font-size: 12px;
+ }
+
+ [dir="rtl"] .task-search-input-wrap i { right: 9px; }
+ [dir="ltr"] .task-search-input-wrap i { left: 9px; }
+
+ .task-search-input {
+  width: 100%;
+  height: 32px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #1e293b;
+  font-size: 11.5px;
+  outline: none;
+  transition: border-color .18s, background .18s;
+ }
+
+ [dir="rtl"] .task-search-input { padding: 0 26px 0 8px; }
+ [dir="ltr"] .task-search-input { padding: 0 8px 0 26px; }
+
+ .task-search-input:focus {
+  border-color: #3b82f6;
+  background: #fff;
+  box-shadow: 0 0 0 2px #3b82f61a;
+ }
+
+ .task-search-btn {
+  height: 32px;
+  min-height: 32px !important;
+  padding: 0 10px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+ }
+
+ .task-clear-btn {
+  height: 32px;
+  min-height: 32px !important;
+  padding: 0 8px;
+  border-radius: 7px;
+  font-size: 11.5px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+ }
+
+ .task-select-filter {
+  height: 32px;
+  min-width: 105px;
+  padding: 0 8px;
+  border: 1px solid #cbd5e1;
+  border-radius: 7px;
+  background: #f8fafc;
+  color: #334155;
+  font-size: 11.5px;
+  outline: none;
+  cursor: pointer;
+ }
+
+ .task-select-filter:focus {
+  border-color: #3b82f6;
+  background: #fff;
+ }
+
+ .task-filters-card .crm-dropdown {
+  min-width: 105px;
+  max-width: 145px;
+  width: auto;
+  flex: 0 1 auto;
+ }
+
+ .task-filters-card .crm-dropdown-trigger {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 8px !important;
+  font-size: 11.5px !important;
+  border-radius: 7px !important;
+  gap: 4px !important;
+ }
+
+ .task-filters-card .crm-dropdown-text {
+  font-size: 11.5px !important;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 105px;
+ }
+
  .task-view-toggle {
   display: inline-flex;
   align-items: center;
   border: 1px solid #cbd5e1;
-  border-radius: 8px;
+  border-radius: 7px;
   overflow: hidden;
   background: #f8fafc;
-  height: 36px;
+  height: 32px;
  }
 
  .task-view-btn {
-  height: 34px;
-  padding: 0 10px;
+  height: 30px;
+  padding: 0 8px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
   border: none;
   background: transparent;
   color: #64748b;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   text-decoration: none;
   cursor: pointer;
@@ -1208,12 +1227,64 @@
   </div>
  </div>
 
- {{-- 3. Search and Filter Bar --}}
+ {{-- 3. Search and Filter Bar (One Compact Row) --}}
  <div class="task-filters-card">
   <form class="task-filters-form" method="GET" action="{{ route('v2.tasks.daily') }}">
    <input type="hidden" name="scope" value="{{ $scope }}">
    <input type="hidden" name="view" value="{{ $viewMode }}">
 
+   {{-- Scope pills --}}
+   <div class="task-scope-pills">
+    <a
+     class="task-scope-pill {{ $scope === 'all' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'all'])) }}"
+    >
+     <span>{{ __('crm.scope_all') }}</span>
+     <span class="task-pill-badge">{{ number_format($totalDueToday) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill overdue {{ $scope === 'overdue' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'overdue'])) }}"
+    >
+     <span>{{ __('crm.scope_overdue') }}</span>
+     <span class="task-pill-badge">{{ number_format($overdueCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill today {{ $scope === 'today' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'today'])) }}"
+    >
+     <span>{{ __('crm.scope_today') }}</span>
+     <span class="task-pill-badge">{{ number_format($todayCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill upcoming {{ $scope === 'upcoming' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'upcoming'])) }}"
+    >
+     <span>{{ __('crm.scope_upcoming') }}</span>
+     <span class="task-pill-badge">{{ number_format($upcomingCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill no-date {{ $scope === 'no_date' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'no_date'])) }}"
+    >
+     <span>{{ __('crm.scope_no_date') }}</span>
+     <span class="task-pill-badge">{{ number_format($noDateCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill completed {{ $scope === 'completed' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'completed'])) }}"
+    >
+     <span>{{ __('crm.scope_completed') }}</span>
+     <span class="task-pill-badge">{{ number_format($completedTodayCount) }}</span>
+    </a>
+   </div>
+
+   {{-- Filter Controls --}}
    <div class="task-filters-row">
     <div class="task-search-input-wrap">
      <i class="bi bi-search"></i>
@@ -1285,62 +1356,10 @@
     </div>
 
     @if ($search !== '' || $statusId !== null || $stageId !== null || $employeeId !== null || $scope !== 'all')
-     <a class="btn soft" href="{{ route('v2.tasks.daily') }}">
+     <a class="btn soft task-clear-btn" href="{{ route('v2.tasks.daily') }}" title="{{ __('crm.clear_filters') }}">
       <i class="bi bi-x-circle"></i>
-      {{ __('crm.clear_filters') }}
      </a>
     @endif
-   </div>
-
-   {{-- Scope pills row --}}
-   <div class="task-scope-pills">
-    <a
-     class="task-scope-pill {{ $scope === 'all' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'all'])) }}"
-    >
-     <span>{{ __('crm.scope_all') }}</span>
-     <span class="task-pill-badge">{{ number_format($totalDueToday) }}</span>
-    </a>
-
-    <a
-     class="task-scope-pill overdue {{ $scope === 'overdue' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'overdue'])) }}"
-    >
-     <span>{{ __('crm.scope_overdue') }}</span>
-     <span class="task-pill-badge">{{ number_format($overdueCount) }}</span>
-    </a>
-
-    <a
-     class="task-scope-pill today {{ $scope === 'today' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'today'])) }}"
-    >
-     <span>{{ __('crm.scope_today') }}</span>
-     <span class="task-pill-badge">{{ number_format($todayCount) }}</span>
-    </a>
-
-    <a
-     class="task-scope-pill upcoming {{ $scope === 'upcoming' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'upcoming'])) }}"
-    >
-     <span>{{ __('crm.scope_upcoming') }}</span>
-     <span class="task-pill-badge">{{ number_format($upcomingCount) }}</span>
-    </a>
-
-    <a
-     class="task-scope-pill no-date {{ $scope === 'no_date' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'no_date'])) }}"
-    >
-     <span>{{ __('crm.scope_no_date') }}</span>
-     <span class="task-pill-badge">{{ number_format($noDateCount) }}</span>
-    </a>
-
-    <a
-     class="task-scope-pill completed {{ $scope === 'completed' ? 'active' : '' }}"
-     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'completed'])) }}"
-    >
-     <span>{{ __('crm.scope_completed') }}</span>
-     <span class="task-pill-badge">{{ number_format($completedTodayCount) }}</span>
-    </a>
    </div>
   </form>
  </div>
