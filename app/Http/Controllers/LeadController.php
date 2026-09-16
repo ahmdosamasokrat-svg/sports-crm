@@ -1082,6 +1082,134 @@ class LeadController extends Controller
             })
             ->values();
 
+        $activeStages = PipelineStage::query()
+            ->visibleTo($request->user())
+            ->where('is_active', true)
+            ->with([
+                'activeFields',
+                'statuses',
+            ])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
+
+        if ($leadRecord->status?->stage && ! $activeStages->contains('id', $leadRecord->status->stage->id)) {
+            $leadRecord->status->stage->loadMissing(['activeFields', 'statuses']);
+            $activeStages->push($leadRecord->status->stage);
+        }
+
+        foreach ($leadRecord->stageValues as $sv) {
+            if ($sv->stage && ! $activeStages->contains('id', $sv->stage->id)) {
+                $sv->stage->loadMissing(['activeFields', 'statuses']);
+                $activeStages->push($sv->stage);
+            }
+        }
+
+        $currentStageId = (int) ($leadRecord->status?->pipeline_stage_id ?? $leadRecord->status?->stage?->id ?? 0);
+        if ($currentStageId === 0 || ! $activeStages->contains('id', $currentStageId)) {
+            $currentStageId = (int) ($activeStages->first()?->id ?? 0);
+        }
+
+        $solutionLabels = [
+            'call_center' => 'Call Center',
+            'erp' => 'ERP',
+        ];
+
+        $stageSections = [];
+        foreach ($activeStages as $stage) {
+            $stageId = (int) $stage->id;
+            $isCurrent = ($stageId === $currentStageId);
+            $stageColor = trim((string) $stage->color) ?: '#3478f6';
+
+            $fieldsData = [];
+            $seenFieldKeys = [];
+
+            foreach ($stage->activeFields as $field) {
+                $seenFieldKeys[$field->key] = true;
+                $formattedVal = null;
+                $hasValue = false;
+
+                if ($field->isCanonical() && ! empty($field->binding_target)) {
+                    $target = (string) $field->binding_target;
+                    $leadVal = $leadRecord->getAttribute($target);
+
+                    if ($target === 'solution_type') {
+                        $formattedVal = $solutionLabels[$leadVal] ?? ($leadVal ?: null);
+                    } elseif (in_array($field->field_type, ['checkbox', 'boolean'], true) || is_bool($leadVal)) {
+                        $formattedVal = $leadVal !== null ? ($leadVal ? 'نعم' : 'لا') : null;
+                    } elseif ($leadVal !== null && $leadVal !== '') {
+                        $formattedVal = (string) $leadVal;
+                    }
+                }
+
+                if ($formattedVal === null || $formattedVal === '') {
+                    $savedVal = $leadRecord->stageValues
+                        ->where('pipeline_stage_id', $stageId)
+                        ->first(static fn ($sv) => $sv->pipeline_stage_field_id === $field->id || $sv->field_key === $field->key);
+
+                    if ($savedVal) {
+                        $formatted = $savedVal->formattedValue();
+                        if ($formatted !== '—' && $formatted !== '') {
+                            $formattedVal = $formatted;
+                        }
+                    }
+                }
+
+                if ($formattedVal !== null && $formattedVal !== '') {
+                    $hasValue = true;
+                } else {
+                    $formattedVal = $field->default_value ?: '—';
+                }
+
+                $fieldsData[] = [
+                    'id' => $field->id,
+                    'key' => $field->key,
+                    'label' => $field->localizedLabel(),
+                    'type' => $field->field_type ?: 'text',
+                    'value' => $formattedVal,
+                    'has_value' => $hasValue,
+                    'is_canonical' => $field->isCanonical(),
+                ];
+            }
+
+            $extraStageValues = $leadRecord->stageValues
+                ->where('pipeline_stage_id', $stageId)
+                ->filter(static fn ($sv) => ! isset($seenFieldKeys[$sv->field_key]))
+                ->unique('field_key');
+
+            foreach ($extraStageValues as $extraVal) {
+                $fVal = $extraVal->formattedValue();
+                $fieldsData[] = [
+                    'id' => $extraVal->pipeline_stage_field_id,
+                    'key' => $extraVal->field_key,
+                    'label' => $extraVal->field ? $extraVal->field->localizedLabel() : ($extraVal->field_key ?: 'حقل إضافي'),
+                    'type' => $extraVal->field_type ?: 'text',
+                    'value' => $fVal !== '' ? $fVal : '—',
+                    'has_value' => $fVal !== '—' && $fVal !== '',
+                    'is_canonical' => false,
+                ];
+            }
+
+            $stageHistory = $stageHistoryGroups
+                ->filter(static fn ($g) => ($g['stage']?->id ?? 0) === $stageId)
+                ->values();
+
+            $filledCount = count(array_filter($fieldsData, static fn ($f) => $f['has_value']));
+
+            $stageSections[] = [
+                'id' => $stageId,
+                'name' => $stage->localizedName(),
+                'code' => $stage->code,
+                'color' => $stageColor,
+                'is_current' => $isCurrent,
+                'current_status' => $isCurrent ? ($leadRecord->status?->localizedName() ?? $leadRecord->status?->name_ar) : null,
+                'fields' => $fieldsData,
+                'fields_count' => count($fieldsData),
+                'filled_count' => $filledCount,
+                'history' => $stageHistory,
+            ];
+        }
+
         $timelineEvents = $timelineEvents->sortByDesc('timestamp')->values();
 
         $followupCommunicationTypes = [
@@ -1308,6 +1436,8 @@ class LeadController extends Controller
                 'backQuery' => $backQuery,
                 'timelineEvents' => $timelineEvents,
                 'stageHistoryGroups' => $stageHistoryGroups,
+                'stageSections' => $stageSections,
+                'currentStageId' => $currentStageId,
             ]
         );
     }

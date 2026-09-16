@@ -184,7 +184,7 @@ class LeadPermissionsTest extends TestCase
             ->delete(route('v2.leads.destroy', $this->lead))
             ->assertRedirect(route('v2.leads'));
 
-        $this->assertDatabaseMissing('leads', ['id' => $this->lead->id]);
+        $this->assertSoftDeleted('leads', ['id' => $this->lead->id]);
     }
 
     public function test_sales_agent_cannot_import_or_export_leads(): void

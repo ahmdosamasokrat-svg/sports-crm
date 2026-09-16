@@ -234,6 +234,170 @@
         html.dark-mode .followup-field-changes { background: #18181b; border-color: rgba(255,255,255,0.08); }
         html.dark-mode .followup-change-item { background: rgba(255,255,255,0.03); }
 
+        /* Stage Details Panel */
+        .stage-selector-field-group {
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 12px;
+            padding: 12px 14px;
+            margin-bottom: 14px;
+        }
+        .stage-selector-label {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-size: 13px;
+            font-weight: 800;
+            color: var(--dark);
+            margin-bottom: 8px;
+        }
+        .stage-select-wrap {
+            position: relative;
+        }
+        .stage-select-input {
+            width: 100%;
+            height: 44px;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 0 14px;
+            padding-inline-end: 38px;
+            background: var(--card);
+            color: var(--dark);
+            font-weight: 800;
+            font-size: 13px;
+            cursor: pointer;
+            font-family: inherit;
+            outline: none;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: border-color .15s ease, box-shadow .15s ease;
+        }
+        .stage-select-input:focus {
+            border-color: var(--red);
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+        .stage-select-icon {
+            position: absolute;
+            inset-inline-end: 14px;
+            top: 50%;
+            transform: translateY(-50%);
+            pointer-events: none;
+            color: var(--muted);
+            font-size: 13px;
+        }
+        .stage-pane-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px 14px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            margin-bottom: 12px;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .stage-pane-name {
+            font-size: 14px;
+            font-weight: 800;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stage-empty-box {
+            text-align: center;
+            padding: 28px 16px;
+            background: var(--bg);
+            border: 1px dashed var(--line);
+            border-radius: 12px;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 700;
+        }
+        .stage-empty-box i {
+            display: block;
+            font-size: 28px;
+            margin-bottom: 6px;
+            opacity: 0.6;
+        }
+        .stage-history-subpanel {
+            margin-top: 14px;
+            padding-top: 12px;
+            border-top: 1px dashed var(--line);
+        }
+        .stage-history-subhead {
+            font-size: 12px;
+            font-weight: 800;
+            color: var(--muted);
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .stage-history-list {
+            display: grid;
+            gap: 8px;
+        }
+        .stage-history-card {
+            padding: 10px 12px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            font-size: 12px;
+        }
+        .stage-history-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 6px;
+            color: var(--muted);
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .stage-history-values {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 6px;
+        }
+        .stage-history-pill {
+            display: inline-flex;
+            gap: 4px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+        }
+
+        /* Dark mode stage details */
+        html.dark-mode .stage-selector-field-group {
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.08);
+        }
+        html.dark-mode .stage-select-input {
+            background: #18181b;
+            border-color: rgba(255,255,255,0.12);
+            color: #f4f4f5;
+        }
+        html.dark-mode .stage-pane-header {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.08);
+        }
+        html.dark-mode .stage-empty-box {
+            background: rgba(255,255,255,0.02);
+            border-color: rgba(255,255,255,0.08);
+        }
+        html.dark-mode .stage-history-card {
+            background: rgba(255,255,255,0.03);
+            border-color: rgba(255,255,255,0.08);
+        }
+        html.dark-mode .stage-history-pill {
+            background: #18181b;
+            border-color: rgba(255,255,255,0.08);
+            color: #e4e4e7;
+        }
+
         @media(max-width:1024px){
             .details-grid{grid-template-columns:1fr}
             .metrics-bar{grid-template-columns:repeat(2,1fr)}
@@ -455,6 +619,121 @@
                         @endif
                     </div>
                 </section>
+
+                <!-- STAGE DATA SECTION -->
+                @if (!empty($stageSections))
+                <section class="panel" id="lead-stage-panel">
+                    <div class="panel-head">
+                        <h2>
+                            <i class="bi bi-diagram-3-fill" style="color:var(--red);"></i>
+                            <span>{{ __('crm.stage_data') }}</span>
+                        </h2>
+                    </div>
+
+                    <!-- Stage Choice Field (حقل اختيارات المرحلة) -->
+                    <div class="stage-selector-field-group">
+                        <label for="stageDetailsSelector" class="stage-selector-label">
+                            <i class="bi bi-ui-radios-grid" style="color:var(--red);"></i>
+                            <span>{{ app()->getLocale() === 'ar' ? 'اختر المرحلة لعرض بياناتها' : 'Select stage to view its data' }}</span>
+                        </label>
+                        <div class="stage-select-wrap">
+                            <select id="stageDetailsSelector" class="stage-select-input" aria-label="{{ __('crm.stage_data') }}">
+                                @foreach ($stageSections as $section)
+                                    <option value="{{ $section['id'] }}" {{ $section['id'] === $currentStageId ? 'selected' : '' }}>
+                                        {{ $section['name'] }}{{ $section['is_current'] ? ' (' . __('crm.current_stage') . ')' : '' }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            <i class="bi bi-chevron-down stage-select-icon"></i>
+                        </div>
+                    </div>
+
+                    <!-- Stage Panes -->
+                    <div class="stage-panes-wrapper">
+                        @foreach ($stageSections as $section)
+                            <div
+                                class="stage-pane {{ $section['id'] === $currentStageId ? 'is-active' : '' }}"
+                                id="stage-pane-{{ $section['id'] }}"
+                                style="{{ $section['id'] === $currentStageId ? '' : 'display:none;' }}"
+                            >
+                                <!-- Stage Header Card -->
+                                <div class="stage-pane-header" style="border-inline-start: 4px solid {{ $section['color'] }};">
+                                    <div class="stage-pane-header-info">
+                                        <span class="stage-pane-name" style="color: {{ $section['color'] }};">
+                                            <i class="bi bi-layers-half"></i> {{ $section['name'] }}
+                                        </span>
+                                        @if ($section['is_current'])
+                                            <span class="badge active" style="margin-inline-start: 8px;">
+                                                <i class="bi bi-check-circle-fill"></i> {{ __('crm.current_stage') }}{{ $section['current_status'] ? ': ' . $section['current_status'] : '' }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <div class="stage-pane-header-meta">
+                                        <span class="badge" style="font-size: 11px;">
+                                            {{ $section['filled_count'] }} / {{ $section['fields_count'] }} {{ app()->getLocale() === 'ar' ? 'حقل مكتمل' : 'fields filled' }}
+                                        </span>
+                                    </div>
+                                </div>
+
+                                <!-- Fields List -->
+                                @if (!empty($section['fields']))
+                                    <div class="info-list">
+                                        @foreach ($section['fields'] as $field)
+                                            <div class="info-row">
+                                                <span class="info-label" style="display:flex; align-items:center; gap:6px;">
+                                                    <i class="bi bi-dot" style="font-size:20px; color:{{ $section['color'] }}; line-height:0.5;"></i>
+                                                    {{ $field['label'] }}
+                                                </span>
+                                                <span class="info-value {{ $field['has_value'] ? '' : 'text-muted' }}" style="{{ $field['has_value'] ? '' : 'color:var(--muted); font-weight:normal;' }}">
+                                                    {{ $field['value'] }}
+                                                </span>
+                                            </div>
+                                        @endforeach
+                                    </div>
+                                @else
+                                    <div class="stage-empty-box">
+                                        <i class="bi bi-inbox"></i>
+                                        <span>{{ app()->getLocale() === 'ar' ? 'لا توجد حقول معرفة لهذه المرحلة' : 'No fields defined for this stage' }}</span>
+                                    </div>
+                                @endif
+
+                                <!-- Stage History / Past Submissions if any -->
+                                @if ($section['history']->isNotEmpty())
+                                    <div class="stage-history-subpanel">
+                                        <div class="stage-history-subhead">
+                                            <i class="bi bi-clock-history"></i>
+                                            <span>{{ app()->getLocale() === 'ar' ? 'سجل الإدخالات السابقة في مرحلة ' . $section['name'] : 'Past submissions in ' . $section['name'] }}</span>
+                                        </div>
+                                        <div class="stage-history-list">
+                                            @foreach ($section['history'] as $historyGroup)
+                                                <div class="stage-history-card">
+                                                    <div class="stage-history-top">
+                                                        <span class="stage-history-actor">
+                                                            <i class="bi bi-person"></i> {{ $historyGroup['actor'] }}
+                                                        </span>
+                                                        <span class="stage-history-date">
+                                                            <i class="bi bi-calendar3"></i> {{ $historyGroup['date'] ? $historyGroup['date']->format('Y-m-d h:i A') : '—' }}
+                                                        </span>
+                                                    </div>
+                                                    @if (!empty($historyGroup['values']))
+                                                        <div class="stage-history-values">
+                                                            @foreach ($historyGroup['values'] as $hVal)
+                                                                <span class="stage-history-pill">
+                                                                    <b>{{ $hVal['label'] }}:</b> {{ $hVal['value'] }}
+                                                                </span>
+                                                            @endforeach
+                                                        </div>
+                                                    @endif
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @endforeach
+                    </div>
+                </section>
+                @endif
 
                 <!-- PHONE NUMBERS & CONTACTS -->
                 <section class="panel">
@@ -1178,6 +1457,35 @@
     }
    );
   });
+})();
+</script>
+<script>
+(() => {
+    const stageSelector = document.getElementById('stageDetailsSelector');
+    const stagePanes = document.querySelectorAll('.stage-pane');
+
+    if (!stageSelector) {
+        return;
+    }
+
+    function switchStage(stageId) {
+        if (!stageId) return;
+        const targetId = String(stageId);
+
+        stagePanes.forEach(pane => {
+            if (pane.id === `stage-pane-${targetId}`) {
+                pane.style.display = '';
+                pane.classList.add('is-active');
+            } else {
+                pane.style.display = 'none';
+                pane.classList.remove('is-active');
+            }
+        });
+    }
+
+    stageSelector.addEventListener('change', (e) => {
+        switchStage(e.target.value);
+    });
 })();
 </script>
 <script src="{{ asset('crm-notifications.js') }}?v=1.0.0"></script>

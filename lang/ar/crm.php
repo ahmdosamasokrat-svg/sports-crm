@@ -1449,6 +1449,7 @@ return [
     'campaign_donation_revenue_help' => 'إجمالي الإيرادات المحصلة من عملاء الحملة',
     'lead_call_insights' => 'سجل وتفاصيل المكالمات الهاتفية',
     'customer_data' => 'البيانات الأساسية للعميل',
+    'stage_data' => 'بيانات المرحلة',
     'log_new_followup' => 'تسجيل متابعة',
     'edit_data' => 'تعديل البيانات',
     'lead_activity_timeline' => 'سجل المتابعات والنشاطات',
