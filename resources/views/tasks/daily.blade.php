@@ -224,9 +224,9 @@
   display: flex;
   flex-direction: row;
   align-items: center;
-  justify-content: space-between;
   gap: 8px;
   flex-wrap: wrap;
+  width: 100%;
  }
 
  .task-scope-pills {
@@ -235,13 +235,15 @@
   gap: 4px;
   padding: 0;
   border: none;
-  flex: 0 1 auto;
+  flex: 1 1 auto;
+  flex-wrap: wrap;
  }
 
  .task-scope-pill {
   min-height: 28px;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
   padding: 2px 8px;
   border: 1px solid #e2e8f0;
@@ -252,6 +254,8 @@
   font-size: 11px;
   font-weight: 700;
   white-space: nowrap;
+  flex: 1 1 auto;
+  text-align: center;
   transition: all .16s;
  }
 
@@ -341,14 +345,13 @@
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  flex: 1 1 auto;
-  justify-content: flex-end;
+  flex: 2 1 auto;
   flex-wrap: wrap;
  }
 
  .task-search-input-wrap {
-  flex: 1 1 140px;
-  max-width: 190px;
+  flex: 2 1 160px;
+  min-width: 140px;
   position: relative;
  }
 
@@ -425,10 +428,9 @@
  }
 
  .task-filters-card .crm-dropdown {
-  min-width: 105px;
-  max-width: 145px;
+  min-width: 110px;
+  flex: 1 1 120px;
   width: auto;
-  flex: 0 1 auto;
  }
 
  .task-filters-card .crm-dropdown-trigger {
@@ -438,6 +440,7 @@
   font-size: 11.5px !important;
   border-radius: 7px !important;
   gap: 4px !important;
+  width: 100%;
  }
 
  .task-filters-card .crm-dropdown-text {
@@ -445,7 +448,7 @@
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  max-width: 105px;
+  flex: 1;
  }
 
  .task-view-toggle {
@@ -568,9 +571,10 @@
  /* Task Cards Grid */
  .task-items-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 16px;
   padding: 20px;
+  width: 100%;
  }
 
  .task-item-card {
