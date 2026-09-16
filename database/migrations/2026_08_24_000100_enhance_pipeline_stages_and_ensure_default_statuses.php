@@ -64,17 +64,20 @@ return new class extends Migration
             ->update(['is_primary' => true]);
 
         // 4. Ensure every existing pipeline stage has at least one LeadStatus
-        $stages = PipelineStage::query()->with('statuses')->get();
+        $stages = DB::table('pipeline_stages')->get();
         foreach ($stages as $stage) {
-            if ($stage->statuses->isEmpty()) {
-                $maxPos = (int) (LeadStatus::query()->max('position') ?? 0);
-                LeadStatus::query()->create([
+            $hasStatus = DB::table('lead_statuses')->where('pipeline_stage_id', $stage->id)->exists();
+            if (! $hasStatus) {
+                $maxPos = (int) (DB::table('lead_statuses')->max('position') ?? 0);
+                DB::table('lead_statuses')->insert([
                     'pipeline_stage_id' => $stage->id,
                     'code' => $stage->code,
                     'name_ar' => $stage->name_ar,
                     'position' => $maxPos + 1,
                     'color' => $stage->color ?: '#3478f6',
                     'is_terminal' => false,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
         }

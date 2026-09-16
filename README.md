@@ -6,7 +6,18 @@
 
 ## ⚡ One-Line Commands
 
-### One-Line Install Command (Ubuntu 24.04.4)
+### 🐳 One-Line Docker Install (Cross-Platform)
+Run instantly on any system with Docker installed:
+```bash
+curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/docker-compose.yml -o docker-compose.yml && docker compose up -d
+```
+*Or via Git Clone:*
+```bash
+git clone https://github.com/ahmdosamasokrat-svg/sokrat-crm-v2.git crm && cd crm && docker compose up -d
+```
+> **Access:** [http://localhost:8080](http://localhost:8080) | **Admin:** `admin` | **Password:** `Admin@123`
+
+### One-Line Install Command (Ubuntu 24.04.4 Bare-Metal)
 ```bash
 curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/install.sh | sudo bash
 ```

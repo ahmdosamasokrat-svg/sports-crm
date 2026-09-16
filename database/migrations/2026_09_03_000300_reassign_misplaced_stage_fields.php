@@ -20,9 +20,9 @@ return new class extends Migration
             return;
         }
 
-        $newStage = PipelineStage::query()->where('code', 'new')->first();
-        $noAnswerStage = PipelineStage::query()->where('code', 'no_answer')->first();
-        $notInterestedStage = PipelineStage::query()->where('code', 'not_interested')->first();
+        $newStage = DB::table('pipeline_stages')->where('code', 'new')->first();
+        $noAnswerStage = DB::table('pipeline_stages')->where('code', 'no_answer')->first();
+        $notInterestedStage = DB::table('pipeline_stages')->where('code', 'not_interested')->first();
 
         if ($newStage && $noAnswerStage && $notInterestedStage) {
             // Move callback_at and attempt notes to no_answer stage

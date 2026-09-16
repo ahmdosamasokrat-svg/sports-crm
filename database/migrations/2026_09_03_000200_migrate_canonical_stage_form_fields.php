@@ -32,7 +32,7 @@ return new class extends Migration
     private function seedStageCanonicalFields(): void
     {
         // 1. Find interested stage and seed canonical company & contact fields if empty
-        $interestedStage = PipelineStage::query()->where('code', 'interested')->first();
+        $interestedStage = DB::table('pipeline_stages')->where('code', 'interested')->first();
         if ($interestedStage !== null) {
             $hasFields = PipelineStageField::query()->where('pipeline_stage_id', $interestedStage->id)->exists();
             if (! $hasFields) {
@@ -91,7 +91,7 @@ return new class extends Migration
         }
 
         // 2. Find quotation stage and seed canonical quotation fields if empty
-        $quotationStage = PipelineStage::query()->where('code', 'quotation')->first();
+        $quotationStage = DB::table('pipeline_stages')->where('code', 'quotation')->first();
         if ($quotationStage !== null) {
             $hasFields = PipelineStageField::query()->where('pipeline_stage_id', $quotationStage->id)->exists();
             if (! $hasFields) {
