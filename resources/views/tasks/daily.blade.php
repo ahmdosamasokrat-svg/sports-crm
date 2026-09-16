@@ -1035,6 +1035,13 @@
    margin-top: 4px;
   }
 
+  .task-btn-svg {
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   flex-shrink: 0;
+  }
+
   /* 1. Communication Buttons Group (Call + WhatsApp) */
   .task-action-comm-group {
    display: flex;
@@ -1049,7 +1056,7 @@
    display: inline-flex;
    align-items: center;
    justify-content: center;
-   gap: 5px;
+   gap: 6px;
    text-decoration: none;
    font-size: 12px;
    font-weight: 700;
@@ -1061,24 +1068,26 @@
 
   .task-btn-comm.call {
    flex: 3 1 auto;
-   background: #2563eb;
-   color: #fff;
+   background: linear-gradient(135deg, #1d4ed8 0%, #2563eb 100%);
+   color: #ffffff;
+   box-shadow: 0 2px 6px rgba(37, 99, 235, 0.22);
   }
   .task-btn-comm.call:hover {
-   background: #1d4ed8;
-   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
+   background: linear-gradient(135deg, #1e40af 0%, #1d4ed8 100%);
+   box-shadow: 0 4px 10px rgba(37, 99, 235, 0.32);
+   transform: translateY(-0.5px);
   }
 
   .task-btn-comm.whatsapp {
    flex: 2 1 auto;
-   background: #f0fdf4;
-   color: #15803d;
-   border-color: #bbf7d0;
+   background: linear-gradient(135deg, #15803d 0%, #16a34a 100%);
+   color: #ffffff;
+   box-shadow: 0 2px 6px rgba(22, 163, 74, 0.22);
   }
   .task-btn-comm.whatsapp:hover {
-   background: #dcfce7;
-   border-color: #86efac;
-   color: #166534;
+   background: linear-gradient(135deg, #166534 0%, #15803d 100%);
+   box-shadow: 0 4px 10px rgba(22, 163, 74, 0.32);
+   transform: translateY(-0.5px);
   }
 
   .task-btn-comm.disabled {
@@ -1087,48 +1096,71 @@
    color: #94a3b8;
    border-color: #e2e8f0;
    cursor: not-allowed;
+   box-shadow: none;
   }
 
   /* 2. Management & Logging Tools Group (Segmented 3-Column Bar) */
   .task-action-tools-group {
    display: grid;
    grid-template-columns: repeat(3, 1fr);
-   gap: 4px;
+   gap: 5px;
    width: 100%;
   }
 
   .task-tool-btn {
-   height: 26px;
+   height: 27px;
    border-radius: 6px;
-   background: #f8fafc;
-   border: 1px solid #e2e8f0;
-   color: #475569;
+   background: #ffffff;
+   border: 1px solid #cbd5e1;
+   color: #334155;
    font-size: 11px;
-   font-weight: 600;
+   font-weight: 700;
    display: inline-flex;
    align-items: center;
    justify-content: center;
-   gap: 4px;
+   gap: 5px;
    text-decoration: none;
    cursor: pointer;
    transition: all .14s ease;
-   padding: 0 4px;
+   padding: 0 6px;
    white-space: nowrap;
+   box-shadow: 0 1px 2px rgba(15, 23, 42, 0.03);
   }
 
-  .task-tool-btn i {
-   font-size: 11px;
-   color: #64748b;
+  .task-tool-btn.followup {
+   color: #1e40af;
   }
-
-  .task-tool-btn:hover {
-   background: #f1f5f9;
-   color: #0f172a;
-   border-color: #cbd5e1;
-  }
-
-  .task-tool-btn:hover i {
+  .task-tool-btn.followup svg {
    color: #2563eb;
+  }
+  .task-tool-btn.followup:hover {
+   background: #eff6ff;
+   border-color: #93c5fd;
+   color: #1d4ed8;
+  }
+
+  .task-tool-btn.reschedule {
+   color: #b45309;
+  }
+  .task-tool-btn.reschedule svg {
+   color: #d97706;
+  }
+  .task-tool-btn.reschedule:hover {
+   background: #fffbeb;
+   border-color: #fde68a;
+   color: #92400e;
+  }
+
+  .task-tool-btn.details {
+   color: #0369a1;
+  }
+  .task-tool-btn.details svg {
+   color: #0284c7;
+  }
+  .task-tool-btn.details:hover {
+   background: #f0f9ff;
+   border-color: #bae6fd;
+   color: #075985;
   }
 
   /* Dark Mode Support for Tickets */
@@ -1150,26 +1182,32 @@
   html.dark-mode .task-ticket-actions {
    border-top-color: rgba(255, 255, 255, 0.08) !important;
   }
-  html.dark-mode .task-btn-comm.whatsapp {
-   background: rgba(22, 163, 74, 0.15) !important;
-   border-color: rgba(22, 163, 74, 0.3) !important;
-   color: #4ade80 !important;
+  html.dark-mode .task-btn-comm.call {
+   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.35);
   }
-  html.dark-mode .task-btn-comm.whatsapp:hover {
-   background: rgba(22, 163, 74, 0.25) !important;
+  html.dark-mode .task-btn-comm.whatsapp {
+   box-shadow: 0 2px 8px rgba(22, 163, 74, 0.35);
   }
   html.dark-mode .task-tool-btn {
    background: rgba(255, 255, 255, 0.05) !important;
-   border-color: rgba(255, 255, 255, 0.1) !important;
-   color: #cbd5e1 !important;
+   border-color: rgba(255, 255, 255, 0.12) !important;
+   color: #f1f5f9 !important;
+   box-shadow: none;
   }
-  html.dark-mode .task-tool-btn:hover {
-   background: rgba(255, 255, 255, 0.1) !important;
-   color: #fff !important;
-   border-color: rgba(255, 255, 255, 0.2) !important;
+  html.dark-mode .task-tool-btn.followup:hover {
+   background: rgba(37, 99, 235, 0.15) !important;
+   border-color: rgba(37, 99, 235, 0.4) !important;
+   color: #93c5fd !important;
   }
-  html.dark-mode .task-tool-btn i {
-   color: #94a3b8 !important;
+  html.dark-mode .task-tool-btn.reschedule:hover {
+   background: rgba(217, 119, 6, 0.15) !important;
+   border-color: rgba(217, 119, 6, 0.4) !important;
+   color: #fde68a !important;
+  }
+  html.dark-mode .task-tool-btn.details:hover {
+   background: rgba(2, 132, 199, 0.15) !important;
+   border-color: rgba(2, 132, 199, 0.4) !important;
+   color: #7dd3fc !important;
   }
   html.dark-mode .task-ticket-user {
    background: rgba(255, 255, 255, 0.08) !important;
