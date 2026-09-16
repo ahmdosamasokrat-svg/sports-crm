@@ -53,7 +53,7 @@
         </div>
     </div>
 
-    {{-- 2. Lead Identity & Meta Row --}}
+    {{-- 2. Lead Identity & Meta Row (Source removed as requested) --}}
     <div class="task-ticket-main">
         <div class="task-ticket-lead-header">
             <h3 class="task-ticket-name">
@@ -83,17 +83,10 @@
                     <span>{{ $lead->assignedUser?->name ?? $lead->assigned_employee }}</span>
                 </span>
             @endif
-
-            @if ($lead->source)
-                <span class="task-ticket-meta-tag" title="{{ __('crm.source') }}">
-                    <i class="bi bi-tag"></i>
-                    <span>{{ $lead->source }}</span>
-                </span>
-            @endif
         </div>
     </div>
 
-    {{-- 3. Last Followup Note --}}
+    {{-- 3. Last Followup Note Preview --}}
     @if ($lastFollowup && !empty($lastFollowup->outcome))
         <div class="task-ticket-note">
             <i class="bi bi-chat-left-text"></i>
@@ -114,31 +107,41 @@
         </div>
     @endif
 
-    {{-- 4. Action Buttons Bar --}}
-    <div class="task-ticket-actions-bar">
-        @if ($lead->phone)
-            <a class="task-action-btn primary" href="tel:{{ $rawPhone }}" data-task-action="call-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }}, 'call');" title="{{ __('crm.call_and_followup') }}">
-                <i class="bi bi-telephone-fill"></i>
-                <span>{{ __('crm.call_and_log') }}</span>
-            </a>
-            <a class="task-action-btn whatsapp" href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener noreferrer" title="{{ __('crm.quick_whatsapp') }}">
-                <i class="bi bi-whatsapp"></i>
-            </a>
-        @else
-            <button class="task-action-btn primary disabled" disabled title="{{ __('crm.no_phone_abbr') }}">
-                <i class="bi bi-telephone-x"></i>
-                <span>{{ __('crm.no_phone_abbr') }}</span>
-            </button>
-        @endif
+    {{-- 4. High-Efficiency Action Dock --}}
+    <div class="task-ticket-actions">
+        {{-- Communication Row (Call & WhatsApp) --}}
+        <div class="task-action-comm-group">
+            @if ($lead->phone)
+                <a class="task-btn-comm call" href="tel:{{ $rawPhone }}" data-task-action="call-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }}, 'call');" title="{{ __('crm.call_and_followup') }}">
+                    <i class="bi bi-telephone-fill"></i>
+                    <span>{{ __('crm.call_and_log') }}</span>
+                </a>
+                <a class="task-btn-comm whatsapp" href="https://wa.me/{{ $waPhone }}" target="_blank" rel="noopener noreferrer" title="{{ __('crm.quick_whatsapp') }}">
+                    <i class="bi bi-whatsapp"></i>
+                    <span>واتساب</span>
+                </a>
+            @else
+                <button class="task-btn-comm disabled" disabled title="{{ __('crm.no_phone_abbr') }}">
+                    <i class="bi bi-telephone-x"></i>
+                    <span>{{ __('crm.no_phone_abbr') }}</span>
+                </button>
+            @endif
+        </div>
 
-        <button class="task-action-btn icon" type="button" data-task-action="quick-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }})" title="{{ __('crm.quick_log_followup') }}">
-            <i class="bi bi-pencil-square"></i>
-        </button>
-        <button class="task-action-btn icon" type="button" data-task-action="reschedule" onclick="openRescheduleModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', '{{ $lead->next_follow_up_at ? $lead->next_follow_up_at->toISOString() : '' }}')" title="{{ __('crm.reschedule_task') }}">
-            <i class="bi bi-calendar-plus"></i>
-        </button>
-        <a class="task-action-btn icon" href="{{ route('v2.leads.show', $lead) }}" title="{{ __('crm.view_lead') }}">
-            <i class="bi bi-eye"></i>
-        </a>
+        {{-- Tools Row (Quick Followup, Reschedule, View Profile) --}}
+        <div class="task-action-tools-group">
+            <button class="task-tool-btn" type="button" data-task-action="quick-followup" onclick="openQuickFollowupModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', {{ $lead->lead_status_id ?? 'null' }})" title="{{ __('crm.quick_log_followup') }}">
+                <i class="bi bi-pencil-square"></i>
+                <span>متابعة</span>
+            </button>
+            <button class="task-tool-btn" type="button" data-task-action="reschedule" onclick="openRescheduleModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', '{{ $lead->next_follow_up_at ? $lead->next_follow_up_at->toISOString() : '' }}')" title="{{ __('crm.reschedule_task') }}">
+                <i class="bi bi-calendar-event"></i>
+                <span>تأجيل</span>
+            </button>
+            <a class="task-tool-btn" href="{{ route('v2.leads.show', $lead) }}" title="{{ __('crm.view_lead') }}">
+                <i class="bi bi-person-lines-fill"></i>
+                <span>تفاصيل</span>
+            </a>
+        </div>
     </div>
 </article>

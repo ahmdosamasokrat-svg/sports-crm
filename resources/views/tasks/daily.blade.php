@@ -1023,96 +1023,112 @@
    font-size: 11px;
   }
 
-  /* Tier 3: Contact & Actions Line */
-  .task-ticket-footer {
+  /* =========================================================
+     Redesigned Actions Layout: Purpose-Driven Dual-Row Dock
+     ========================================================= */
+  .task-ticket-actions {
+   display: flex;
+   flex-direction: column;
+   gap: 5px;
+   padding-top: 8px;
+   border-top: 1px solid #f1f5f9;
+   margin-top: 4px;
+  }
+
+  /* 1. Communication Buttons Group (Call + WhatsApp) */
+  .task-action-comm-group {
    display: flex;
    align-items: center;
-   justify-content: space-between;
-   gap: 8px;
-   margin-top: 2px;
-   padding-top: 6px;
-   border-top: 1px solid #f1f5f9;
+   gap: 6px;
+   width: 100%;
   }
 
-  .task-ticket-contact {
-   display: inline-flex;
-   align-items: center;
-   gap: 8px;
-   min-width: 0;
-   flex: 1 1 auto;
-  }
-
-  .task-ticket-source {
-   display: inline-flex;
-   align-items: center;
-   gap: 3px;
-   padding: 1px 6px;
-   border-radius: 4px;
-   background: #f1f5f9;
-   color: #64748b;
-   font-size: 10.5px;
-   font-weight: 600;
-  }
-
-  .task-ticket-actions {
-   display: inline-flex;
-   align-items: center;
-   gap: 4px;
-   flex-shrink: 0;
-  }
-
-  .task-action-btn {
-   height: 28px;
-   border-radius: 6px;
+  .task-btn-comm {
+   height: 32px;
+   border-radius: 7px;
    display: inline-flex;
    align-items: center;
    justify-content: center;
+   gap: 5px;
    text-decoration: none;
+   font-size: 12px;
+   font-weight: 700;
    border: 1px solid transparent;
    cursor: pointer;
-   font-size: 11.5px;
-   font-weight: 700;
-   transition: all .16s;
+   transition: all .16s ease;
+   box-sizing: border-box;
   }
 
-  .task-action-btn.primary {
+  .task-btn-comm.call {
+   flex: 3 1 auto;
    background: #2563eb;
    color: #fff;
-   padding: 0 9px;
-   gap: 4px;
   }
-  .task-action-btn.primary:hover {
+  .task-btn-comm.call:hover {
    background: #1d4ed8;
+   box-shadow: 0 2px 8px rgba(37, 99, 235, 0.25);
   }
-  .task-action-btn.primary.disabled {
-   opacity: 0.5;
+
+  .task-btn-comm.whatsapp {
+   flex: 2 1 auto;
+   background: #f0fdf4;
+   color: #15803d;
+   border-color: #bbf7d0;
+  }
+  .task-btn-comm.whatsapp:hover {
+   background: #dcfce7;
+   border-color: #86efac;
+   color: #166534;
+  }
+
+  .task-btn-comm.disabled {
+   width: 100%;
+   background: #f8fafc;
+   color: #94a3b8;
+   border-color: #e2e8f0;
    cursor: not-allowed;
   }
 
-  .task-action-btn.whatsapp {
-   width: 28px;
-   padding: 0;
-   color: #16a34a;
-   background: #f0fdf4;
-   border-color: #bbf7d0;
-   font-size: 13px;
-  }
-  .task-action-btn.whatsapp:hover {
-   background: #dcfce7;
+  /* 2. Management & Logging Tools Group (Segmented 3-Column Bar) */
+  .task-action-tools-group {
+   display: grid;
+   grid-template-columns: repeat(3, 1fr);
+   gap: 4px;
+   width: 100%;
   }
 
-  .task-action-btn.icon {
-   width: 28px;
-   padding: 0;
-   background: #fff;
-   border-color: #cbd5e1;
-   color: #475569;
-   font-size: 12px;
-  }
-  .task-action-btn.icon:hover {
+  .task-tool-btn {
+   height: 26px;
+   border-radius: 6px;
    background: #f8fafc;
+   border: 1px solid #e2e8f0;
+   color: #475569;
+   font-size: 11px;
+   font-weight: 600;
+   display: inline-flex;
+   align-items: center;
+   justify-content: center;
+   gap: 4px;
+   text-decoration: none;
+   cursor: pointer;
+   transition: all .14s ease;
+   padding: 0 4px;
+   white-space: nowrap;
+  }
+
+  .task-tool-btn i {
+   font-size: 11px;
+   color: #64748b;
+  }
+
+  .task-tool-btn:hover {
+   background: #f1f5f9;
    color: #0f172a;
-   border-color: #94a3b8;
+   border-color: #cbd5e1;
+  }
+
+  .task-tool-btn:hover i {
+   color: #2563eb;
   }
 
   /* Dark Mode Support for Tickets */
@@ -1131,20 +1147,31 @@
   html.dark-mode .task-note-text {
    color: #e2e8f0 !important;
   }
-  html.dark-mode .task-ticket-footer {
+  html.dark-mode .task-ticket-actions {
    border-top-color: rgba(255, 255, 255, 0.08) !important;
   }
-  html.dark-mode .task-action-btn.icon {
+  html.dark-mode .task-btn-comm.whatsapp {
+   background: rgba(22, 163, 74, 0.15) !important;
+   border-color: rgba(22, 163, 74, 0.3) !important;
+   color: #4ade80 !important;
+  }
+  html.dark-mode .task-btn-comm.whatsapp:hover {
+   background: rgba(22, 163, 74, 0.25) !important;
+  }
+  html.dark-mode .task-tool-btn {
    background: rgba(255, 255, 255, 0.05) !important;
-   border-color: rgba(255, 255, 255, 0.15) !important;
+   border-color: rgba(255, 255, 255, 0.1) !important;
    color: #cbd5e1 !important;
   }
-  html.dark-mode .task-action-btn.icon:hover {
+  html.dark-mode .task-tool-btn:hover {
    background: rgba(255, 255, 255, 0.1) !important;
    color: #fff !important;
+   border-color: rgba(255, 255, 255, 0.2) !important;
   }
-  html.dark-mode .task-ticket-user,
-  html.dark-mode .task-ticket-source {
+  html.dark-mode .task-tool-btn i {
+   color: #94a3b8 !important;
+  }
+  html.dark-mode .task-ticket-user {
    background: rgba(255, 255, 255, 0.08) !important;
    color: #cbd5e1 !important;
   }
