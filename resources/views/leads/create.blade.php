@@ -506,6 +506,23 @@ body.kanban-followup-popup .crm-side {
                 </div>
             </section>
 
+            <!-- CARD: CUSTOMER DYNAMIC FIELDS -->
+            @if (isset($customerFields) && $customerFields->isNotEmpty())
+                <section class="form-card">
+                    <div class="section-head">
+                        <h2><i class="bi bi-card-checklist"></i> {{ __("crm.customer_data") ?: "بيانات وتصنيف العميل" }}</h2>
+                        <p>{{ __("crm.followup_customer_fields_employee_desc") ?: "بيانات وتصنيفات ديناميكية إضافية خاصة بالعميل يتم إدارتها من الإعدادات" }}</p>
+                    </div>
+
+                    @include("partials.stage-field-inputs", [
+                        "fields" => $customerFields,
+                        "recordValues" => old("customer_fields", []),
+                        "prefix" => "customer_fields",
+                        "scope" => "lead_create_customer",
+                    ])
+                </section>
+            @endif
+
             <!-- CARD 2: PIPELINE STAGE & STATUS SELECTION -->
             <section class="form-card">
                 <div class="section-head">

@@ -570,6 +570,20 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->whereNumber('field')
                 ->name('.stages.fields.toggle');
 
+                        // Lead Sources Settings GUI
+            Route::get('/lead-sources', [\App\Http\Controllers\Settings\LeadSourceController::class, 'index'])
+                ->name('.lead-sources.index');
+            Route::post('/lead-sources', [\App\Http\Controllers\Settings\LeadSourceController::class, 'store'])
+                ->name('.lead-sources.store');
+            Route::patch('/lead-sources/{source}', [\App\Http\Controllers\Settings\LeadSourceController::class, 'update'])
+                ->name('.lead-sources.update');
+            Route::patch('/lead-sources/{source}/toggle', [\App\Http\Controllers\Settings\LeadSourceController::class, 'toggle'])
+                ->name('.lead-sources.toggle');
+            Route::post('/lead-sources/{source}/move', [\App\Http\Controllers\Settings\LeadSourceController::class, 'move'])
+                ->name('.lead-sources.move');
+            Route::delete('/lead-sources/{source}', [\App\Http\Controllers\Settings\LeadSourceController::class, 'destroy'])
+                ->name('.lead-sources.destroy');
+
             Route::get('/followup-customer-fields', [FollowupCustomerFieldController::class, 'index'])
                 ->name('.followup-customer-fields.index');
             Route::post('/followup-customer-fields', [FollowupCustomerFieldController::class, 'store'])

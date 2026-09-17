@@ -91,3 +91,4 @@ Thumbs.db
 /playwright-report/
 /test-results/
 
+public/debug_boot.txt

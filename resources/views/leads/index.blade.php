@@ -926,6 +926,31 @@ html.dark-mode .btn-action {
                     </div>
                 </div>
 
+                <!-- Temperature Filter -->
+                @php
+                    $tempField = ($customerFields ?? collect())->firstWhere('key', 'lead_temperature');
+                    $tempOptions = $tempField ? $tempField->normalizedOptions() : [
+                        ['value' => 'hot', 'label_ar' => '🔥 حار (Hot)', 'label_en' => 'Hot'],
+                        ['value' => 'warm', 'label_ar' => '⚡ متوسط (Warm)', 'label_en' => 'Warm'],
+                        ['value' => 'cold', 'label_ar' => '❄️ بارد (Cold)', 'label_en' => 'Cold'],
+                    ];
+                @endphp
+                @if ($tempField || count($tempOptions) > 0)
+                <div class="filter-field">
+                    <label for="leadTemperature"><i class="bi bi-thermometer-half"></i> {{ $tempField ? $tempField->localizedLabel() : __('حرارة العميل') }}</label>
+                    <div style="width:100%;">
+                        <select id="leadTemperature" name="temperature" class="crm-custom-select filter-control" data-crm-dropdown>
+                            <option value="">{{ __('جميع التصنيفات') }}</option>
+                            @foreach ($tempOptions as $tOpt)
+                                <option value="{{ $tOpt['value'] }}" @selected(($filters['temperature'] ?? '') === $tOpt['value'])>
+                                    {{ app()->getLocale() === 'en' && !empty($tOpt['label_en']) ? $tOpt['label_en'] : $tOpt['label_ar'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Employee Filter -->
                 <div class="filter-field col-employee">
                     <label for="leadEmployee"><i class="bi bi-person-check"></i> {{ __('crm.assigned_employee') }}</label>
@@ -1318,6 +1343,33 @@ html.dark-mode .btn-action {
                                                 <strong>{{ $lead->name }}</strong>
                                             </a>
                                             <small>{{ $lead->email ?: __('crm.no_email') }}</small>
+                                            @php
+                                                $leadCust = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+                                                $leadTemp = $leadCust['lead_temperature'] ?? null;
+                                            @endphp
+                                            @if ($leadTemp)
+                                                @php
+                                                    $tempStyle = match($leadTemp) {
+                                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                                        default => 'background:var(--bg-card);color:var(--dark);'
+                                                    };
+                                                    $tempOptionMap = collect($tempOptions ?? [])->keyBy('value');
+                                                    $tempOptItem = $tempOptionMap->get($leadTemp);
+                                                    $tempName = $tempOptItem ? (app()->getLocale() === 'en' && !empty($tempOptItem['label_en']) ? $tempOptItem['label_en'] : $tempOptItem['label_ar']) : match($leadTemp) {
+                                                        'hot' => '🔥 حار',
+                                                        'warm' => '⚡ متوسط',
+                                                        'cold' => '❄️ بارد',
+                                                        default => ucfirst((string) $leadTemp)
+                                                    };
+                                                @endphp
+                                                <div style="margin-top:2px;">
+                                                    <span class="badge" style="font-size:10px;padding:1px 6px;border-radius:4px;display:inline-flex;align-items:center;gap:3px;{{ $tempStyle }}">
+                                                        <i class="bi bi-thermometer-half"></i> {{ $tempName }}
+                                                    </span>
+                                                </div>
+                                            @endif
                                         </div>
                                     </div>
                                 </td>

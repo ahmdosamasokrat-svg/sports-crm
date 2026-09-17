@@ -487,6 +487,27 @@
                                 <span>•</span>
                             @endif
                             <span><i class="bi bi-person-badge"></i> {{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
+                            @if (!empty($customerFieldValues['lead_temperature']))
+                                @php
+                                    $topTempVal = $customerFieldValues['lead_temperature'];
+                                    $topTempBadgeStyle = match($topTempVal) {
+                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                        default => 'background:var(--bg-card);color:var(--dark);'
+                                    };
+                                    $topTempLabel = match($topTempVal) {
+                                        'hot' => 'حار (Hot)',
+                                        'warm' => 'متوسط (Warm)',
+                                        'cold' => 'بارد (Cold)',
+                                        default => ucfirst((string) $topTempVal)
+                                    };
+                                @endphp
+                                <span>•</span>
+                                <span class="badge" style="padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $topTempBadgeStyle }}">
+                                    <i class="bi bi-thermometer-half"></i> {{ $topTempLabel }}
+                                </span>
+                            @endif
                         </p>
                     </div>
                 </div>
@@ -607,6 +628,51 @@
                             <span class="info-label">{{ __('crm.assigned_employee') }}</span>
                             <span class="info-value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
                         </div>
+                        <!-- DYNAMIC CUSTOMER FIELDS (TEMPERATURE, FITNESS GOALS, ETC.) -->
+                        @if (!empty($customerFields))
+                            @foreach ($customerFields as $cField)
+                                @php
+                                    $cfVal = $customerFieldValues[$cField->key] ?? null;
+                                @endphp
+                                @if ($cfVal !== null && $cfVal !== '' && !in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address'], true))
+                                    <div class="info-row">
+                                        <span class="info-label">{{ $cField->localizedLabel() }}</span>
+                                        <span class="info-value">
+                                            @if ($cField->type === 'select' || $cField->type === 'multiselect')
+                                                @php
+                                                    $cfOptions = collect($cField->normalizedOptions())->keyBy('value');
+                                                    if (is_array($cfVal)) {
+                                                        $cfDisplay = implode(', ', array_map(fn($v) => $cfOptions->get($v)['label_ar'] ?? $v, $cfVal));
+                                                    } else {
+                                                        $cfDisplay = $cfOptions->get($cfVal)['label_ar'] ?? $cfVal;
+                                                    }
+                                                @endphp
+                                                @if ($cField->key === 'lead_temperature')
+                                                    @php
+                                                        $cfTempStyle = match($cfVal) {
+                                                            'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                                            'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                                            'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                                            default => 'background:var(--bg-card);color:var(--dark);'
+                                                        };
+                                                    @endphp
+                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $cfTempStyle }}">
+                                                        <i class="bi bi-thermometer-half"></i> {{ $cfDisplay }}
+                                                    </span>
+                                                @else
+                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;">{{ $cfDisplay }}</span>
+                                                @endif
+                                            @elseif ($cField->type === 'checkbox')
+                                                {{ $cfVal ? __('crm.yes') : __('crm.no') }}
+                                            @else
+                                                {{ is_array($cfVal) ? implode(', ', $cfVal) : $cfVal }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
+                            @endforeach
+                        @endif
+
                         <div class="info-row">
                             <span class="info-label">{{ __('crm.registration_date') }}</span>
                             <span class="info-value">{{ $lead->created_at ? $lead->created_at->format('Y-m-d h:i A') : '—' }}</span>

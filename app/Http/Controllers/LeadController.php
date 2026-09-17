@@ -71,6 +71,7 @@ class LeadController extends Controller
             'status' => mb_substr(trim((string) $request->query('status', '')), 0, 50),
             'employee' => mb_substr(trim((string) $request->query('employee', '')), 0, 150),
             'source' => mb_substr(trim((string) $request->query('source', '')), 0, 100),
+            'temperature' => mb_substr(trim((string) $request->query('temperature', '')), 0, 50),
             'follow_up' => mb_substr(trim((string) $request->query('follow_up', '')), 0, 20),
             'sort' => mb_substr(trim((string) $request->query('sort', 'latest')), 0, 20),
         ];
@@ -165,13 +166,7 @@ class LeadController extends Controller
             ->sort()
             ->values();
 
-        $sources = Lead::query()
-            ->accessibleTo($user)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($user);
 
         if (
             $filters['source'] !== ''
@@ -249,6 +244,10 @@ class LeadController extends Controller
             );
         }
 
+        if ($filters['temperature'] !== '') {
+            $query->where('custom_fields->lead_temperature', $filters['temperature']);
+        }
+
         switch ($filters['follow_up']) {
             case 'today':
                 $query->whereBetween(
@@ -322,6 +321,8 @@ class LeadController extends Controller
 
         $totalLeads = (int) (clone $leadCountBase)->count();
 
+        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+
         $activeQuery = array_filter(
             $filters,
             static fn (string $value): bool => $value !== ''
@@ -360,7 +361,8 @@ class LeadController extends Controller
                 'filters',
                 'activeQuery',
                 'queryWithoutStatus',
-                'totalLeads'
+                'totalLeads',
+                'customerFields'
             )
         );
     }
@@ -421,17 +423,13 @@ class LeadController extends Controller
                 : 'بدون مرحلة'
         );
 
-        $sources = Lead::query()
-            ->accessibleTo($actor)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
 
         $totalLeads = Lead::query()
             ->accessibleTo($actor)
             ->count();
+
+        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
 
         return view(
             'leads.create',
@@ -440,6 +438,7 @@ class LeadController extends Controller
                 'statusGroups',
                 'activeStages',
                 'sources',
+                'customerFields',
                 'assignedEmployee',
                 'canAssignLead',
                 'assignableUsers',
@@ -861,7 +860,29 @@ class LeadController extends Controller
             'quotation_file_path' => $quotationPath,
         ];
 
-        $stage = $status->stage;
+$stage = $status->stage;
+
+        // Extract dynamic customer fields
+        $customFieldsInput = $request->input('customer_fields', $request->input('custom_fields', []));
+        if (! empty($customFieldsInput) && is_array($customFieldsInput)) {
+            $cleanedCustom = [];
+            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $fieldsByKey = $allFields->keyBy('key');
+            foreach ($customFieldsInput as $cKey => $cVal) {
+                if ($cVal === null || $cVal === '') {
+                    continue;
+                }
+                $fieldModel = $fieldsByKey->get($cKey);
+                if ($fieldModel && $fieldModel->lead_attribute) {
+                    $leadData[$fieldModel->lead_attribute] = is_string($cVal) ? trim($cVal) : $cVal;
+                } else {
+                    $cleanedCustom[$cKey] = is_string($cVal) ? trim($cVal) : $cVal;
+                }
+            }
+            if (! empty($cleanedCustom)) {
+                $leadData['custom_fields'] = $cleanedCustom;
+            }
+        }
         $normalizedStageValues = [];
         if ($stage !== null) {
             $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);
@@ -1438,6 +1459,8 @@ class LeadController extends Controller
                 'stageHistoryGroups' => $stageHistoryGroups,
                 'stageSections' => $stageSections,
                 'currentStageId' => $currentStageId,
+                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
             ]
         );
     }
@@ -1481,13 +1504,7 @@ class LeadController extends Controller
             ->orderBy('id')
             ->get();
 
-        $sources = Lead::query()
-            ->accessibleTo($actor)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
 
         $quotationPath = trim(
             (string) $leadRecord->quotation_file_path
@@ -1535,6 +1552,8 @@ class LeadController extends Controller
                 'quotationFileHelpText' => $quotationFileHelpText,
                 'stageFields' => $stageFields,
                 'latestStageValues' => $latestStageValues,
+                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
             ]
         );
     }
@@ -2406,6 +2425,27 @@ class LeadController extends Controller
             $leadData['assigned_employee'] = $assignedEmployee;
         }
         $stage = $status->stage;
+
+        // Extract dynamic customer fields
+        $customerFieldsInput = $request->input('customer_fields', $request->input('custom_fields', null));
+        if ($customerFieldsInput !== null && is_array($customerFieldsInput)) {
+            $existingCustom = is_array($leadRecord->custom_fields) ? $leadRecord->custom_fields : [];
+            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $fieldsByKey = $allFields->keyBy('key');
+            foreach ($customerFieldsInput as $cKey => $cVal) {
+                $fieldModel = $fieldsByKey->get($cKey);
+                if ($fieldModel && $fieldModel->lead_attribute) {
+                    $leadData[$fieldModel->lead_attribute] = ($cVal === '' || $cVal === null) ? null : (is_string($cVal) ? trim($cVal) : $cVal);
+                } else {
+                    if ($cVal === '' || $cVal === null) {
+                        unset($existingCustom[$cKey]);
+                    } else {
+                        $existingCustom[$cKey] = is_string($cVal) ? trim($cVal) : $cVal;
+                    }
+                }
+            }
+            $leadData['custom_fields'] = empty($existingCustom) ? null : $existingCustom;
+        }
         $normalizedStageValues = [];
         if ($stage !== null) {
             $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);

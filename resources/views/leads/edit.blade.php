@@ -1049,6 +1049,23 @@
        </div>
       </div>
      </section>
+     @if (($customerFields ?? collect())->isNotEmpty())
+     <section class="form-section reveal-panel" id="customerFieldsSection" style="margin-top:20px;">
+      <div class="section-head">
+       <h3><i class="bi bi-card-checklist"></i> {{ __("crm.customer_data") ?: "بيانات وتصنيف العميل" }}</h3>
+       <p>{{ __("crm.followup_customer_fields_employee_desc") ?: "بيانات وتصنيفات ديناميكية إضافية خاصة بالعميل يتم إدارتها من الإعدادات" }}</p>
+      </div>
+      <div class="section-body" style="padding:16px;">
+       @include("partials.stage-field-inputs", [
+        "fields" => $customerFields,
+        "recordValues" => old("customer_fields", $customerFieldValues ?? []),
+        "prefix" => "customer_fields",
+        "scope" => "lead_edit_customer",
+       ])
+      </div>
+     </section>
+     @endif
+
      @if (($stageFields ?? collect())->isNotEmpty())
      <section class="form-section reveal-panel" id="stageQuestionsSection" style="margin-top:20px;">
       <div class="section-head">
