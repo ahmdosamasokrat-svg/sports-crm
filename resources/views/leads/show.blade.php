@@ -710,6 +710,21 @@
                             @endforeach
                         @endif
 
+                        <!-- ANY UNREGISTERED DYNAMIC DATA FIELDS -->
+                        @php
+                            $registeredKeys = collect($customerFields ?? [])->pluck('key')->all();
+                            $rawCustom = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+                            $unregisteredCustom = array_diff_key($rawCustom, array_flip($registeredKeys));
+                        @endphp
+                        @foreach ($unregisteredCustom as $uKey => $uVal)
+                            @if ($uVal !== null && $uVal !== '')
+                                <div class="info-row">
+                                    <span class="info-label">{{ ucwords(str_replace(['_', '-'], ' ', (string) $uKey)) }}</span>
+                                    <span class="info-value">{{ is_array($uVal) ? implode(', ', $uVal) : $uVal }}</span>
+                                </div>
+                            @endif
+                        @endforeach
+
                         <div class="info-row">
                             <span class="info-label">{{ __('crm.registration_date') }}</span>
                             <span class="info-value">{{ $lead->created_at ? $lead->created_at->format('Y-m-d h:i A') : '—' }}</span>

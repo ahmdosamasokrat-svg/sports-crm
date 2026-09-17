@@ -1199,6 +1199,28 @@ class LeadTransferController extends Controller
         } catch (\Throwable) {
         }
 
+        try {
+            $customerFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            foreach ($customerFields as $cField) {
+                if ($cField->lead_attribute && in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'activity', 'governorate', 'address', 'job_title', 'source', 'users_count', 'branches_count'], true)) {
+                    continue;
+                }
+                $rawLabel = trim((string) ($cField->label_ar ?: ($cField->label_en ?: $cField->key)));
+                $normLabel = $this->normalizeHeader($rawLabel);
+
+                if (isset($existingLabelsNormalized[$normLabel])) {
+                    continue;
+                }
+
+                $colKey = 'cf_' . $cField->key;
+                if (! isset($columns[$colKey])) {
+                    $columns[$colKey] = $rawLabel;
+                    $existingLabelsNormalized[$normLabel] = $colKey;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
         return $columns;
     }
 
@@ -1402,6 +1424,42 @@ class LeadTransferController extends Controller
             }
         } catch (\Throwable) {
         }
+
+        try {
+            $customerFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            foreach ($customerFields as $cField) {
+                $rawLabel = trim((string) ($cField->label_ar ?: ($cField->label_en ?: $cField->key)));
+                $normLabel = $this->normalizeHeader($rawLabel);
+
+                if (isset($map[$normLabel])) {
+                    continue;
+                }
+
+                $key = 'cf_' . $cField->key;
+                $map[$this->normalizeHeader((string) $cField->key)] = $key;
+                $map[$this->normalizeHeader(str_replace('_', '', (string) $cField->key))] = $key;
+                $map[$this->normalizeHeader(str_replace('_', ' ', (string) $cField->key))] = $key;
+
+                if ($cField->label_ar) {
+                    $map[$this->normalizeHeader((string) $cField->label_ar)] = $key;
+                }
+                if ($cField->label_en) {
+                    $map[$this->normalizeHeader((string) $cField->label_en)] = $key;
+                }
+
+                if ($cField->key === 'lead_temperature') {
+                    $map[$this->normalizeHeader('حرارة العميل')] = $key;
+                    $map[$this->normalizeHeader('درجة الحرارة')] = $key;
+                    $map[$this->normalizeHeader('تصنيف الحرارة')] = $key;
+                    $map[$this->normalizeHeader('الحرارة')] = $key;
+                    $map[$this->normalizeHeader('temperature')] = $key;
+                    $map[$this->normalizeHeader('lead temperature')] = $key;
+                    $map[$this->normalizeHeader('lead_temp')] = $key;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
         return $map;
     }
 
@@ -2200,12 +2258,44 @@ class LeadTransferController extends Controller
                     'notes' => $notes,
                 ];
                 $customFieldValues = [];
+                $customerFieldsList = \App\Support\FollowupCustomerFieldSchema::fields(false);
+                $customerFieldsByKey = $customerFieldsList->keyBy('key');
                 foreach ($indexes as $colKey => $colIdx) {
                     if (str_starts_with($colKey, 'custom_')) {
                         $fieldKey = substr($colKey, 7);
                         $val = trim((string) ($row[$colIdx] ?? ''));
                         if ($val !== '') {
                             $customFieldValues[$fieldKey] = $val;
+                        }
+                    } elseif (str_starts_with($colKey, 'cf_')) {
+                        $fieldKey = substr($colKey, 3);
+                        $val = trim((string) ($row[$colIdx] ?? ''));
+                        if ($val !== '') {
+                            $fieldModel = $customerFieldsByKey->get($fieldKey);
+                            if ($fieldModel && $fieldModel->lead_attribute) {
+                                $leadData[$fieldModel->lead_attribute] = $val;
+                            } else {
+                                if ($fieldModel && in_array($fieldModel->type, ['select', 'multiselect'], true)) {
+                                    $opts = $fieldModel->normalizedOptions();
+                                    $matchedOpt = null;
+                                    $cleanVal = mb_strtolower(trim($val));
+                                    foreach ($opts as $opt) {
+                                        $optVal = mb_strtolower((string) $opt['value']);
+                                        $optAr = mb_strtolower((string) ($opt['label_ar'] ?? ''));
+                                        $optEn = mb_strtolower((string) ($opt['label_en'] ?? ''));
+                                        if ($optVal === $cleanVal || mb_stripos($cleanVal, $optVal) !== false
+                                            || ($optAr !== '' && (mb_stripos($cleanVal, $optAr) !== false || mb_stripos($optAr, $cleanVal) !== false))
+                                            || ($optEn !== '' && (mb_stripos($cleanVal, $optEn) !== false || mb_stripos($optEn, $cleanVal) !== false))
+                                        ) {
+                                            $matchedOpt = $opt['value'];
+                                            break;
+                                        }
+                                    }
+                                    $customFieldValues[$fieldKey] = $matchedOpt ?? $val;
+                                } else {
+                                    $customFieldValues[$fieldKey] = $val;
+                                }
+                            }
                         }
                     }
                 }
@@ -3154,6 +3244,29 @@ class LeadTransferController extends Controller
             }
         } catch (\Throwable) {
         }
+
+        try {
+            $customerFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            foreach ($customerFields as $cField) {
+                if ($cField->lead_attribute && in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'activity', 'governorate', 'address', 'job_title', 'source', 'users_count', 'branches_count'], true)) {
+                    continue;
+                }
+                $rawLabel = trim((string) ($cField->label_ar ?: ($cField->label_en ?: $cField->key)));
+                $normLabel = $this->normalizeHeader($rawLabel);
+
+                if (isset($existingLabelsNormalized[$normLabel])) {
+                    continue;
+                }
+
+                $colKey = 'cf_' . $cField->key;
+                if (! isset($columns[$colKey])) {
+                    $columns[$colKey] = $rawLabel;
+                    $existingLabelsNormalized[$normLabel] = $colKey;
+                }
+            }
+        } catch (\Throwable) {
+        }
+
         return $columns;
     }
 
@@ -3161,6 +3274,28 @@ class LeadTransferController extends Controller
         Lead $lead,
         string $column
     ): string {
+        if (str_starts_with($column, 'cf_')) {
+            $fieldKey = substr($column, 3);
+            $cField = \App\Support\FollowupCustomerFieldSchema::fields(false)->firstWhere('key', $fieldKey);
+            if ($cField && $cField->lead_attribute) {
+                return (string) ($lead->getAttribute($cField->lead_attribute) ?? '');
+            }
+
+            $customFields = (array) ($lead->custom_fields ?? []);
+            if (isset($customFields[$fieldKey]) && $customFields[$fieldKey] !== null && $customFields[$fieldKey] !== '') {
+                $val = $customFields[$fieldKey];
+                if ($cField && in_array($cField->type, ['select', 'multiselect'], true)) {
+                    $opts = collect($cField->normalizedOptions())->keyBy('value');
+                    if (is_array($val)) {
+                        return implode(', ', array_map(fn ($v) => $opts->get($v)['label_ar'] ?? $opts->get($v)['label_en'] ?? $v, $val));
+                    }
+                    return (string) ($opts->get($val)['label_ar'] ?? $opts->get($val)['label_en'] ?? $val);
+                }
+                return is_array($val) ? implode(', ', $val) : (string) $val;
+            }
+
+            return '';
+        }
         if (str_starts_with($column, 'custom_')) {
             $fieldKey = substr($column, 7);
 

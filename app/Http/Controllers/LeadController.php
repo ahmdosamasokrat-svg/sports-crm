@@ -248,6 +248,23 @@ class LeadController extends Controller
             $query->where('custom_fields->lead_temperature', $filters['temperature']);
         }
 
+        // Dynamically filter any custom customer fields passed via cf[key]=val
+        $cfFilters = (array) $request->query('cf', []);
+        if (! empty($cfFilters)) {
+            $allCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)->keyBy('key');
+            foreach ($cfFilters as $cfKey => $cfVal) {
+                if ($cfVal === null || $cfVal === '') {
+                    continue;
+                }
+                $cfModel = $allCustomerFields->get((string) $cfKey);
+                if ($cfModel && $cfModel->lead_attribute) {
+                    $query->where($cfModel->lead_attribute, $cfVal);
+                } else {
+                    $query->where('custom_fields->' . $cfKey, $cfVal);
+                }
+            }
+        }
+
         switch ($filters['follow_up']) {
             case 'today':
                 $query->whereBetween(
@@ -1636,6 +1653,9 @@ $stage = $status->stage;
             'One or more selected leads could not be loaded.'
         );
 
+        $dynamicCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)
+            ->filter(fn ($f) => empty($f->lead_attribute) || !in_array($f->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address', 'source', 'users_count', 'branches_count'], true));
+
         $headers = [
             'رقم العميل',
             'اسم العميل',
@@ -1666,6 +1686,10 @@ $stage = $status->stage;
             'آخر تحديث',
         ];
 
+        foreach ($dynamicCustomerFields as $cField) {
+            $headers[] = $cField->localizedLabel();
+        }
+
         $solutionLabels = [
             'call_center' => 'Call Center',
             'erp' => 'ERP',
@@ -1693,7 +1717,8 @@ $stage = $status->stage;
                     Lead $lead
                 ) use (
                     $formatDate,
-                    $solutionLabels
+                    $solutionLabels,
+                    $dynamicCustomerFields
                 ): array {
                     $quotationPath = trim(
                         (string)
@@ -1722,7 +1747,7 @@ $stage = $status->stage;
                         (string) $lead->solution_type
                     );
 
-                    return [
+                    $leadRow = [
                         (int) $lead->id,
                         (string) $lead->name,
                         (string) $lead->phone,
@@ -1794,6 +1819,33 @@ $stage = $status->stage;
                             $lead->updated_at
                         ),
                     ];
+
+                    $leadCust = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+                    foreach ($dynamicCustomerFields as $cField) {
+                        $rawVal = $cField->lead_attribute
+                            ? $lead->getAttribute($cField->lead_attribute)
+                            : ($leadCust[$cField->key] ?? null);
+
+                        if ($rawVal === null || $rawVal === '') {
+                            $leadRow[] = '';
+                            continue;
+                        }
+
+                        if (in_array($cField->type, ['select', 'multiselect'], true)) {
+                            $opts = collect($cField->normalizedOptions())->keyBy('value');
+                            if (is_array($rawVal)) {
+                                $leadRow[] = implode(', ', array_map(fn ($v) => $opts->get($v)['label_ar'] ?? $opts->get($v)['label_en'] ?? $v, $rawVal));
+                            } else {
+                                $leadRow[] = (string) ($opts->get($rawVal)['label_ar'] ?? $opts->get($rawVal)['label_en'] ?? $rawVal);
+                            }
+                        } elseif ($cField->type === 'checkbox') {
+                            $leadRow[] = $rawVal ? 'نعم' : 'لا';
+                        } else {
+                            $leadRow[] = is_array($rawVal) ? implode(', ', $rawVal) : (string) $rawVal;
+                        }
+                    }
+
+                    return $leadRow;
                 }
             )
             ->all();
