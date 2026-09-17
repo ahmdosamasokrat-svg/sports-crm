@@ -986,6 +986,7 @@ class DashboardController extends Controller
             'next_follow_up_at',
             'lead_status_id',
             'updated_at',
+            'custom_fields',
         ];
         $activeUsers = User::query()->where('is_active', true)->get(['id', 'name'])->keyBy('id');
         $attachAssignedUser = static function ($leads) use ($activeUsers): void {
@@ -1274,6 +1275,7 @@ class DashboardController extends Controller
             'next_follow_up_at',
             'lead_status_id',
             'updated_at',
+            'custom_fields',
         ];
 
         $leads = $query

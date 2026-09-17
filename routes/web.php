@@ -270,10 +270,13 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::get('/leads/{lead}/edit', [LeadController::class, 'edit'])
             ->whereNumber('lead')
             ->name('v2.leads.edit');
-        Route::patch('/leads/{lead}', [LeadController::class, 'update'])
+       Route::patch('/leads/{lead}', [LeadController::class, 'update'])
+           ->whereNumber('lead')
+           ->name('v2.leads.update');
+        Route::patch('/leads/{lead}/temperature', [LeadController::class, 'updateTemperature'])
             ->whereNumber('lead')
-            ->name('v2.leads.update');
-    });
+            ->name('v2.leads.temperature.update');
+   });
 
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])
         ->whereNumber('lead')

@@ -459,58 +459,62 @@
             }
         @endphp
 
-        @include('partials.topbar', [
-            'title' => __('crm.lead_details'),
-            'subtitle' => '<span>' . __('crm.lead_code_label') . ': #' . $lead->id . '</span> <span style="margin:0 6px">•</span> <span>' . __('crm.registered_at') . ': ' . ($lead->created_at?->format('Y-m-d') ?? '—') . '</span>',
-            'icon' => 'bi-person-badge-fill',
-            'backUrl' => route('v2.leads', $backQuery),
-            'backTitle' => __('crm.back_to_leads_list'),
-            'actions' => $showTopActions,
-        ])
+       @include('partials.topbar', [
+           'title' => __('crm.lead_details'),
+           'subtitle' => '<span>' . __('crm.lead_code_label') . ': #' . $lead->id . '</span> <span style="margin:0 6px">•</span> <span>' . __('crm.registered_at') . ': ' . ($lead->created_at?->format('Y-m-d') ?? '—') . '</span>',
+           'icon' => 'bi-person-badge-fill',
+           'backUrl' => route('v2.leads', $backQuery),
+           'backTitle' => __('crm.back_to_leads_list'),
+           'actions' => $showTopActions,
+       ])
 
-        <!-- PROFILE HEADER CARD -->
-        <section class="lead-header-card">
-            <div class="lead-header-top">
-                <div class="lead-identity">
-                    <div class="lead-avatar">
-                        <i class="bi bi-person"></i>
-                    </div>
-                    <div class="lead-names">
-                        <h2>{{ $lead->name }}</h2>
-                        <p>
-                            @if ($lead->company_name)
-                                <span><i class="bi bi-building"></i> {{ $lead->company_name }}</span>
-                                <span>•</span>
-                            @endif
-                            @if ($lead->governorate || $lead->address)
-                                <span><i class="bi bi-geo-alt"></i> {{ $lead->governorate ?: $lead->address }}</span>
-                                <span>•</span>
-                            @endif
-                            <span><i class="bi bi-person-badge"></i> {{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
-                            @if (!empty($customerFieldValues['lead_temperature']))
-                                @php
-                                    $topTempVal = $customerFieldValues['lead_temperature'];
-                                    $topTempBadgeStyle = match($topTempVal) {
-                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
-                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
-                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
-                                        default => 'background:var(--bg-card);color:var(--dark);'
-                                    };
-                                    $topTempLabel = match($topTempVal) {
-                                        'hot' => 'حار (Hot)',
-                                        'warm' => 'متوسط (Warm)',
-                                        'cold' => 'بارد (Cold)',
-                                        default => ucfirst((string) $topTempVal)
-                                    };
-                                @endphp
-                                <span>•</span>
-                                <span class="badge" style="padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $topTempBadgeStyle }}">
-                                    <i class="bi bi-thermometer-half"></i> {{ $topTempLabel }}
-                                </span>
-                            @endif
-                        </p>
-                    </div>
-                </div>
+        @if (session('success'))
+            <div class="alert alert-success" style="margin-bottom:16px;padding:12px 16px;border-radius:12px;background:#ecfdf5;border:1px solid #6ee7b7;color:#065f46;display:flex;align-items:center;gap:8px;font-weight:700;">
+                <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
+            </div>
+        @endif
+
+       <!-- PROFILE HEADER CARD -->
+       <section class="lead-header-card">
+           <div class="lead-header-top">
+               <div class="lead-identity">
+                   <div class="lead-avatar">
+                       <i class="bi bi-person"></i>
+                   </div>
+                   <div class="lead-names">
+                       <h2>{{ $lead->name }}</h2>
+                       <p>
+                           @if ($lead->company_name)
+                               <span><i class="bi bi-building"></i> {{ $lead->company_name }}</span>
+                               <span>•</span>
+                           @endif
+                           @if ($lead->governorate || $lead->address)
+                               <span><i class="bi bi-geo-alt"></i> {{ $lead->governorate ?: $lead->address }}</span>
+                               <span>•</span>
+                           @endif
+                           <span><i class="bi bi-person-badge"></i> {{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
+                            @php
+                                $topTempVal = $customerFieldValues['lead_temperature'] ?? null;
+                                $topTempBadgeStyle = match($topTempVal) {
+                                    'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                    'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                    'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                    default => 'background:var(--bg);color:var(--muted);border:1px dashed var(--line);'
+                                };
+                                $topTempLabel = match($topTempVal) {
+                                    'hot' => '🔥 ' . (app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)'),
+                                    'warm' => '⚡ ' . (app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)'),
+                                    'cold' => '❄️ ' . (app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)'),
+                                    default => '🔘 ' . (app()->getLocale() === 'en' ? 'Temp: Not Set' : 'حرارة العميل: غير محدد')
+                                };
+                            @endphp
+                            <span>•</span>
+                            <span class="badge" style="padding:2px 8px;border-radius:6px;font-size:12px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $topTempBadgeStyle }}">
+                                <i class="bi bi-thermometer-half"></i> {{ $topTempLabel }}
+                            </span>
+                       </p>
+                   </div>
+               </div>
                 <div>
                     @php
                         $stageCode = strtolower((string) ($lead->status?->code ?? $lead->status?->stage?->code ?? ''));
@@ -537,17 +541,27 @@
                 </div>
             </div>
 
-            <div class="metrics-bar">
-                <div class="metric-box">
-                    <span>{{ __('crm.company_name') }}</span>
-                    <b>{{ $lead->company_name ?: '—' }}</b>
-                </div>
-                <div class="metric-box">
-                    <span>{{ __('crm.solution_type') }}</span>
-                    <b>{{ $solutionTypeLabel ?: '—' }}</b>
-                </div>
-                <div class="metric-box">
-                    <span>{{ __('crm.quotation_status') }}</span>
+           <div class="metrics-bar">
+               <div class="metric-box">
+                   <span>{{ __('crm.company_name') }}</span>
+                   <b>{{ $lead->company_name ?: '—' }}</b>
+               </div>
+               <div class="metric-box">
+                    <span><i class="bi bi-thermometer-half"></i> {{ app()->getLocale() === 'en' ? 'Lead Temperature' : 'حرارة العميل' }}</span>
+                    <b>
+                        @if ($topTempVal === 'hot')
+                            <span style="color:#dc2626">🔥 {{ app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)' }}</span>
+                        @elseif ($topTempVal === 'warm')
+                            <span style="color:#d97706">⚡ {{ app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)' }}</span>
+                        @elseif ($topTempVal === 'cold')
+                            <span style="color:#0284c7">❄️ {{ app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)' }}</span>
+                        @else
+                            <span style="color:var(--muted);font-weight:600;">🔘 {{ app()->getLocale() === 'en' ? 'Not Set' : 'غير محدد' }}</span>
+                        @endif
+                    </b>
+               </div>
+               <div class="metric-box">
+                   <span>{{ __('crm.quotation_status') }}</span>
                     <b style="color:{{ $lead->quotation_sent ? '#16a34a' : ($hasQuotationFile ? '#2563eb' : 'inherit') }}">
                         {{ $lead->quotation_sent ? 'تم الإرسال للعميل' : ($hasQuotationFile ? 'جاهز للإرسال' : 'لم يتم الإنشاء') }}
                     </b>
@@ -624,48 +638,71 @@
                             <span class="info-label">{{ __('crm.lead_source') }}</span>
                             <span class="info-value">{{ $lead->source ? __($lead->source) : '—' }}</span>
                         </div>
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.assigned_employee') }}</span>
-                            <span class="info-value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
-                        </div>
-                        <!-- DYNAMIC CUSTOMER FIELDS (TEMPERATURE, FITNESS GOALS, ETC.) -->
-                        @if (!empty($customerFields))
-                            @foreach ($customerFields as $cField)
-                                @php
-                                    $cfVal = $customerFieldValues[$cField->key] ?? null;
-                                @endphp
-                                @if ($cfVal !== null && $cfVal !== '' && !in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address'], true))
-                                    <div class="info-row">
-                                        <span class="info-label">{{ $cField->localizedLabel() }}</span>
-                                        <span class="info-value">
+                       <div class="info-row">
+                           <span class="info-label">{{ __('crm.assigned_employee') }}</span>
+                           <span class="info-value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
+                       </div>
+                       <!-- DYNAMIC CUSTOMER FIELDS (TEMPERATURE, FITNESS GOALS, ETC.) -->
+                       @if (!empty($customerFields))
+                           @foreach ($customerFields as $cField)
+                               @php
+                                   $cfVal = $customerFieldValues[$cField->key] ?? null;
+                               @endphp
+                                @if (!in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address'], true))
+                                   <div class="info-row">
+                                       <span class="info-label">{{ $cField->localizedLabel() }}</span>
+                                       <span class="info-value">
+                                            @if ($cField->key === 'lead_temperature')
+                                                @php
+                                                    $cfTempStyle = match($cfVal) {
+                                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                                        default => 'background:var(--bg);color:var(--muted);border:1px dashed var(--line);'
+                                                    };
+                                                    $cfDisplay = match($cfVal) {
+                                                        'hot' => '🔥 ' . (app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)'),
+                                                        'warm' => '⚡ ' . (app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)'),
+                                                        'cold' => '❄️ ' . (app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)'),
+                                                        default => '🔘 ' . (app()->getLocale() === 'en' ? 'Not Set' : 'غير محدد')
+                                                    };
+                                                @endphp
+                                                <div style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $cfTempStyle }}">
+                                                        <i class="bi bi-thermometer-half"></i> {{ $cfDisplay }}
+                                                    </span>
+                                                    @can('update', $lead)
+                                                        <form method="POST" action="{{ route('v2.leads.temperature.update', $lead) }}" style="margin:0;display:inline-flex;align-items:center;">
+                                                            @csrf
+                                                            @method('PATCH')
+                                                            <select name="temperature" onchange="this.form.submit()" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--dark);cursor:pointer;" title="{{ app()->getLocale() === 'en' ? 'Change Temperature' : 'تغيير درجة الحرارة مباشرة' }}">
+                                                                <option value="" @selected(empty($cfVal))>-- {{ app()->getLocale() === 'en' ? 'Set Temperature' : 'تحديد الحرارة' }} --</option>
+                                                                <option value="hot" @selected($cfVal === 'hot')>🔥 {{ app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)' }}</option>
+                                                                <option value="warm" @selected($cfVal === 'warm')>⚡ {{ app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)' }}</option>
+                                                                <option value="cold" @selected($cfVal === 'cold')>❄️ {{ app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)' }}</option>
+                                                            </select>
+                                                        </form>
+                                                    @endcan
+                                                </div>
+                                            @elseif ($cfVal !== null && $cfVal !== '')
                                             @if ($cField->type === 'select' || $cField->type === 'multiselect')
                                                 @php
                                                     $cfOptions = collect($cField->normalizedOptions())->keyBy('value');
                                                     if (is_array($cfVal)) {
-                                                        $cfDisplay = implode(', ', array_map(fn($v) => $cfOptions->get($v)['label_ar'] ?? $v, $cfVal));
+                                                        $cfDisplay = implode(', ', array_map(fn($v) => (app()->getLocale() === 'en' && !empty($cfOptions->get($v)['label_en'])) ? $cfOptions->get($v)['label_en'] : ($cfOptions->get($v)['label_ar'] ?? $v), $cfVal));
                                                     } else {
-                                                        $cfDisplay = $cfOptions->get($cfVal)['label_ar'] ?? $cfVal;
+                                                        $opt = $cfOptions->get($cfVal);
+                                                        $cfDisplay = ($opt && app()->getLocale() === 'en' && !empty($opt['label_en'])) ? $opt['label_en'] : ($opt['label_ar'] ?? $cfVal);
                                                     }
                                                 @endphp
-                                                @if ($cField->key === 'lead_temperature')
-                                                    @php
-                                                        $cfTempStyle = match($cfVal) {
-                                                            'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
-                                                            'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
-                                                            'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
-                                                            default => 'background:var(--bg-card);color:var(--dark);'
-                                                        };
-                                                    @endphp
-                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $cfTempStyle }}">
-                                                        <i class="bi bi-thermometer-half"></i> {{ $cfDisplay }}
-                                                    </span>
-                                                @else
                                                     <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;">{{ $cfDisplay }}</span>
-                                                @endif
                                             @elseif ($cField->type === 'checkbox')
                                                 {{ $cfVal ? __('crm.yes') : __('crm.no') }}
                                             @else
                                                 {{ is_array($cfVal) ? implode(', ', $cfVal) : $cfVal }}
+                                            @endif
+                                            @else
+                                                <span style="color:var(--muted);font-style:italic;">— {{ __('crm.not_specified') ?: 'غير محدد' }} —</span>
                                             @endif
                                         </span>
                                     </div>

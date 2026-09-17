@@ -3162,11 +3162,39 @@ XML;
             );
         }
 
-        return $columnName;
+       return $columnName;
+   }
+
+    public function updateTemperature(
+        Request $request,
+        string $lead
+    ): RedirectResponse {
+        $this->assertCrmV2Database();
+
+        $leadRecord = Lead::query()->findOrFail((int) $lead);
+        Gate::authorize('update', $leadRecord);
+
+        $validated = $request->validate([
+            'temperature' => ['nullable', 'string', Rule::in(['cold', 'warm', 'hot', ''])],
+        ]);
+
+        $tempVal = ! empty($validated['temperature']) ? trim((string) $validated['temperature']) : null;
+
+        $existingCustom = is_array($leadRecord->custom_fields) ? $leadRecord->custom_fields : [];
+        if ($tempVal === null) {
+            unset($existingCustom['lead_temperature']);
+        } else {
+            $existingCustom['lead_temperature'] = $tempVal;
+        }
+
+        $leadRecord->custom_fields = empty($existingCustom) ? null : $existingCustom;
+        $leadRecord->save();
+
+        return back()->with('success', __('crm.updated_successfully') ?: 'تم تحديث درجة حرارة العميل بنجاح');
     }
 
-    private function assertCrmV2Database(): void
-    {
+   private function assertCrmV2Database(): void
+   {
         CrmDatabaseGuard::ensureConnected();
     }
 }
