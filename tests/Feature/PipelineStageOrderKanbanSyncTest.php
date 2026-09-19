@@ -42,6 +42,8 @@ class PipelineStageOrderKanbanSyncTest extends TestCase
             'is_active' => true,
         ]);
         $this->admin->groups()->sync([$superGroup->id]);
+
+        $this->seed(\Database\Seeders\CrmV2PipelineSeeder::class);
     }
 
     public function test_kanban_columns_order_strictly_follows_pipeline_stage_positions(): void

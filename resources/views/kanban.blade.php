@@ -142,12 +142,12 @@ a{color:inherit}
 }
 .board-top-scroll{
  width:100%;
- height:18px;
+ height:20px;
  overflow-x:auto;
  overflow-y:hidden;
  overscroll-behavior-x:contain;
  scrollbar-width:thin;
- scrollbar-color:#cbd5e1 transparent
+ scrollbar-color:var(--red, #ef4444) transparent;
 }
 .board-top-scroll[hidden]{display:none}
 .board-top-scroll:focus-visible{
@@ -159,19 +159,20 @@ a{color:inherit}
  pointer-events:none
 }
 .board-top-scroll::-webkit-scrollbar{
- height:8px
+ height:10px;
 }
 .board-top-scroll::-webkit-scrollbar-track{
- background:rgba(0,0,0,0.03);
+ background:transparent;
  border-radius:999px;
- margin:0 14px
+ margin:0 14px;
 }
 .board-top-scroll::-webkit-scrollbar-thumb{
- background:#cbd5e1;
- border-radius:999px
+ background:#ef4444;
+ border-radius:999px;
+ border:1px solid transparent;
 }
 .board-top-scroll::-webkit-scrollbar-thumb:hover{
- background:#94a3b8
+ background:#dc2626;
 }
 .board{
  display:grid;
@@ -215,15 +216,31 @@ a{color:inherit}
  border-bottom:1px solid var(--line)
 }
 .column-icon{
- width:34px;
- height:34px;
- flex:0 0 34px;
- display:grid;
- place-items:center;
- border-radius:10px;
- background:color-mix(in srgb,var(--column-color) 12%,white);
+ width:28px;
+ height:28px;
+ flex:0 0 28px;
+ display:flex;
+ align-items:center;
+ justify-content:center;
+ border-radius:0;
+ background:transparent !important;
+ border:none !important;
+ box-shadow:none !important;
  color:var(--column-color);
- font-size:16px
+}
+.column-icon svg{
+ width:20px;
+ height:20px;
+ stroke:currentColor;
+ fill:none;
+ stroke-width:2;
+ stroke-linecap:round;
+ stroke-linejoin:round;
+ display:block;
+}
+.column-icon i{
+ font-size:18px;
+ line-height:1;
 }
 .column-title{
  flex:1;
@@ -231,14 +248,19 @@ a{color:inherit}
  font-size:13px
 }
 .column-count{
- min-width:30px;
- height:30px;
- display:grid;
- place-items:center;
- border-radius:9px;
- background:var(--column-color);
- color:#fff;
- font:900 12px var(--font-primary)
+ min-width:auto;
+ height:auto;
+ display:inline-flex;
+ align-items:center;
+ justify-content:center;
+ border-radius:0;
+ background:transparent !important;
+ border:none !important;
+ box-shadow:none !important;
+ color:var(--column-color) !important;
+ font:900 15px var(--font-mono, monospace);
+ line-height:1;
+ padding:0 4px;
 }
 .column-body{
  display:grid;
@@ -310,135 +332,275 @@ a{color:inherit}
 
 .kanban-card{
  --card-stage-color:#3478f6;
- display:flex;
- flex-direction:column;
- gap:11px;
- padding:13px;
- border:1px solid
-  color-mix(
-   in srgb,
-   var(--card-stage-color) 28%,
-   var(--line)
-  );
- border-top:4px solid
-  var(--card-stage-color);
- border-radius:14px;
- background:
-  linear-gradient(
-   180deg,
-   color-mix(
-    in srgb,
-    var(--card-stage-color) 8%,
-    white
-   ),
-   #fff 72px
-  );
- box-shadow:0 8px 20px #1720330b
+ display:flex !important;
+ flex-direction:column !important;
+ gap:9px !important;
+ padding:12px 14px !important;
+ border:1px solid color-mix(in srgb, var(--card-stage-color) 25%, var(--line)) !important;
+ border-top:3.5px solid var(--card-stage-color) !important;
+ border-radius:14px !important;
+ background:var(--card, #ffffff) !important;
+ box-shadow:0 4px 14px rgba(15, 23, 42, 0.05) !important;
+ box-sizing:border-box !important;
+ width:100% !important;
+ max-width:100% !important;
+ transition:transform 0.15s ease, box-shadow 0.15s ease, border-color 0.15s ease !important;
 }
 
-.kanban-card-head{
- display:flex;
- align-items:flex-start;
- justify-content:space-between;
- gap:8px
+.kanban-card:hover{
+ transform:translateY(-2px) !important;
+ box-shadow:0 8px 22px rgba(15, 23, 42, 0.09) !important;
+ border-color:var(--card-stage-color) !important;
 }
 
-.kanban-card-name{
- min-width:0;
- color:#263247;
- font-size:14px;
- font-weight:900;
- text-decoration:none;
- overflow:hidden;
- text-overflow:ellipsis;
- white-space:nowrap
+.kc-header{
+ display:flex !important;
+ align-items:center !important;
+ gap:10px !important;
+ min-width:0 !important;
+ width:100% !important;
 }
 
-.kanban-card-stage{
- flex:0 0 auto;
- padding:5px 8px;
- border-radius:999px;
- background:
-  color-mix(
-   in srgb,
-   var(--card-stage-color) 11%,
-   white
-  );
- color:var(--card-stage-color);
- font-size:9px;
- font-weight:900
+.kc-avatar{
+ width:34px !important;
+ height:34px !important;
+ flex:0 0 34px !important;
+ border-radius:10px !important;
+ background:color-mix(in srgb, var(--card-stage-color) 12%, var(--card, #ffffff)) !important;
+ color:var(--card-stage-color) !important;
+ border:1px solid color-mix(in srgb, var(--card-stage-color) 30%, transparent) !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ font-weight:900 !important;
+ font-size:14px !important;
+ text-transform:uppercase !important;
+ line-height:1 !important;
 }
 
-.kanban-card-info{
- display:grid;
- gap:7px
+.kc-title-wrap{
+ flex:1 1 auto !important;
+ min-width:0 !important;
+ display:flex !important;
+ flex-direction:column !important;
+ gap:2px !important;
+ overflow:hidden !important;
 }
 
-.kanban-card-row{
- display:flex;
- align-items:flex-start;
- justify-content:space-between;
- gap:8px;
- padding:7px 8px;
- border:1px solid #eef0f4;
- border-radius:9px;
- background:#fff
+.kc-name{
+ color:var(--dark, #0f172a) !important;
+ font-size:13.5px !important;
+ font-weight:800 !important;
+ text-decoration:none !important;
+ overflow:hidden !important;
+ text-overflow:ellipsis !important;
+ white-space:nowrap !important;
+ line-height:1.3 !important;
+ display:block !important;
 }
 
-.kanban-card-row span{
- display:inline-flex;
- align-items:center;
- gap:4px;
- color:#8b94a5;
- font-size:9px;
- font-weight:bold
-}
-.kanban-card-row span i{
- font-size:11px;
- color:#788294
+.kc-name:hover{
+ color:var(--card-stage-color) !important;
 }
 
-.kanban-card-row strong{
- max-width:155px;
- overflow-wrap:anywhere;
- color:#536074;
- font-size:10px;
- text-align:end
+.kc-source{
+ display:inline-flex !important;
+ align-items:center !important;
+ gap:4px !important;
+ font-size:11px !important;
+ color:var(--muted, #64748b) !important;
+ font-weight:600 !important;
+ max-width:100% !important;
+ overflow:hidden !important;
+ text-overflow:ellipsis !important;
+ white-space:nowrap !important;
 }
 
-.kanban-phone{
- direction:ltr;
- display:inline-block;
- color:#356cb2;
- text-decoration:none
+.kc-source svg{
+ flex-shrink:0 !important;
+ opacity:0.75 !important;
+ display:inline-block !important;
+ vertical-align:middle !important;
 }
 
-.kanban-card-actions{
- display:grid;
- grid-template-columns:
-  repeat(2,minmax(0,1fr));
- gap:6px
+.kc-source span{
+ overflow:hidden !important;
+ text-overflow:ellipsis !important;
+ white-space:nowrap !important;
 }
 
-.kanban-card-actions .btn{
- min-height:34px;
- padding:6px 8px;
- font-size:10px;
- font-weight:900;
- box-shadow:none;
- display:inline-flex;
- align-items:center;
- justify-content:center;
- gap:4px
-}
-.kanban-card-actions .btn i{
- font-size:12px
+.kc-meta-grid{
+ display:flex !important;
+ flex-direction:column !important;
+ gap:6px !important;
+ background:var(--bg, #f8fafc) !important;
+ border:1px solid var(--line, #e2e8f0) !important;
+ border-radius:10px !important;
+ padding:8px 10px !important;
+ box-sizing:border-box !important;
+ width:100% !important;
 }
 
-.kanban-card-actions .call{
- grid-column:1/-1;
- border-color:var(--card-stage-color);
- background:var(--card-stage-color)
+.kc-meta-item{
+ display:flex !important;
+ align-items:center !important;
+ gap:8px !important;
+ font-size:11.5px !important;
+ line-height:1.2 !important;
+ min-width:0 !important;
+ width:100% !important;
+}
+
+.kc-meta-icon{
+ display:inline-flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ flex-shrink:0 !important;
+ width:14px !important;
+ height:14px !important;
+}
+
+.kc-meta-val{
+ overflow:hidden !important;
+ text-overflow:ellipsis !important;
+ white-space:nowrap !important;
+ font-weight:700 !important;
+ color:var(--dark, #1e293b) !important;
+ font-size:11.5px !important;
+}
+
+.kanban-phone.kc-meta-val{
+ direction:ltr !important;
+ color:#0284c7 !important;
+ text-decoration:none !important;
+ font-family:var(--font-mono, monospace) !important;
+ font-size:11.5px !important;
+}
+
+.kanban-phone.kc-meta-val:hover{
+ text-decoration:underline !important;
+}
+
+.kc-followup-badge{
+ display:inline-flex !important;
+ align-items:center !important;
+ gap:6px !important;
+ padding:4px 8px !important;
+ border-radius:7px !important;
+ font-size:10.5px !important;
+ font-weight:700 !important;
+ width:fit-content !important;
+ max-width:100% !important;
+ margin-top:2px !important;
+}
+
+.kc-followup-badge svg{
+ flex-shrink:0 !important;
+}
+
+.kc-followup-badge .kc-badge-tag{
+ font-size:9.5px !important;
+ padding:1px 5px !important;
+ border-radius:4px !important;
+ font-weight:800 !important;
+}
+
+.kc-followup-overdue{
+ background:rgba(239, 68, 68, 0.1) !important;
+ color:#dc2626 !important;
+ border:1px solid rgba(239, 68, 68, 0.25) !important;
+}
+
+.kc-followup-overdue .kc-badge-tag{
+ background:#dc2626 !important;
+ color:#ffffff !important;
+}
+
+.kc-followup-today{
+ background:rgba(245, 158, 11, 0.1) !important;
+ color:#d97706 !important;
+ border:1px solid rgba(245, 158, 11, 0.25) !important;
+}
+
+.kc-followup-today .kc-badge-tag{
+ background:#d97706 !important;
+ color:#ffffff !important;
+}
+
+.kc-followup-upcoming{
+ background:rgba(16, 185, 129, 0.08) !important;
+ color:#059669 !important;
+ border:1px solid rgba(16, 185, 129, 0.2) !important;
+}
+
+.kc-actions{
+ display:flex !important;
+ align-items:center !important;
+ gap:8px !important;
+ margin-top:6px !important;
+ width:100% !important;
+ box-sizing:border-box !important;
+}
+
+.kc-actions .btn{
+ flex:1 1 50% !important;
+ min-width:0 !important;
+ min-height:34px !important;
+ height:34px !important;
+ padding:0 12px !important;
+ font-size:11.5px !important;
+ font-weight:800 !important;
+ border-radius:9px !important;
+ display:inline-flex !important;
+ align-items:center !important;
+ justify-content:center !important;
+ gap:6px !important;
+ text-decoration:none !important;
+ transition:all 0.15s ease !important;
+ white-space:nowrap !important;
+ box-sizing:border-box !important;
+ overflow:hidden !important;
+}
+
+.kc-actions .btn span{
+ overflow:hidden !important;
+ text-overflow:ellipsis !important;
+ white-space:nowrap !important;
+ font-size:11.5px !important;
+ line-height:1 !important;
+}
+
+.kc-actions .btn svg{
+ flex-shrink:0 !important;
+ width:13.5px !important;
+ height:13.5px !important;
+}
+
+.kc-action-call{
+ background:var(--card-stage-color) !important;
+ border-color:var(--card-stage-color) !important;
+ color:#ffffff !important;
+ flex:0 0 38% !important;
+ max-width:38% !important;
+}
+
+.kc-action-call:hover{
+ opacity:0.92 !important;
+ transform:translateY(-1px) !important;
+ box-shadow:0 3px 10px rgba(0,0,0,0.12) !important;
+}
+
+.kc-action-followup{
+ background:var(--bg, #f8fafc) !important;
+ border:1px solid var(--line, #e2e8f0) !important;
+ color:var(--dark, #334155) !important;
+ flex:1 1 62% !important;
+}
+
+.kc-action-followup:hover{
+ border-color:var(--card-stage-color) !important;
+ color:var(--card-stage-color) !important;
+ transform:translateY(-1px) !important;
 }
 
 .kanban-empty{
@@ -446,16 +608,17 @@ a{color:inherit}
 }
 
 @media(max-width:768px){
- .kanban-card-actions{
-  grid-template-columns:1fr;
-  gap:6px
+ .kc-actions{
+  flex-direction:row !important;
+  flex-wrap:wrap !important;
+  gap:6px !important;
  }
- .kanban-card-actions .btn{
-  min-height:44px;
-  font-size:11px
+ .kc-actions .btn{
+  min-height:36px !important;
+  font-size:11px !important;
  }
- .kanban-card-actions .call{
-  grid-column:auto
+ .kc-action-call{
+  flex:1 1 100% !important;
  }
  .kanban-scope-btn{
   min-height:44px
@@ -474,28 +637,30 @@ a{color:inherit}
 
 .kanban-scope-buttons{
  display:grid;
- grid-template-columns:
-  repeat(3,minmax(0,1fr));
- gap:5px
+ grid-template-columns:repeat(4, minmax(0, 1fr));
+ gap:4px;
+ width:100%;
+ box-sizing:border-box;
 }
 
 .kanban-scope-btn{
  min-width:0;
- min-height:38px;
+ min-height:36px;
  display:flex;
  flex-direction:column;
  align-items:center;
  justify-content:center;
- gap:2px;
- padding:5px 3px;
+ gap:1px;
+ padding:4px 2px;
  border:1px solid #e5e8ef;
- border-radius:9px;
+ border-radius:8px;
  background:#f7f8fa;
  color:#697489;
  font-family:inherit;
  cursor:pointer;
- transition:none;
- animation:none
+ transition:all 0.12s ease;
+ box-sizing:border-box;
+ overflow:hidden;
 }
 
 .kanban-scope-btn span{
@@ -504,13 +669,21 @@ a{color:inherit}
  overflow:hidden;
  text-overflow:ellipsis;
  white-space:nowrap;
+ font-size:8.5px;
+ font-weight:800;
+ line-height:1;
+}
+
+.kanban-scope-btn span i{
  font-size:9px;
- font-weight:900
+ vertical-align:middle;
 }
 
 .kanban-scope-btn b{
- font:900 14px var(--font-primary);
- color:inherit
+ font:900 13px var(--font-primary);
+ color:inherit;
+ line-height:1.1;
+ margin-top:1px;
 }
 
 .kanban-scope-btn.active{
@@ -1204,22 +1377,22 @@ html.dark .kanban-page-btn:disabled,
 html.dark-mode .board-top-scroll,
 html.dark .board-top-scroll,
 [data-theme="dark"] .board-top-scroll{
- scrollbar-color:#475569 transparent
+ scrollbar-color:#ef4444 transparent
 }
 html.dark-mode .board-top-scroll::-webkit-scrollbar-track,
 html.dark .board-top-scroll::-webkit-scrollbar-track,
 [data-theme="dark"] .board-top-scroll::-webkit-scrollbar-track{
- background:rgba(255,255,255,0.03)
+ background:transparent
 }
 html.dark-mode .board-top-scroll::-webkit-scrollbar-thumb,
 html.dark .board-top-scroll::-webkit-scrollbar-thumb,
 [data-theme="dark"] .board-top-scroll::-webkit-scrollbar-thumb{
- background:#475569
+ background:#ef4444
 }
 html.dark-mode .board-top-scroll::-webkit-scrollbar-thumb:hover,
 html.dark .board-top-scroll::-webkit-scrollbar-thumb:hover,
 [data-theme="dark"] .board-top-scroll::-webkit-scrollbar-thumb:hover{
- background:#64748b
+ background:#dc2626
 }
 
 /* Dark mode surface and content overrides */
@@ -1308,50 +1481,53 @@ html.dark .column-icon,
 html.dark-mode .kanban-card,
 html.dark .kanban-card,
 [data-theme="dark"] .kanban-card{
- background:
-  linear-gradient(
-   180deg,
-   color-mix(in srgb,var(--card-stage-color) 14%,#1e293b),
-   #1e293b 72px
-  );
- box-shadow:0 8px 20px rgba(0,0,0,.24)
+ background: #1e293b;
+ border-color: rgba(255, 255, 255, 0.08);
+ border-top-color: var(--card-stage-color);
+ box-shadow: 0 4px 14px rgba(0, 0, 0, 0.35);
 }
 
-html.dark-mode .kanban-card-name,
-html.dark .kanban-card-name,
-[data-theme="dark"] .kanban-card-name{
- color:#f1f5f9
+html.dark-mode .kanban-card:hover,
+html.dark .kanban-card:hover,
+[data-theme="dark"] .kanban-card:hover{
+ border-color: var(--card-stage-color);
+ box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
 }
 
-html.dark-mode .kanban-card-stage,
-html.dark .kanban-card-stage,
-[data-theme="dark"] .kanban-card-stage{
- background:color-mix(in srgb,var(--card-stage-color) 16%,#1e293b)
+html.dark-mode .kc-avatar,
+html.dark .kc-avatar,
+[data-theme="dark"] .kc-avatar{
+ background: color-mix(in srgb, var(--card-stage-color) 20%, #1e293b);
 }
 
-html.dark-mode .kanban-card-row,
-html.dark .kanban-card-row,
-[data-theme="dark"] .kanban-card-row{
- border-color:rgba(255,255,255,.08);
- background:#172033
+html.dark-mode .kc-name,
+html.dark .kc-name,
+[data-theme="dark"] .kc-name{
+ color: #f8fafc;
 }
 
-html.dark-mode .kanban-card-row span,
-html.dark .kanban-card-row span,
-[data-theme="dark"] .kanban-card-row span{
- color:#94a3b8
+html.dark-mode .kc-meta-grid,
+html.dark .kc-meta-grid,
+[data-theme="dark"] .kc-meta-grid{
+ background: #0f172a;
+ border-color: rgba(255, 255, 255, 0.06);
 }
 
-html.dark-mode .kanban-card-row span i,
-html.dark .kanban-card-row span i,
-[data-theme="dark"] .kanban-card-row span i{
- color:#aeb8c8
+html.dark-mode .kc-meta-val,
+html.dark .kc-meta-val,
+[data-theme="dark"] .kc-meta-val{
+ color: #e2e8f0;
 }
 
-html.dark-mode .kanban-card-row strong,
-html.dark .kanban-card-row strong,
-[data-theme="dark"] .kanban-card-row strong{
- color:#cbd5e1
+html.dark-mode .kc-action-view,
+html.dark-mode .kc-action-followup,
+html.dark .kc-action-view,
+html.dark .kc-action-followup,
+[data-theme="dark"] .kc-action-view,
+[data-theme="dark"] .kc-action-followup{
+ background: #0f172a !important;
+ border-color: rgba(255, 255, 255, 0.1) !important;
+ color: #cbd5e1 !important;
 }
 
 html.dark-mode .kanban-phone,
@@ -1587,7 +1763,7 @@ html.dark .kanban-followup-frame,
 
  <main class="crm-main">
   @php
-      $kanbanTopActions = '<a class="btn soft" href="' . route('dashboard') . '"><i class="bi bi-speedometer2"></i> ' . __('crm.dashboard') . '</a>';
+      $kanbanTopActions = '';
       if (auth()->user()->can('leads.create')) {
           $kanbanTopActions .= '<a class="btn primary" href="' . route('v2.leads.create') . '" data-kanban-create-popup draggable="false"><i class="bi bi-plus-lg"></i> ' . __('crm.add_lead_short') . '</a>';
       }
@@ -1711,23 +1887,26 @@ html.dark .kanban-followup-frame,
       "
      >
      @php
-      $columnIconClass = match($column['code']) {
-          'new' => 'bi bi-person-plus-fill',
-          'no-answer', 'no_answer' => 'bi bi-telephone-x-fill',
-          'interested' => 'bi bi-heart-fill',
-          'not_interested', 'not-interested' => 'bi bi-x-circle-fill',
-          'meeting' => 'bi bi-calendar-event-fill',
-          'quotation' => 'bi bi-file-earmark-text-fill',
-          'discussion' => 'bi bi-chat-dots-fill',
-          'contract', 'contract-closing', 'contract_closing' => 'bi bi-file-earmark-check-fill',
-          'execution' => 'bi bi-gear-fill',
-          default => 'bi bi-app-indicator',
+      $code = (string) ($column['code'] ?? '');
+      $iconSvg = match(true) {
+          str_contains($code, 'new') || str_contains($code, 'start') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',
+          str_contains($code, 'interest') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+          str_contains($code, 'not_interested') || str_contains($code, 'not-interested') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>',
+          str_contains($code, 'no_answer') || str_contains($code, 'no-answer') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="23" y1="1" x2="17" y2="7"/><line x1="17" y1="1" x2="23" y2="7"/></svg>',
+          str_contains($code, 'postponed') || str_contains($code, 'delayed') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+          str_contains($code, 'meeting') || str_contains($code, 'negotiation') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>',
+          str_contains($code, 'quotation') || str_contains($code, 'offer') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+          str_contains($code, 'discussion') || str_contains($code, 'negotiation_call') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/></svg>',
+          str_contains($code, 'contract') || str_contains($code, 'closing') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+          str_contains($code, 'execution') || str_contains($code, 'operations') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+          str_contains($code, 'final') || str_contains($code, 'installment') || str_contains($code, 'payment') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="1" y="4" width="22" height="16" rx="2" ry="2"/><line x1="1" y1="10" x2="23" y2="10"/></svg>',
+          default => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 14 14"/></svg>',
       };
      @endphp
 
       <header class="column-head">
        <span class="column-icon">
-        <i class="{{ $columnIconClass }}"></i>
+        {!! $iconSvg !!}
        </span>
        <h2 class="column-title">
         {{ $column['name'] }}
@@ -1753,12 +1932,6 @@ html.dark .kanban-followup-frame,
        }}
       </span>
      </header>
-
-     <div class="kanban-drag-hint">
-      {{ __('crm.drag_hint_title') }}
-      <strong>{{ __('crm.confirm_transfer') }}</strong>
-      {{ __('crm.drag_hint_end') }}
-     </div>
 
           @if (!$kanbanDirectStatus)
 <div class="kanban-followup-toolbar">

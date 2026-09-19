@@ -805,12 +805,25 @@ class StageFieldSchema
 
         DB::transaction(function () use ($lead, $stageId, $fields, $values, $history, $actor, &$savedRecords): void {
             foreach ($values as $key => $val) {
-                if ($val === null) {
-                    continue;
-                }
                 $field = $fields->get($key);
                 $fieldType = $field ? (string) $field->type : 'text';
                 $fieldId = $field ? (int) $field->id : null;
+
+                if ($val === null) {
+                    // An explicit null is a clear operation: it supersedes the latest
+                    // non-null value for this field, otherwise there is nothing to clear.
+                    $latestValue = $fieldId === null
+                        ? null
+                        : LeadStageFieldValue::query()
+                            ->where('lead_id', $lead->id)
+                            ->where('pipeline_stage_field_id', $fieldId)
+                            ->latest('id')
+                            ->value('value');
+
+                    if ($latestValue === null) {
+                        continue;
+                    }
+                }
 
                 if (is_array($val) && ($val['type'] ?? '') === 'file') {
                     $docCategory = $val['category'] ?? \App\Models\LeadDocument::CATEGORY_ATTACHMENT;

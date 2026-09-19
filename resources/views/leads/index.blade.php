@@ -855,6 +855,85 @@ html.dark-mode .btn-action {
   .dynamic-field-picker-menu { inset-inline: 0; width: 100%; }
   .dynamic-filter-fields { grid-template-columns: 1fr; }
 }
+
+
+
+/* Bulk Assign Modal & Dropdown Stacking */
+#bulkAssignModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.6);
+  z-index: 999999 !important;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(3px);
+}
+#bulkAssignModal .crm-modal-dialog {
+  background: var(--card, #ffffff);
+  border: 1px solid var(--line, #e2e8f0);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 460px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  overflow: visible !important;
+  position: relative;
+  z-index: 1000000 !important;
+}
+#bulkAssignModal .modal-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: var(--bg);
+  border-top-left-radius: 16px;
+  border-top-right-radius: 16px;
+  position: relative;
+  z-index: 1;
+}
+#bulkAssignModal .modal-body {
+  padding: 20px;
+  position: relative;
+  z-index: 1000010 !important;
+  overflow: visible !important;
+}
+#bulkAssignModal .modal-footer {
+  padding: 14px 20px;
+  border-top: 1px solid var(--line);
+  background: var(--bg);
+  border-bottom-left-radius: 16px;
+  border-bottom-right-radius: 16px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  position: relative;
+  z-index: 1;
+}
+#bulkAssignModal .crm-dropdown,
+#bulkAssignModal .crm-dropdown.is-open {
+  position: relative !important;
+  z-index: 1000020 !important;
+  width: 100% !important;
+}
+#bulkAssignModal .crm-dropdown-menu {
+  z-index: 1000050 !important;
+  position: absolute !important;
+  top: calc(100% + 6px) !important;
+  inset-inline-start: 0 !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  box-shadow: 0 16px 36px rgba(15, 23, 42, 0.2) !important;
+  background: var(--card, #ffffff) !important;
+  border: 1px solid var(--line, #e2e8f0) !important;
+}
+html.dark-mode #bulkAssignModal .crm-dropdown-menu {
+  background: #18181b !important;
+  border-color: rgba(255, 255, 255, 0.12) !important;
+  color: #f4f4f5 !important;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.5) !important;
+}
 </style>
 </head>
 <body>
@@ -873,6 +952,8 @@ html.dark-mode .btn-action {
                 <i class="bi bi-check-circle-fill"></i> {{ session('success') }}
             </div>
         @endif
+
+
 
         <!-- FILTERS PANEL -->
         <section class="filter-panel">
@@ -1132,11 +1213,11 @@ html.dark-mode .btn-action {
                                 <button class="btn small soft" type="button" id="restoreDefaultColsBtn" style="flex:1; color: #4f46e5; font-weight: 700; font-size:11px;">
                                     استعادة الأعمدة الافتراضية
                                 </button>
-                                <button class="btn small soft" type="button" id="selectAllColsBtn" style="font-size:11px;">
-                                    تحديد الكل
+                                <button class="btn small soft" type="button" id="selectAllColsBtn" style="font-size:11px;" data-select-all-dynamic-fields>
+                                    {{ __('crm.select_all_fields') }}
                                 </button>
-                                <button class="btn small soft" type="button" id="clearOptionalColsBtn" style="font-size:11px;">
-                                    مسح الاختياري
+                                <button class="btn small soft" type="button" id="clearOptionalColsBtn" style="font-size:11px;" data-clear-dynamic-fields>
+                                    {{ __('crm.clear_field_selection') }}
                                 </button>
                             </div>
                         </div>
@@ -1235,6 +1316,13 @@ html.dark-mode .btn-action {
                 </button>
             </div>
             <div style="display:flex; align-items:center; gap:8px;">
+                @can('leads.assign')
+                    @if (isset($assignableUsers) && $assignableUsers->isNotEmpty())
+                        <button type="button" class="btn small primary" id="bulkAssignBtn" onclick="openBulkAssignModal()" style="font-size:12px;">
+                            <i class="bi bi-person-check-fill"></i> {{ __('تعيين لموظف') }}
+                        </button>
+                    @endif
+                @endcan
                 @can('leads.export')
                     <button type="button" class="btn small soft" id="bulkExportBtn" onclick="submitBulkExport()" style="font-size:12px; color:#16a34a; border-color:#bbf7d0; background:#f0fdf4;">
                         <i class="bi bi-file-earmark-excel"></i> {{ __('تصدير') }}
@@ -1259,6 +1347,57 @@ html.dark-mode .btn-action {
             @csrf
             <div id="bulkDeleteInputs"></div>
         </form>
+
+        @can('leads.assign')
+            @if (isset($assignableUsers) && $assignableUsers->isNotEmpty())
+                <!-- BULK ASSIGN MODAL -->
+                <div id="bulkAssignModal" class="crm-modal">
+                    <div class="crm-modal-dialog">
+                        <div class="modal-header">
+                            <h3 style="margin:0; font-size:15px; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:8px;">
+                                <i class="bi bi-person-check-fill" style="color:var(--red);"></i> {{ __('تعيين العملاء لموظف') }}
+                            </h3>
+                            <button type="button" onclick="closeBulkAssignModal()" style="background:none; border:none; font-size:20px; line-height:1; color:var(--muted); cursor:pointer; padding:0 4px;">&times;</button>
+                        </div>
+                        <form id="bulkAssignForm" method="POST" action="{{ route('v2.leads.bulk-assign') }}" style="margin:0;">
+                            @csrf
+                            <div class="modal-body">
+                                <div style="margin-bottom:14px; padding:10px 14px; border-radius:10px; background:color-mix(in srgb, var(--red) 8%, var(--card)); border:1px solid color-mix(in srgb, var(--red) 20%, transparent); display:flex; align-items:center; gap:10px;">
+                                    <i class="bi bi-info-circle-fill" style="color:var(--red); font-size:16px;"></i>
+                                    <span style="font-size:12.5px; font-weight:700; color:var(--dark);">
+                                        {{ __('سيتم إسناد') }} <strong id="bulkAssignCountText" style="color:var(--red);">0</strong> {{ __('عملاء تم تحديدهم') }}
+                                    </span>
+                                </div>
+                                <div class="field" style="position:relative; z-index:1000020; overflow:visible;">
+                                    <label for="bulk_target_user_id" style="display:block; margin-bottom:6px; font-size:12px; font-weight:800; color:var(--dark);">
+                                        {{ __('اختر الموظف المسؤول') }} <span style="color:var(--red)">*</span>
+                                    </label>
+                                    <select
+                                        id="bulk_target_user_id"
+                                        name="target_user_id"
+                                        class="crm-custom-select filter-control"
+                                        data-crm-dropdown
+                                        data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10.02 12c.005-.184.02-.375.034-.555.056-.704.14-1.282.266-1.745A4.9 4.9 0 0 0 8 9c-1.378 0-2.496.53-2.92 1.077-.184.238-.309.522-.387.828a.5.5 0 0 0 .97.234c.05-.195.13-.38.252-.538C6.27 10.158 7.08 9.8 8 9.8c.92 0 1.73.358 2.085.801.074.092.127.202.164.321.037.119.06.252.073.403.014.16.023.325.027.475H3.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 .5-.5c0-.368-.008-.687-.02-1z"/></svg>'
+                                        required
+                                        style="width:100%; height:42px; border:1px solid var(--line); border-radius:10px; padding:0 12px; font-size:13px; background:var(--bg); color:var(--dark); font-weight:600;"
+                                    >
+                                        <option value="">{{ __('اختر الموظف المسؤول...') }}</option>
+                                        @foreach ($assignableUsers as $assignUser)
+                                            <option value="{{ $assignUser->id }}">{{ $assignUser->name }} ({{ $assignUser->username }})</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                                <div id="bulkAssignInputs"></div>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn small soft" onclick="closeBulkAssignModal()">{{ __('إلغاء') }}</button>
+                                <button type="submit" class="btn small primary">{{ __('تأكيد التعيين') }}</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            @endif
+        @endcan
 
         <!-- CUSTOMERS TABLE -->
         <section class="table-card">
@@ -1781,6 +1920,54 @@ html.dark-mode .btn-action {
         updateBulkToolbar();
     };
 
+    window.openBulkAssignModal = () => {
+        const ids = getSelectedLeadIds();
+        if (ids.length === 0) return;
+        const countEl = document.getElementById('bulkAssignCountText');
+        if (countEl) countEl.textContent = ids.length;
+        const container = document.getElementById('bulkAssignInputs');
+        if (container) {
+            container.innerHTML = '';
+            ids.forEach(id => {
+                const inp = document.createElement('input');
+                inp.type = 'hidden';
+                inp.name = 'lead_ids[]';
+                inp.value = id;
+                container.appendChild(inp);
+            });
+        }
+        const modal = document.getElementById('bulkAssignModal');
+        if (modal) {
+            modal.style.display = 'flex';
+            setTimeout(() => {
+                const selectEl = document.getElementById('bulk_target_user_id');
+                const triggerBtn = selectEl?.closest('.field')?.querySelector('.crm-dropdown-trigger');
+                if (triggerBtn) {
+                    triggerBtn.focus();
+                } else if (selectEl) {
+                    selectEl.focus();
+                }
+            }, 60);
+        }
+    };
+
+    window.closeBulkAssignModal = () => {
+        const modal = document.getElementById('bulkAssignModal');
+        if (modal) modal.style.display = 'none';
+    };
+
+    document.getElementById('bulkAssignModal')?.addEventListener('click', (e) => {
+        if (e.target.id === 'bulkAssignModal') {
+            window.closeBulkAssignModal();
+        }
+    });
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') {
+            window.closeBulkAssignModal();
+        }
+    });
+
     window.submitBulkExport = () => {
         const ids = getSelectedLeadIds();
         if (ids.length === 0) return;
@@ -1842,17 +2029,19 @@ html.dark-mode .btn-action {
         });
     });
 
-    // Select All Columns
-    selectAllColsBtn?.addEventListener('click', () => {
-        const allCols = Array.from(document.querySelectorAll('[data-col-toggle]')).map(el => el.dataset.colToggle);
-        saveColumns(allCols);
+    // Clear Optional Columns
+    clearOptionalColsBtn?.addEventListener('click', () => {
+        saveColumns(MANDATORY_COLS);
         applyColumnVisibility();
         triggerReactiveFilter();
     });
 
-    // Clear Optional Columns
-    clearOptionalColsBtn?.addEventListener('click', () => {
-        saveColumns(MANDATORY_COLS);
+    // Select All Dynamic Stage Fields
+    selectAllColsBtn?.addEventListener('click', () => {
+        const dynamicCols = Array.from(document.querySelectorAll('[data-dynamic-field-option]'))
+            .map(cb => cb.dataset.colToggle)
+            .filter(col => col && col.startsWith('stage_field_'));
+        saveColumns([...MANDATORY_COLS, ...dynamicCols]);
         applyColumnVisibility();
         triggerReactiveFilter();
     });

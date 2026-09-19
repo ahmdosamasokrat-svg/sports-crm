@@ -141,18 +141,19 @@ class LeadIndexDynamicStagesTest extends TestCase
             );
     }
 
-    // 1. Leads Index status cards come from active PipelineStages
-    public function test_1_leads_index_status_cards_come_from_active_pipeline_stages(): void
+    // 1. Leads Index stages come from active PipelineStages
+    public function test_1_leads_index_stages_come_from_active_pipeline_stages(): void
     {
         app()->setLocale('ar');
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('البداية');
-        $response->assertSee('الاهتمام');
-        $response->assertSee('المعاينة الفنية');
+        $pipelineStages = $response->viewData('pipelineStages');
+        $this->assertTrue($pipelineStages->contains('id', $this->startStage->id));
+        $this->assertTrue($pipelineStages->contains('id', $this->interestStage->id));
+        $this->assertTrue($pipelineStages->contains('id', $this->customStage->id));
     }
 
-    // 2. custom stage appears automatically
+    // 2. custom stage appears automatically in pipeline stages
     public function test_2_custom_stage_appears_automatically(): void
     {
         $newCustom = PipelineStage::query()->create([
@@ -166,8 +167,8 @@ class LeadIndexDynamicStagesTest extends TestCase
 
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('عملاء VIP في القائمة');
-        $response->assertSee('#f59e0b');
+        $pipelineStages = $response->viewData('pipelineStages');
+        $this->assertTrue($pipelineStages->contains('id', $newCustom->id));
     }
 
     // 3. inactive stage does not appear
@@ -185,25 +186,29 @@ class LeadIndexDynamicStagesTest extends TestCase
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
         $response->assertDontSee('مرحلة معطلة في القائمة');
+        $pipelineStages = $response->viewData('pipelineStages');
+        $this->assertFalse($pipelineStages->contains('id', $inactiveStage->id));
     }
 
-    // 4. custom stage renders as a card
-    public function test_4_custom_stage_renders_as_card_with_badge(): void
+    // 4. stats grid is not rendered
+    public function test_4_stats_grid_is_not_rendered(): void
     {
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('المعاينة الفنية');
-        $response->assertSee(__('crm.additional_stage_badge'));
+        $response->assertDontSee('stats-grid');
+        $response->assertDontSee('stat-card');
     }
 
-    // 5. zero-count active stage appears
+    // 5. zero-count active stage appears in pipelineStages data
     public function test_5_zero_count_active_stage_appears(): void
     {
         // customStage has 0 leads
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('المعاينة الفنية');
-        $response->assertSee('0');
+        $pipelineStages = $response->viewData('pipelineStages');
+        $custom = $pipelineStages->firstWhere('id', $this->customStage->id);
+        $this->assertNotNull($custom);
+        $this->assertEquals(0, $custom->leads_count ?? ($custom->scoped_leads_count ?? 0));
     }
 
     // 6. stage count includes all statuses under stage
@@ -250,36 +255,35 @@ class LeadIndexDynamicStagesTest extends TestCase
         $this->assertEquals('المعاينة الفنية', $pipelineStages->first()->name_ar);
     }
 
-    // 8. localized stage name renders
+    // 8. localized stage name resolves properly
     public function test_8_localized_stage_name_renders(): void
     {
         app()->setLocale('ar');
-        $responseAr = $this->actingAs($this->admin)->get(route('v2.leads'));
-        $responseAr->assertOk();
-        $responseAr->assertSee('البداية');
-        $responseAr->assertSee('الاهتمام');
+        $this->assertEquals('البداية', $this->startStage->localizedName());
+        $this->assertEquals('الاهتمام', $this->interestStage->localizedName());
 
         app()->setLocale('en');
-        $responseEn = $this->actingAs($this->admin)->get(route('v2.leads'));
-        $responseEn->assertOk();
-        $responseEn->assertSee('Start');
-        $responseEn->assertSee('Interest');
+        $this->assertEquals('Start', $this->startStage->localizedName());
+        $this->assertEquals('Interest', $this->interestStage->localizedName());
     }
 
-    // 9. icon/color are sourced from PipelineStage
+    // 9. color is sourced from PipelineStage
     public function test_9_color_is_sourced_from_pipeline_stage(): void
     {
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('--status-color:#8b5cf6');
+        $pipelineStages = $response->viewData('pipelineStages');
+        $custom = $pipelineStages->firstWhere('id', $this->customStage->id);
+        $this->assertEquals('#8b5cf6', $custom->color);
     }
 
-    // 10. stage card link uses stage ID
-    public function test_10_stage_card_link_uses_stage_id(): void
+    // 10. stats grid and cards are not rendered
+    public function test_10_stats_grid_and_cards_are_not_rendered(): void
     {
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('stage=' . $this->customStage->id);
+        $response->assertDontSee('stats-grid');
+        $response->assertDontSee('stat-card');
     }
 
     // 11. stage filter returns correct leads
@@ -420,15 +424,10 @@ class LeadIndexDynamicStagesTest extends TestCase
     // 16. no old hardcoded workflow cards remain
     public function test_16_no_old_hardcoded_workflow_cards_remain(): void
     {
-        app()->setLocale('ar');
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-
-        // Cards rendered must be active PipelineStages
-        $pipelineStages = $response->viewData('pipelineStages');
-        foreach ($pipelineStages as $stage) {
-            $response->assertSee($stage->localizedName());
-        }
+        $response->assertDontSee('hero-pipeline');
+        $response->assertDontSee('stats-grid');
     }
 
     // 17. existing Lead tests remain green
@@ -443,63 +442,14 @@ class LeadIndexDynamicStagesTest extends TestCase
         $response->assertViewHas('sources');
     }
 
-    // 18. hero pills come from active PipelineStages
-    public function test_18_hero_pills_render_from_active_pipeline_stages(): void
+    // 18. hero pipeline and stats grid are not rendered
+    public function test_18_hero_pipeline_is_not_rendered(): void
     {
-        app()->setLocale('ar');
         $response = $this->actingAs($this->admin)->get(route('v2.leads'));
         $response->assertOk();
-        $response->assertSee('hero-pipeline');
-        $response->assertSee($this->startStage->localizedName());
-        $response->assertSee($this->interestStage->localizedName());
-        $response->assertSee($this->customStage->localizedName());
-    }
-
-    // 19. hero pills include custom stages
-    public function test_19_hero_pills_include_newly_added_custom_stages(): void
-    {
-        $newHeroStage = PipelineStage::query()->create([
-            'code' => 'stage_hero_custom_' . uniqid(),
-            'name_ar' => 'مرحلة البانر المخصصة',
-            'position' => 25,
-            'color' => '#ec4899',
-            'icon' => 'bi-fire',
-            'is_primary' => false,
-            'is_active' => true,
-        ]);
-
-        $response = $this->actingAs($this->admin)->get(route('v2.leads'));
-        $response->assertOk();
-        $response->assertSee('مرحلة البانر المخصصة');
-        $response->assertSee('bi-fire');
-        $response->assertSee('--stage-color:#ec4899');
-    }
-
-    // 20. hero pills exclude inactive stages
-    public function test_20_hero_pills_exclude_inactive_stages(): void
-    {
-        $inactiveHeroStage = PipelineStage::query()->create([
-            'code' => 'stage_hero_inactive',
-            'name_ar' => 'مرحلة بانر معطلة',
-            'position' => 30,
-            'color' => '#6b7280',
-            'is_primary' => false,
-            'is_active' => false,
-        ]);
-
-        $response = $this->actingAs($this->admin)->get(route('v2.leads'));
-        $response->assertOk();
-        $response->assertDontSee('مرحلة بانر معطلة');
-    }
-
-    // 21. hero pills have stage id links and active state
-    public function test_21_hero_pills_have_stage_id_links_and_active_state(): void
-    {
-        $response = $this->actingAs($this->admin)->get(route('v2.leads', [
-            'stage' => $this->customStage->id,
-        ]));
-        $response->assertOk();
-        $response->assertSee('data-stage-id="' . $this->customStage->id . '"', false);
-        $response->assertSee('is-selected');
+        $response->assertDontSee('hero-pipeline');
+        $response->assertDontSee('heroPipelineSection');
+        $response->assertDontSee('stats-grid');
+        $response->assertDontSee('stat-card');
     }
 }
