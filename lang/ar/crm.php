@@ -351,7 +351,7 @@ return [
     'of' => 'من',
     'previous' => 'السابق',
     'next' => 'التالي',
-    'new_campaign' => '＋ حملة جديدة',
+    'new_campaign' => 'حملة جديدة',
     'campaign_name_search' => 'البحث باسم الحملة',
     'campaign_name_placeholder' => 'اكتب اسم الحملة...',
     'campaign_status' => 'حالة الحملة',

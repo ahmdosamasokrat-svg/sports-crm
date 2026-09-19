@@ -351,7 +351,7 @@ return [
     'of' => 'of',
     'previous' => 'Previous',
     'next' => 'Next',
-    'new_campaign' => '＋ New Campaign',
+    'new_campaign' => 'New Campaign',
     'campaign_name_search' => 'Search by campaign name',
     'campaign_name_placeholder' => 'Enter campaign name...',
     'campaign_status' => 'Campaign Status',
