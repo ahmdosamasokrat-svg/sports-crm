@@ -51,29 +51,17 @@
   }
  };
 
- const updateCollapseButton = (collapsed) => {
-  if (!collapseButton) {
-   return;
-  }
+  const updateCollapseButton = (collapsed) => {
+   if (!collapseButton) {
+    return;
+   }
 
-  const icon = collapseButton.querySelector('i');
-  const label = collapseButton.querySelector('span');
-  const title = collapsed ? 'توسيع القائمة الجانبية' : 'طي القائمة الجانبية';
+   const title = collapsed ? 'توسيع القائمة الجانبية (Ctrl+B)' : 'طي القائمة الجانبية (Ctrl+B)';
 
-  collapseButton.setAttribute('aria-label', title);
-  collapseButton.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
-  collapseButton.setAttribute('title', title);
-
-  if (label) {
-   label.textContent = collapsed ? 'توسيع القائمة' : 'طي القائمة';
-  }
-
-  if (icon) {
-   icon.className = collapsed
-    ? 'bi bi-chevron-double-left'
-    : 'bi bi-chevron-double-right';
-  }
- };
+   collapseButton.setAttribute('aria-label', title);
+   collapseButton.setAttribute('aria-pressed', collapsed ? 'true' : 'false');
+   collapseButton.setAttribute('title', title);
+  };
 
  const setCollapsed = (collapsed, persist = true) => {
   root.classList.toggle('crm-sidebar-collapsed', collapsed);
@@ -92,37 +80,35 @@
 
  let animationTimer = null;
 
- const toggleCollapsedAnimated = (targetState) => {
-  if (animationTimer) {
-   clearTimeout(animationTimer);
-   animationTimer = null;
-  }
-
-  const collapsing = targetState !== undefined ? targetState : !isCollapsed();
-
-  if (collapsing === isCollapsed()) {
-   return;
-  }
-  if (collapsing) {
-   root.classList.add('crm-sidebar-animating', 'crm-sidebar-fading-out');
-   setCollapsed(true);
-   setTimeout(() => {
-    root.classList.remove('crm-sidebar-fading-out');
-   }, 90);
-   animationTimer = setTimeout(() => {
-    root.classList.remove('crm-sidebar-animating');
+  const toggleCollapsedAnimated = (targetState) => {
+   if (animationTimer) {
+    clearTimeout(animationTimer);
     animationTimer = null;
-   }, 220);
-  } else {
-   root.classList.add('crm-sidebar-animating', 'crm-sidebar-fading-in');
-   setCollapsed(false);
+   }
 
-   animationTimer = setTimeout(() => {
-    root.classList.remove('crm-sidebar-animating', 'crm-sidebar-fading-in');
-    animationTimer = null;
-   }, 220);
-  }
- };
+   const collapsing = targetState !== undefined ? targetState : !isCollapsed();
+
+   if (collapsing === isCollapsed()) {
+    return;
+   }
+
+   if (collapsing) {
+    document.querySelectorAll('.crm-sub.open').forEach(menu => {
+      menu.dataset.wasOpen = 'true';
+    });
+
+    setCollapsed(true);
+   } else {
+    setCollapsed(false);
+
+    document.querySelectorAll('.crm-sub[data-was-open="true"]').forEach(menu => {
+      menu.classList.add('open');
+      delete menu.dataset.wasOpen;
+      const btn = document.querySelector(`[data-crm-menu="${menu.id}"]`);
+      if (btn) btn.classList.add('is-open');
+    });
+   }
+  };
 
  const setMenuOpen = (button, target, open) => {
   target.classList.toggle('open', open);
@@ -133,11 +119,20 @@
  document.querySelectorAll('.crm-link, .crm-toggle').forEach(setTitleFromLabel);
  setCollapsed(readCollapsed(), false);
 
- if (collapseButton) {
-  collapseButton.addEventListener('click', () => {
-   toggleCollapsedAnimated();
+  if (collapseButton) {
+   collapseButton.addEventListener('click', () => {
+    toggleCollapsedAnimated();
+   });
+  }
+
+  window.addEventListener('keydown', (e) => {
+   if ((e.ctrlKey || e.metaKey) && (e.key === 'b' || e.key === 'B')) {
+    if (window.matchMedia('(min-width: 901px)').matches) {
+     e.preventDefault();
+     toggleCollapsedAnimated();
+    }
+   }
   });
- }
 
  if (sidebar) {
   sidebar.addEventListener(

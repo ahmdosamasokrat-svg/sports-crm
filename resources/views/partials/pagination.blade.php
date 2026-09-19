@@ -3,9 +3,9 @@
     {{-- Results Summary --}}
     <div class="crm-pagination-summary">
         @if (app()->getLocale() === 'ar')
-            <span>{{ __('عرض') }} <strong>{{ $paginator->firstItem() }}</strong>–<strong>{{ $paginator->lastItem() }}</strong> {{ __('من أصل') }} <strong>{{ number_format($paginator->total()) }}</strong> {{ __('عميل') }}</span>
+            <span>{{ __('عرض') }} <strong>{{ $paginator->firstItem() }}</strong>–<strong>{{ $paginator->lastItem() }}</strong> {{ __('من أصل') }} <strong>{{ number_format($paginator->total()) }}</strong></span>
         @else
-            <span>{{ __('Showing') }} <strong>{{ $paginator->firstItem() }}</strong> {{ __('to') }} <strong>{{ $paginator->lastItem() }}</strong> {{ __('of') }} <strong>{{ number_format($paginator->total()) }}</strong> {{ __('results') }}</span>
+            <span>{{ __('Showing') }} <strong>{{ $paginator->firstItem() }}</strong> {{ __('to') }} <strong>{{ $paginator->lastItem() }}</strong> {{ __('of') }} <strong>{{ number_format($paginator->total()) }}</strong></span>
         @endif
     </div>
 

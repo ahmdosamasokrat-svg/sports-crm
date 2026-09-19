@@ -94,37 +94,38 @@
 {{-- CRM SHARED SIDEBAR ASSET V1 END --}}
 
 <aside class="crm-side side" id="crmSidebar">
- <a
-  class="crm-side-brand brand"
-  href="{{ route('dashboard') }}"
- >
-  <img
-   class="logo crm-logo-light"
-   src="{{ asset('images/sokrat-pro-tech.png') }}"
-   alt="Sokrat PRO"
+  <a
+   class="crm-side-brand brand"
+   href="{{ route('dashboard') }}"
   >
-  <img
-   class="logo crm-logo-dark"
-   src="{{ asset('images/sokrat-pro-tech-dark.png') }}"
-   alt="Sokrat PRO Tech"
+   <img
+    class="logo crm-logo-light"
+    src="{{ asset('images/sokrat-pro-tech.png') }}"
+    alt="Sokrat PRO"
+   >
+   <img
+    class="logo crm-logo-dark"
+    src="{{ asset('images/sokrat-pro-tech-dark.png') }}"
+    alt="Sokrat PRO Tech"
+   >
+
+   <span>
+    <strong>SokratCRM</strong>
+   </span>
+  </a>
+
+  <button
+   class="crm-sidebar-collapse-btn"
+   id="crmSidebarCollapseBtn"
+   type="button"
+   aria-label="{{ __('crm.collapse_sidebar') }}"
+   aria-pressed="false"
+   title="{{ __('crm.collapse_sidebar') }} (Ctrl+B)"
   >
-
-  <span>
-   <strong>SokratCRM</strong>
-   <small>{{ __('crm.crm_subtitle') }}</small>
-  </span>
- </a>
-
- <button
-  class="crm-sidebar-collapse-btn flex items-center justify-center"
-  id="crmSidebarCollapseBtn"
-  type="button"
-  aria-label="{{ __('crm.collapse_sidebar') }}"
-  aria-pressed="false"
-  title="{{ __('crm.collapse_sidebar') }}"
- >
-  <i class="bi bi-chevron-double-right ltr:rotate-180" aria-hidden="true"></i>
- </button>
+   <svg class="crm-collapse-svg" viewBox="0 0 16 16" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+    <path d="M10 3L5 8L10 13" />
+   </svg>
+  </button>
 
  <p class="crm-side-caption caption">
   {{ __('crm.main_menu') }}
