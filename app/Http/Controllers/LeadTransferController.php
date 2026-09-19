@@ -722,6 +722,22 @@ class LeadTransferController extends Controller
 
         @unlink($path);
 
+        $desc = app()->getLocale() === 'en'
+            ? "Imported {$result['imported']} leads from file (Skipped {$result['skipped']})"
+            : "تم استيراد {$result['imported']} عميل من ملف (تم تخطي {$result['skipped']})";
+
+        \App\Services\ActivityLogger::log(
+            action: 'lead.imported',
+            module: 'leads',
+            description: $desc,
+            properties: [
+                'imported' => $result['imported'],
+                'skipped' => $result['skipped'],
+                'campaign_id' => $campaign?->id,
+            ],
+            actor: $request->user(),
+        );
+
         $message =
             'تم استيراد '
             .$result['imported']

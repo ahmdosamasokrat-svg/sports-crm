@@ -13,13 +13,19 @@ use App\Models\User;
 use App\Observers\CalendarEventNotificationObserver;
 use App\Observers\LeadNotificationObserver;
 use App\Policies\CalendarEventPolicy;
+use App\Policies\GroupPolicy;
 use App\Policies\LeadFollowupPolicy;
 use App\Policies\LeadPolicy;
 use App\Policies\QuotationPolicy;
 use App\Policies\UserPolicy;
 use App\Security\CrmPermission;
+use App\Services\ActivityLogger;
+use Illuminate\Auth\Events\Failed;
+use Illuminate\Auth\Events\Login;
+use Illuminate\Auth\Events\Logout;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
@@ -52,6 +58,51 @@ class AppServiceProvider extends ServiceProvider
                 static fn (User $user): bool => $user->hasPermission($permission),
             );
         }
+
+        Event::listen(Login::class, static function (Login $event): void {
+            if ($event->user instanceof User) {
+                $desc = app()->getLocale() === 'en'
+                    ? "User logged in: {$event->user->name}"
+                    : "تسجيل دخول المستخدم: {$event->user->name}";
+                ActivityLogger::log(
+                    action: 'auth.login',
+                    module: 'users',
+                    description: $desc,
+                    subject: $event->user,
+                    actor: $event->user,
+                );
+            }
+        });
+
+        Event::listen(Logout::class, static function (Logout $event): void {
+            if ($event->user instanceof User) {
+                $desc = app()->getLocale() === 'en'
+                    ? "User logged out: {$event->user->name}"
+                    : "تسجيل خروج المستخدم: {$event->user->name}";
+                ActivityLogger::log(
+                    action: 'auth.logout',
+                    module: 'users',
+                    description: $desc,
+                    subject: $event->user,
+                    actor: $event->user,
+                );
+            }
+        });
+
+        Event::listen(Failed::class, static function (Failed $event): void {
+            $username = (string) ($event->credentials['username'] ?? ($event->credentials['email'] ?? 'unknown'));
+            $desc = app()->getLocale() === 'en'
+                ? "Failed login attempt for user: {$username}"
+                : "محاولة تسجيل دخول فاشلة للمستخدم: {$username}";
+            ActivityLogger::log(
+                action: 'auth.failed',
+                module: 'users',
+                description: $desc,
+                properties: [
+                    'username' => $username,
+                ],
+            );
+        });
 
         View::composer(
             'partials.crm-sidebar',

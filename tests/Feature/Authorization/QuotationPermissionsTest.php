@@ -150,6 +150,41 @@ class QuotationPermissionsTest extends TestCase
             ->assertOk();
     }
 
+    public function test_user_with_quotations_view_all_sees_and_opens_all_employee_quotations(): void
+    {
+        $managerGroup = Group::query()->firstOrCreate(
+            ['code' => 'sales-manager'],
+            [
+                'name' => 'مدير المبيعات',
+                'is_system' => false,
+            ]
+        );
+        $managerGroup->permissions()->sync(
+            Permission::whereIn('code', [
+                'dashboard.view',
+                'quotations.view',
+                'quotations.view_all',
+            ])->pluck('id')
+        );
+
+        $manager = User::factory()->create(['is_active' => true]);
+        $manager->groups()->attach($managerGroup);
+
+        $employeeQuotation = $this->createQuotation(
+            $this->salesAgent,
+            'Employee quotation visible to manager',
+        );
+
+        $this->actingAs($manager)
+            ->get(route('v2.quotations.index'))
+            ->assertOk()
+            ->assertSeeText($employeeQuotation->client_name);
+
+        $this->actingAs($manager)
+            ->get(route('v2.quotations.show', $employeeQuotation))
+            ->assertOk();
+    }
+
     private function createQuotation(User $creator, string $clientName): Quotation
     {
         return Quotation::query()->create([

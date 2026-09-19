@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -17,7 +18,7 @@ use Illuminate\Support\Facades\Lang;
 
 class PipelineStage extends Model
 {
-    use SoftDeletes;
+    use LogsActivity, SoftDeletes;
     public const SIDEBAR_CACHE_KEY = 'crm.sidebar.active_pipeline_stages';
     public const DASHBOARD_CACHE_KEY = 'crm.dashboard.active_pipeline_stages';
 

@@ -91,6 +91,18 @@ class VoipController extends Controller
                 'VOIP_CLIENT_SECRET' => $clientSecret,
             ]);
 
+            \App\Services\ActivityLogger::log(
+                action: 'voip.paired',
+                module: 'settings',
+                description: app()->getLocale() === 'en'
+                    ? "Paired VoIP PBX server ({$apiUrl})"
+                    : "تم الاقتران بنجاح مع خادم السنترال ({$apiUrl})",
+                properties: [
+                    'api_url' => $apiUrl,
+                ],
+                actor: $request->user(),
+            );
+
             return back()->with('success', 'تم الاقتران بنجاح مع خادم Sokrat VoIP!');
         } catch (Throwable $e) {
             return back()->with('error', 'خطأ في الاقتران: '.$e->getMessage());
@@ -106,6 +118,15 @@ class VoipController extends Controller
                 'VOIP_CLIENT_ID' => '',
                 'VOIP_CLIENT_SECRET' => '',
             ]);
+
+            \App\Services\ActivityLogger::log(
+                action: 'voip.disconnected',
+                module: 'settings',
+                description: app()->getLocale() === 'en'
+                    ? "Disconnected VoIP PBX server"
+                    : "تم فصل الارتباط عن خادم السنترال (VoIP)",
+                actor: $request->user(),
+            );
 
             return back()->with('success', 'تم فصل الارتباط عن خادم Sokrat VoIP بنجاح.');
         } catch (Throwable $e) {

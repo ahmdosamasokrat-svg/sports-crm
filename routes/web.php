@@ -338,6 +338,13 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         )->name('v2.leads.bulk-delete');
     });
 
+    Route::middleware('can:leads.assign')->group(function (): void {
+        Route::post(
+            '/leads/bulk-assign',
+            [LeadController::class, 'bulkAssign'],
+        )->name('v2.leads.bulk-assign');
+    });
+
     Route::get(
         '/leads/{lead}/quotation-preview',
         [LeadController::class, 'quotationPreview'],
@@ -447,6 +454,8 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             '/reports/tasks',
             static fn () => view('placeholder', ['title' => 'تقرير المهام']),
         )->name('v2.reports.tasks');
+        Route::get('/reports/employees-alias', static fn () => redirect()->route('v2.reports.employees.index'))
+            ->name('v2.reports.employees');
     });
 
     Route::prefix('reports/employees')->group(function (): void {
@@ -458,8 +467,6 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             ->whereNumber('user')
             ->name('v2.reports.employees.show');
     });
-    Route::get('/reports/employees-alias', static fn () => redirect()->route('v2.reports.employees.index'))
-        ->name('v2.reports.employees');
 
     Route::get('/campaigns', [CampaignController::class, 'index'])
         ->middleware('can:campaigns.view')
@@ -666,5 +673,9 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             Route::post('/voip/disconnect', [VoipController::class, 'disconnect'])
                 ->middleware('can:voip.settings')
                 ->name('.voip.disconnect');
+
+            Route::get('/audit-logs', [\App\Http\Controllers\Settings\ActivityLogController::class, 'index'])
+                ->middleware('can:audit_logs.view')
+                ->name('.audit-logs.index');
         });
 });

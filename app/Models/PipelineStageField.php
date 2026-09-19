@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -14,7 +15,7 @@ use Illuminate\Support\Facades\Cache;
 
 class PipelineStageField extends Model
 {
-    use SoftDeletes;
+    use LogsActivity, SoftDeletes;
 
     public const CACHE_KEY_PREFIX = 'crm.pipeline_stage_fields.stage_';
 

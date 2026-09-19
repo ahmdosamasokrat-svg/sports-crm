@@ -17,7 +17,8 @@ class QuotationPolicy
 
     public function view(User $user, Quotation $quotation): bool
     {
-        return $user->hasPermission(CrmPermission::QUOTATIONS_VIEW);
+        return $user->hasPermission(CrmPermission::QUOTATIONS_VIEW)
+            && $quotation->isAccessibleTo($user);
     }
 
     public function create(User $user): bool

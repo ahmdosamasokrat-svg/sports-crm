@@ -103,6 +103,7 @@ class AuthorizationTest extends TestCase
                 'password' => 'SecretPass123',
                 'password_confirmation' => 'SecretPass123',
                 'group_ids' => [$superAdminGroup->id],
+                'pipeline_stage_access_mode' => 'all',
             ])
             ->assertSessionHasErrors('group_ids');
 
@@ -140,6 +141,7 @@ class AuthorizationTest extends TestCase
                 'username' => $admin->username,
                 'email' => $admin->email,
                 'group_ids' => [$regularGroup->id],
+                'pipeline_stage_access_mode' => 'all',
             ])
             ->assertSessionHasErrors('group_ids');
 
@@ -174,6 +176,7 @@ class AuthorizationTest extends TestCase
                 'password' => 'SecretPass123',
                 'password_confirmation' => 'SecretPass123',
                 'group_ids' => [$targetGroup->id],
+                'pipeline_stage_access_mode' => 'all',
             ])
                 ->assertRedirect()
                 ->assertSessionHasNoErrors();
@@ -200,6 +203,7 @@ class AuthorizationTest extends TestCase
                 'name' => 'Optional Email Updated',
                 'username' => $firstUser->username,
                 'group_ids' => [$targetGroup->id],
+                'pipeline_stage_access_mode' => 'all',
             ])
             ->assertRedirect(route('v2.settings.users.edit', $firstUser))
             ->assertSessionHasNoErrors();

@@ -11,6 +11,7 @@ use App\Models\LeadStatus;
 use App\Models\LeadStatusHistory;
 use App\Models\PipelineStage;
 use App\Models\User;
+use App\Services\ActivityLogger;
 use App\Support\StageFieldSchema;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
@@ -256,6 +257,30 @@ class LeadTransitionService
                     $normalizedStageValues,
                     $historyRecord,
                     $actor
+                );
+            }
+
+            if ($statusChanged) {
+                $fromLabel = (app()->getLocale() === 'en' && !empty($fromStatus?->name_en)) ? $fromStatus->name_en : ($fromStatus?->name_ar ?? '—');
+                $toLabel = (app()->getLocale() === 'en' && !empty($toStatus->name_en)) ? $toStatus->name_en : $toStatus->name_ar;
+                $desc = app()->getLocale() === 'en'
+                    ? "Changed stage/status of lead {$lockedLead->name} from [{$fromLabel}] to [{$toLabel}]"
+                    : "قام بتغيير مرحلة/حالة العميل {$lockedLead->name} من [{$fromLabel}] إلى [{$toLabel}]";
+
+                ActivityLogger::log(
+                    action: 'lead.stage_transition',
+                    module: 'leads',
+                    description: $desc,
+                    subject: $lockedLead,
+                    properties: [
+                        'from_status_id' => $fromStatusId,
+                        'from_status' => $fromLabel,
+                        'to_status_id' => $toStatusId,
+                        'to_status' => $toLabel,
+                        'to_stage' => $toStage?->localizedName(),
+                        'context' => $context,
+                    ],
+                    actor: $actor,
                 );
             }
 

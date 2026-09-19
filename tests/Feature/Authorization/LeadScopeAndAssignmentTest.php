@@ -346,6 +346,40 @@ class LeadScopeAndAssignmentTest extends TestCase
         );
     }
 
+    public function test_bulk_assign_reassigns_leads_to_permitted_target(): void
+    {
+        $this->grantPermissions(
+            $this->actorGroup,
+            [
+                CrmPermission::LEADS_ASSIGN->value,
+                LeadAssignment::groupPermissionCode($this->targetGroup),
+            ],
+        );
+        $this->actor->unsetRelation('groups');
+
+        $lead1 = $this->createLead($this->actor, $this->actor, 'Bulk Lead 1');
+        $lead2 = $this->createLead($this->actor, $this->actor, 'Bulk Lead 2');
+
+        $this->actingAs($this->actor)
+            ->post(route('v2.leads.bulk-assign'), [
+                'lead_ids' => [$lead1->id, $lead2->id],
+                'target_user_id' => $this->target->id,
+            ])
+            ->assertRedirect()
+            ->assertSessionHas('success');
+
+        $this->assertDatabaseHas('leads', [
+            'id' => $lead1->id,
+            'assigned_user_id' => $this->target->id,
+            'assigned_employee' => $this->target->name,
+        ]);
+        $this->assertDatabaseHas('leads', [
+            'id' => $lead2->id,
+            'assigned_user_id' => $this->target->id,
+            'assigned_employee' => $this->target->name,
+        ]);
+    }
+
     private function createGroup(
         string $code,
         array $permissions = [],

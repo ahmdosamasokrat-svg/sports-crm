@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
 use App\Security\CrmPermission;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -12,6 +13,8 @@ use Illuminate\Support\Facades\Storage;
 
 class LeadDocument extends Model
 {
+    use LogsActivity;
+
     public const CATEGORY_QUOTATION = 'quotation';
     public const CATEGORY_PDF = 'pdf';
     public const CATEGORY_IMAGE = 'image';

@@ -26,6 +26,7 @@ enum CrmPermission: string
     case TASKS_VIEW = 'tasks.view';
 
     case QUOTATIONS_VIEW = 'quotations.view';
+    case QUOTATIONS_VIEW_ALL = 'quotations.view_all';
     case QUOTATIONS_CREATE = 'quotations.create';
 
     case CAMPAIGNS_VIEW = 'campaigns.view';
@@ -64,6 +65,8 @@ enum CrmPermission: string
     case LEADS_TRASH_RESTORE = 'leads.trash.restore';
     case LEADS_TRASH_FORCE_DELETE = 'leads.trash.force_delete';
 
+    case AUDIT_LOGS_VIEW = 'audit_logs.view';
+
     public function module(): string
     {
         return explode('.', $this->value, 2)[0];
@@ -89,6 +92,7 @@ enum CrmPermission: string
             self::LEADS_FOLLOWUPS_CREATE => 'تسجيل متابعات العملاء',
             self::TASKS_VIEW => 'عرض المهام والمتابعات',
             self::QUOTATIONS_VIEW => 'عرض عروض الأسعار',
+            self::QUOTATIONS_VIEW_ALL => 'عرض كل عروض الأسعار الخاصة بالموظفين',
             self::QUOTATIONS_CREATE => 'إنشاء عروض الأسعار',
             self::CAMPAIGNS_VIEW => 'عرض الحملات',
             self::CAMPAIGNS_CREATE => 'إنشاء الحملات',
@@ -119,6 +123,7 @@ enum CrmPermission: string
             self::LEADS_TRASH_VIEW => 'عرض سلة مهملات العملاء',
             self::LEADS_TRASH_RESTORE => 'استعادة العملاء من سلة المهملات',
             self::LEADS_TRASH_FORCE_DELETE => 'الحذف النهائي للعملاء من سلة المهملات',
+            self::AUDIT_LOGS_VIEW => 'عرض سجل العمليات والنشاطات (Logs)',
         };
     }
 
@@ -152,6 +157,7 @@ enum CrmPermission: string
             'voip' => 'اتصالات السنترال (VoIP)',
             'calendar' => 'التقويم والأحداث',
             'technical_support' => 'الدعم الفني',
+            'audit_logs' => 'سجل العمليات والنشاطات',
         ];
     }
 }

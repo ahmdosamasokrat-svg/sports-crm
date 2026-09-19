@@ -119,7 +119,8 @@
         .settings-tabs a {
             display: inline-flex;
             align-items: center;
-            gap: 7px;
+            justify-content: center;
+            gap: 8px;
             color: var(--muted);
             text-decoration: none;
             font-weight: 800;
@@ -128,6 +129,16 @@
             border-radius: 10px;
             transition: all 0.15s ease;
             white-space: nowrap;
+            line-height: 1;
+        }
+        .settings-tabs a i {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 15px;
+            line-height: 1;
+            flex-shrink: 0;
+            transform: translateY(0.5px);
         }
         .settings-tabs a:hover {
             background: var(--bg);
@@ -437,11 +448,96 @@
         }
         .permission-table th:first-child { background: var(--bg); }
         .permission-table tr:hover td:first-child { background: var(--bg); }
-        .permission-table .module-row td {
-            background: var(--bg) !important;
-            color: var(--dark);
-            font-weight: 900;
+        .permission-table .module-row td,
+        .permission-table .module-row:hover td {
+            background: #eef2f6 !important;
+            color: #0f172a !important;
+            font-weight: 800;
             text-align: start;
+            padding: 13px 18px !important;
+            border-top: 2px solid #cbd5e1 !important;
+            border-bottom: 2px solid #cbd5e1 !important;
+            border-inline-start: 6px solid var(--red) !important;
+        }
+        .permission-table .module-header-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            position: sticky;
+            inset-inline-start: 18px;
+        }
+        .permission-table .module-header-main {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .permission-table .module-icon-box {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            background: #ffffff;
+            color: var(--red);
+            font-size: 16px;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.06);
+            border: 1px solid #d1d5db;
+        }
+        .permission-table .module-title-text {
+            font-size: 14.5px;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: 0.2px;
+        }
+        .permission-table .module-count-badge {
+            display: inline-flex;
+            align-items: center;
+            padding: 3px 10px;
+            border-radius: 20px;
+            background: #ffffff;
+            color: #475569;
+            font-size: 11px;
+            font-weight: 700;
+            border: 1px solid #cbd5e1;
+        }
+        .permission-table .permission-bullet {
+            display: inline-block;
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #cbd5e1;
+            margin-inline-end: 8px;
+            vertical-align: middle;
+            transition: background 0.15s ease;
+        }
+        .permission-table tr:hover .permission-bullet {
+            background: var(--red);
+        }
+        html.dark-mode .permission-table .module-row td,
+        html.dark-mode .permission-table .module-row:hover td {
+            background: #273549 !important;
+            color: #f8fafc !important;
+            border-top: 2px solid rgba(255, 255, 255, 0.15) !important;
+            border-bottom: 2px solid rgba(255, 255, 255, 0.15) !important;
+            border-inline-start: 6px solid var(--red) !important;
+        }
+        html.dark-mode .permission-table .module-icon-box {
+            background: rgba(239, 68, 68, 0.25);
+            color: #fca5a5;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        html.dark-mode .permission-table .module-title-text {
+            color: #f8fafc;
+        }
+        html.dark-mode .permission-table .module-count-badge {
+            background: rgba(255, 255, 255, 0.1);
+            color: #e2e8f0;
+            border: 1px solid rgba(255, 255, 255, 0.15);
+        }
+        html.dark-mode .permission-table .permission-bullet {
+            background: #475569;
         }
         .permission-table input {
             width: 22px;
@@ -450,6 +546,75 @@
             cursor: pointer;
             touch-action: manipulation;
         }
+
+        /* CRM Shared Pagination Styles */
+        .crm-pagination-wrapper {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+            flex-wrap: wrap;
+            padding: 8px 4px;
+        }
+        .crm-pagination-summary {
+            font-size: 12.5px;
+            color: var(--muted);
+            font-weight: 600;
+        }
+        .crm-pagination-summary strong {
+            color: var(--dark);
+            font-weight: 800;
+        }
+        .crm-pagination-list {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+        .crm-page-item {
+            display: inline-block;
+        }
+        .crm-page-link {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 36px;
+            height: 36px;
+            padding: 0 10px;
+            border-radius: 9px;
+            border: 1px solid var(--line);
+            background: var(--card);
+            color: var(--dark);
+            font-size: 12.5px;
+            font-weight: 700;
+            text-decoration: none;
+            transition: all 0.15s ease;
+        }
+        .crm-page-link:hover:not(.ellipsis) {
+            border-color: var(--red);
+            color: var(--red);
+            background: color-mix(in srgb, var(--red) 6%, var(--card));
+            transform: translateY(-1px);
+        }
+        .crm-page-item.active .crm-page-link {
+            background: var(--red);
+            border-color: var(--red);
+            color: #fff;
+            box-shadow: 0 4px 12px rgba(220, 38, 55, 0.25);
+        }
+        .crm-page-item.disabled .crm-page-link {
+            opacity: 0.45;
+            cursor: not-allowed;
+            pointer-events: none;
+            background: var(--bg);
+        }
+        .crm-page-link.prev-next {
+            gap: 6px;
+            padding: 0 14px;
+        }
+
         /* Dark Mode Overrides */
         html.dark-mode .settings-tabs {
             background: rgba(30, 41, 59, 0.6);
@@ -576,6 +741,11 @@
             @can('voip.settings')
                 <a class="{{ request()->routeIs('v2.settings.voip') ? 'active' : '' }}" href="{{ route('v2.settings.voip') }}">
                     <i class="bi bi-telephone"></i> {{ __('crm.voip_link') }}
+                </a>
+            @endcan
+            @can('audit_logs.view')
+                <a class="{{ request()->routeIs('v2.settings.audit-logs.*') ? 'active' : '' }}" href="{{ route('v2.settings.audit-logs.index') }}">
+                    <i class="bi bi-clock-history"></i> {{ __('crm.audit_logs') ?? 'سجل العمليات' }}
                 </a>
             @endcan
         </nav>

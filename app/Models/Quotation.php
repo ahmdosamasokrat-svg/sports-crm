@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Models\Concerns\LogsActivity;
+use App\Security\CrmPermission;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Quotation extends Model
 {
+    use LogsActivity;
+
     protected $fillable = [
         'quotation_no',
         'client_name',
@@ -32,7 +36,7 @@ class Quotation extends Model
 
     public function scopeAccessibleTo(Builder $query, User $user): Builder
     {
-        if ($user->isSuperAdmin()) {
+        if ($user->isSuperAdmin() || $user->hasPermission(CrmPermission::QUOTATIONS_VIEW_ALL) || $user->hasPermission('quotations.view_all')) {
             return $query;
         }
 

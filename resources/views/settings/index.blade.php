@@ -66,9 +66,15 @@
             </a>
         @endcan
         @can('voip.settings')
-            <a class="stat-card action-card" href="{{ route('v2.settings.voip') }}">
+            <a class="stat-card" href="{{ route('v2.settings.voip') }}">
                 <span><i class="bi bi-telephone" style="color:#0284c7"></i> {{ __('crm.voip_link') }}</span>
                 <b style="font-size:17px;margin-top:8px">{{ __('crm.voip_server_settings') }}</b>
+            </a>
+        @endcan
+        @can('audit_logs.view')
+            <a class="stat-card" href="{{ route('v2.settings.audit-logs.index') }}">
+                <span><i class="bi bi-clock-history" style="color:#8b5cf6"></i> {{ __('crm.audit_logs') ?? 'سجل العمليات' }}</span>
+                <b style="font-size:17px;margin-top:8px">{{ __('crm.audit_logs_desc') ?? 'متابعة نشاطات وإجراءات الموظفين' }}</b>
             </a>
         @endcan
     </div>

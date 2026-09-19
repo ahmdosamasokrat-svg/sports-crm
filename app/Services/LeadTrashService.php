@@ -10,6 +10,7 @@ use App\Models\LeadStatusHistory;
 use App\Models\PipelineStage;
 use App\Models\User;
 use App\Security\CrmPermission;
+use App\Services\ActivityLogger;
 use App\Support\CrmDatabaseGuard;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Facades\DB;
@@ -32,7 +33,27 @@ class LeadTrashService
         $lead->deleted_reason = $reason ?? 'manual_delete';
         $lead->save();
 
-        return (bool) $lead->delete();
+        $deleted = (bool) $lead->delete();
+
+        if ($deleted) {
+            $desc = app()->getLocale() === 'en'
+                ? "Moved lead {$lead->name} to trash (Reason: {$lead->deleted_reason})"
+                : "قام بنقل العميل {$lead->name} إلى سلة المهملات (السبب: {$lead->deleted_reason})";
+
+            ActivityLogger::log(
+                action: 'lead.trashed',
+                module: 'leads',
+                description: $desc,
+                subject: $lead,
+                properties: [
+                    'reason' => $lead->deleted_reason,
+                    'stage_id' => $stageId,
+                ],
+                actor: $actor,
+            );
+        }
+
+        return $deleted;
     }
 
     /**
@@ -157,6 +178,22 @@ class LeadTrashService
             $lockedLead->deleted_reason = null;
             $lockedLead->save();
 
+            $desc = app()->getLocale() === 'en'
+                ? "Restored lead {$lockedLead->name} from trash"
+                : "قام باستعادة العميل {$lockedLead->name} من سلة المهملات";
+
+            ActivityLogger::log(
+                action: 'lead.restored',
+                module: 'leads',
+                description: $desc,
+                subject: $lockedLead,
+                properties: [
+                    'stage_id' => $resolvedStatus?->pipeline_stage_id,
+                    'status_id' => $resolvedStatus?->id,
+                ],
+                actor: $actor,
+            );
+
             return $lockedLead;
         });
     }
@@ -180,7 +217,23 @@ class LeadTrashService
                 Storage::disk('local')->delete($quotationPath);
             }
 
-            return (bool) $lockedLead->forceDelete();
+            $deleted = (bool) $lockedLead->forceDelete();
+
+            if ($deleted) {
+                $desc = app()->getLocale() === 'en'
+                    ? "Permanently deleted lead {$lockedLead->name} from trash"
+                    : "قام بالحذف النهائي للعميل {$lockedLead->name} من سلة المهملات";
+
+                ActivityLogger::log(
+                    action: 'lead.force_deleted',
+                    module: 'leads',
+                    description: $desc,
+                    subject: $lockedLead,
+                    actor: $actor,
+                );
+            }
+
+            return $deleted;
         });
     }
 

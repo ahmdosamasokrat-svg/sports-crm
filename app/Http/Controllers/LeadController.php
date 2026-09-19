@@ -343,6 +343,10 @@ class LeadController extends Controller
         $queryWithoutStatus = $activeQuery;
         unset($queryWithoutStatus['status'], $queryWithoutStatus['stage']);
 
+        $assignableUsers = ($user && ($user->isSuperAdmin() || $user->hasPermission(CrmPermission::LEADS_ASSIGN)))
+            ? LeadAssignment::assignableUsers($user)
+            : collect();
+
         return view(
             'leads.index',
             compact(
@@ -360,7 +364,8 @@ class LeadController extends Controller
                 'filters',
                 'activeQuery',
                 'queryWithoutStatus',
-                'totalLeads'
+                'totalLeads',
+                'assignableUsers'
             )
         );
     }
@@ -941,6 +946,7 @@ class LeadController extends Controller
             return redirect()
                 ->route('v2.campaigns.show', [
                     'campaign' => $campaign,
+                    'assigned_user_id' => $assignee->id,
                 ])
                 ->with('success', 'تمت إضافة العميل إلى الحملة بنجاح.');
         }
@@ -1805,6 +1811,20 @@ class LeadController extends Controller
                 .now()->format('Ymd-His')
                 .'.xlsx';
 
+            $desc = app()->getLocale() === 'en'
+                ? "Exported {$selectedLeads->count()} leads to an Excel spreadsheet"
+                : "قام بتصدير {$selectedLeads->count()} عميل إلى ملف إكسيل";
+
+            \App\Services\ActivityLogger::log(
+                action: 'lead.exported',
+                module: 'leads',
+                description: $desc,
+                properties: [
+                    'count' => $selectedLeads->count(),
+                ],
+                actor: $request->user(),
+            );
+
             return response()
                 ->download(
                     $temporaryFile,
@@ -1857,6 +1877,96 @@ class LeadController extends Controller
         return redirect()
             ->back()
             ->with('success', "تم نقل {$trashedCount} عميل إلى سلة المهملات بنجاح.");
+    }
+
+    public function bulkAssign(
+        Request $request
+    ): RedirectResponse {
+        $this->assertCrmV2Database();
+        $actor = $request->user();
+        abort_unless(
+            $actor !== null && ($actor->isSuperAdmin() || $actor->hasPermission(CrmPermission::LEADS_ASSIGN)),
+            403,
+            'غير مصرح لك بإسناد العملاء.'
+        );
+
+        $validated = $request->validate([
+            'lead_ids' => ['required', 'array', 'min:1', 'max:1000'],
+            'lead_ids.*' => ['required', 'integer'],
+            'target_user_id' => [
+                'required',
+                'integer',
+                Rule::exists('users', 'id')->where('is_active', true),
+            ],
+        ], [
+            'lead_ids.required' => 'اختر عميلًا واحدًا على الأقل.',
+            'lead_ids.min' => 'اختر عميلًا واحدًا على الأقل.',
+            'target_user_id.required' => 'اختر الموظف المسؤول.',
+        ]);
+
+        $target = User::query()->findOrFail((int) $validated['target_user_id']);
+
+        if (! LeadAssignment::canAssignTo($actor, $target)) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'target_user_id' => 'لا تملك صلاحية إسناد العملاء إلى هذا الموظف.',
+            ]);
+        }
+
+        $leadIds = array_map('intval', $validated['lead_ids']);
+
+        $leads = Lead::query()
+            ->with(['status'])
+            ->whereIn('id', $leadIds)
+            ->accessibleTo($actor)
+            ->get();
+
+        if ($leads->isEmpty()) {
+            throw \Illuminate\Validation\ValidationException::withMessages([
+                'lead_ids' => 'لم يتم العثور على أي عملاء متاحين للإسناد.',
+            ]);
+        }
+
+        if ($target->hasRestrictedPipelineStageAccess()) {
+            foreach ($leads as $lead) {
+                if ($lead->status && ! $target->canAccessPipelineStage((int) $lead->status->pipeline_stage_id)) {
+                    throw \Illuminate\Validation\ValidationException::withMessages([
+                        'target_user_id' => 'الموظف المختار لا يملك صلاحية الوصول إلى مرحلة العميل: '.$lead->name,
+                    ]);
+                }
+            }
+        }
+
+        $assignedCount = 0;
+        DB::transaction(function () use ($leads, $target, &$assignedCount): void {
+            foreach ($leads as $lead) {
+                $lead->update([
+                    'assigned_user_id' => $target->id,
+                    'assigned_employee' => $target->name,
+                ]);
+                $assignedCount++;
+            }
+        });
+
+        $desc = app()->getLocale() === 'en'
+            ? "Assigned {$assignedCount} leads to employee {$target->name}"
+            : "قام بإسناد {$assignedCount} عميل إلى الموظف {$target->name}";
+
+        \App\Services\ActivityLogger::log(
+            action: 'lead.bulk_assign',
+            module: 'leads',
+            description: $desc,
+            properties: [
+                'target_user_id' => $target->id,
+                'target_user_name' => $target->name,
+                'count' => $assignedCount,
+                'lead_ids' => $leads->pluck('id')->all(),
+            ],
+            actor: $actor,
+        );
+
+        return redirect()
+            ->back()
+            ->with('success', "تم إسناد {$assignedCount} عميل إلى {$target->name} بنجاح.");
     }
 
     public function quotationPreview(
