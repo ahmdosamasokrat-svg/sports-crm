@@ -14,7 +14,14 @@ class DatabaseSeeder extends Seeder
         $this->call([
             CrmV2PipelineSeeder::class,
             CrmAccessControlSeeder::class,
-            CalendarEventSeeder::class,
         ]);
+
+        $seedDemoData = filter_var(env('CRM_SEED_DEMO_DATA', false), FILTER_VALIDATE_BOOLEAN);
+
+        if (! app()->isProduction() && app()->environment(['local', 'testing']) && $seedDemoData) {
+            $this->call([
+                CalendarEventSeeder::class,
+            ]);
+        }
     }
 }

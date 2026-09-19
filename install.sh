@@ -2,14 +2,14 @@
 set -Eeuo pipefail
 umask 027
 
-APP_NAME="SOKRAT CRM V2"
-REPO_URL="https://github.com/ahmdosamasokrat-svg/sokrat-crm-v2.git"
-APP_DIR="/var/www/html/crm-v2"
+APP_NAME="SportTime CRM"
+REPO_URL="https://github.com/ahmdosamasokrat-svg/mpc-crm.git"
+APP_DIR="/var/www/html/sporttime-crm"
 DB_NAME="sokrat_crm_v2"
 DB_USER="sokrat_crm_v2_app"
-SITE_NAME="sokrat-crm-v2"
+SITE_NAME="sporttime-crm"
 SITE_CONF="/etc/apache2/sites-available/${SITE_NAME}.conf"
-CREDENTIALS_FILE="/root/sokrat-crm-v2-credentials.txt"
+CREDENTIALS_FILE="/root/sporttime-crm-credentials.txt"
 
 APP_CREATED=0
 DB_CREATED=0
@@ -162,13 +162,17 @@ COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 if [ -f package.json ]; then
     log "Installing JavaScript dependencies and building Vite assets"
-    npm install --no-audit --no-fund --no-progress
+    if [ -f package-lock.json ]; then
+        npm ci --no-audit --no-fund --no-progress
+    else
+        npm install --no-audit --no-fund --no-progress
+    fi
     npm run build
 fi
 
 DB_PASSWORD="$(openssl rand -hex 24)"
 CRM_ADMIN_USER="admin"
-CRM_ADMIN_PASSWORD='Admin@123'
+CRM_ADMIN_PASSWORD="$(openssl rand -base64 48 | tr -dc 'A-Za-z0-9' | head -c 20)"
 CRM_ADMIN_NAME="مدير النظام"
 CRM_ADMIN_EMAIL="admin@localhost.invalid"
 
@@ -194,7 +198,7 @@ set_env() {
     fi
 }
 
-set_env APP_NAME "SOKRAT CRM V2"
+set_env APP_NAME "SportTime CRM"
 set_env APP_ENV production
 set_env APP_DEBUG false
 set_env APP_URL "http://localhost"
@@ -247,8 +251,8 @@ cat > "$SITE_CONF" <<APACHE
         Require all granted
     </Directory>
 
-    ErrorLog \${APACHE_LOG_DIR}/sokrat-crm-v2-error.log
-    CustomLog \${APACHE_LOG_DIR}/sokrat-crm-v2-access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/sporttime-crm-error.log
+    CustomLog \${APACHE_LOG_DIR}/sporttime-crm-access.log combined
 </VirtualHost>
 APACHE
 SITE_CREATED=1
@@ -267,7 +271,7 @@ php artisan migrate:status --no-ansi >/dev/null
 curl -fsS --max-time 15 "http://localhost/login" >/dev/null || curl -fsS --max-time 15 "http://127.0.0.1/login" >/dev/null
 
 cat > "$CREDENTIALS_FILE" <<CREDS
-SOKRAT CRM V2 INSTALLATION CREDENTIALS
+SportTime CRM INSTALLATION CREDENTIALS
 ======================================
 URL=http://localhost/
 Admin user=${CRM_ADMIN_USER}
@@ -283,7 +287,7 @@ chmod 600 "$CREDENTIALS_FILE"
 trap - ERR
 
 printf '\n==================================================\n'
-printf 'SOKRAT CRM V2 INSTALLATION COMPLETE\n'
+printf 'SportTime CRM INSTALLATION COMPLETE\n'
 printf '==================================================\n'
 printf 'URL: http://localhost/\n'
 printf 'Admin user: %s\n' "$CRM_ADMIN_USER"

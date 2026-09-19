@@ -41,6 +41,9 @@ Thumbs.db
 /.env
 /.env.*
 !/.env.example
+/docker.env
+!/docker.env.example
+/.omo/
 /auth.json
 
 # Dependencies

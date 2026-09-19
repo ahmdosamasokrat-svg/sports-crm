@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-echo "=== Sokrat CRM V2 Container Starting ==="
+echo "=== SportTime CRM Container Starting ==="
 
 # Allow git operations in mounted working directory
 git config --global --add safe.directory /var/www/html 2>/dev/null || true
@@ -61,8 +61,9 @@ if [ -n "$DB_HOST" ]; then
     echo "Running database migrations..."
     php artisan migrate --force --no-interaction
 
-    echo "Running seeders (admin user & default pipeline)..."
-    php artisan db:seed --force --no-interaction || true
+    echo "Running core seeders (CrmV2PipelineSeeder, CrmAccessControlSeeder)..."
+    php artisan db:seed --class=Database\\Seeders\\CrmV2PipelineSeeder --force --no-interaction
+    php artisan db:seed --class=Database\\Seeders\\CrmAccessControlSeeder --force --no-interaction
 fi
 
 echo "Creating storage symlink..."
@@ -73,5 +74,5 @@ php artisan config:clear --no-interaction || true
 php artisan route:cache --no-interaction || true
 php artisan view:cache --no-interaction || true
 
-echo "=== Sokrat CRM V2 is ready! Starting Apache ==="
+echo "=== SportTime CRM is ready! Starting Apache ==="
 exec "$@"

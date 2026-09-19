@@ -1,30 +1,30 @@
-# SOKRAT CRM V2
+# SportTime CRM
 
-**SOKRAT CRM V2** is a modern, high-performance Customer Relationship Management system built with PHP 8.3 and Laravel 13. Designed specifically for deployment on **Ubuntu 24.04.4 LTS**, it provides comprehensive tools for managing leads, tracking pipeline stages, generating quotations, conducting campaigns, and analyzing team performance.
+**SportTime CRM** is a modern, high-performance Customer Relationship Management system built with PHP 8.3 and Laravel 13. Designed specifically for deployment on **Ubuntu 24.04.4 LTS** or via **Docker**, it provides comprehensive tools for managing leads, tracking pipeline stages, generating quotations, conducting campaigns, and analyzing team performance.
 
 ---
 
 ## ⚡ One-Line Commands
 
-### 🐳 One-Line Docker Install (Cross-Platform)
-Run instantly on any system with Docker installed:
+### 🐳 Docker Deployment (Cross-Platform)
+Clone the full repository and start the containers using Docker Compose:
 ```bash
-curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/docker-compose.yml -o docker-compose.yml && docker compose up -d
+git clone https://github.com/ahmdosamasokrat-svg/mpc-crm.git sporttime-crm
+cd sporttime-crm
+cp docker.env.example docker.env
+# Edit docker.env to configure secure passwords (DB_PASSWORD, MYSQL_ROOT_PASSWORD, CRM_V2_ADMIN_PASSWORD)
+docker compose --env-file docker.env up -d
 ```
-*Or via Git Clone:*
-```bash
-git clone https://github.com/ahmdosamasokrat-svg/sokrat-crm-v2.git crm && cd crm && docker compose up -d
-```
-> **Access:** [http://localhost:8080](http://localhost:8080) | **Admin:** `admin` | **Password:** `Admin@123`
+> **Access:** [http://localhost:8081](http://localhost:8081) | **Default Admin User:** `admin` | **Password:** Set in `docker.env`
 
 ### One-Line Install Command (Ubuntu 24.04.4 Bare-Metal)
 ```bash
-curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/mpc-crm/main/install.sh | sudo bash
 ```
 
 ### One-Line Uninstall Command (Ubuntu 24.04.4)
 ```bash
-curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/uninstall.sh | sudo bash -s -- -y
+curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/mpc-crm/main/uninstall.sh | sudo bash -s -- -y
 ```
 
 ---
@@ -76,29 +76,29 @@ MicroSIP passes the caller ID to the command. CRM normalizes common local and in
 Run this command on your Ubuntu 24.04.4 server terminal:
 
 ```bash
-curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/install.sh | sudo bash
+curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/mpc-crm/main/install.sh | sudo bash
 ```
 
 ### Method 2: Manual Clone & Install
 If you have cloned the repository locally:
 
 ```bash
-git clone https://github.com/ahmdosamasokrat-svg/sokrat-crm-v2.git
-cd sokrat-crm-v2
+git clone https://github.com/ahmdosamasokrat-svg/mpc-crm.git
+cd mpc-crm
 chmod +x install.sh
 sudo ./install.sh
 ```
 
 ### What `install.sh` Does:
 1. Installs Apache 2.4, MySQL 8.0, PHP 8.3 (with required extensions), Composer, and Node.js/npm.
-2. Clones/places application files in `/var/www/html/crm-v2`.
-3. Installs PHP dependencies (`composer install`) and builds frontend assets (`npm install && npm run build`).
+2. Clones/places application files in `/var/www/html/sporttime-crm`.
+3. Installs PHP dependencies (`composer install`) and builds frontend assets (`npm ci && npm run build`).
 4. Creates an isolated MySQL database (`sokrat_crm_v2`) and user (`sokrat_crm_v2_app`) with secure generated credentials.
 5. Generates `.env` and application key (`php artisan key:generate`).
-6. Executes database migrations, seeds the CRM pipeline and permissions, and provisions `admin` as the default Super Admin.
-7. Configures Apache VirtualHost serving `/var/www/html/crm-v2/public` on `http://localhost/`.
+6. Executes database migrations, seeds the CRM pipeline and permissions, and provisions `admin` as the default Super Admin with an auto-generated secure password.
+7. Configures Apache VirtualHost serving `/var/www/html/sporttime-crm/public` on `http://localhost/`.
 8. Secures directory storage/cache permissions for `www-data`.
-9. Saves the CRM and database credentials to `/root/sokrat-crm-v2-credentials.txt`.
+9. Saves the CRM and database credentials to `/root/sporttime-crm-credentials.txt`.
 
 Once installed, open your browser and navigate to:
 👉 **[http://localhost/](http://localhost/)**
@@ -106,7 +106,7 @@ Once installed, open your browser and navigate to:
 Default CRM account:
 
 - **Username:** `admin`
-- **Password:** `Admin@123`
+- **Password:** Automatically generated during installation and saved in `/root/sporttime-crm-credentials.txt`.
 
 Change this password from **Settings → Users** after the first login.
 
@@ -116,29 +116,29 @@ Change this password from **Settings → Users** after the first login.
 
 ### Method 1: One-Line Uninstall (Recommended)
 ```bash
-curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/sokrat-crm-v2/main/uninstall.sh | sudo bash -s -- -y
+curl -sSL https://raw.githubusercontent.com/ahmdosamasokrat-svg/mpc-crm/main/uninstall.sh | sudo bash -s -- -y
 ```
 
 ### Method 2: Manual Uninstall
 ```bash
-cd sokrat-crm-v2 # or /var/www/html/crm-v2
+cd /var/www/html/sporttime-crm
 chmod +x uninstall.sh
 sudo ./uninstall.sh
 ```
 
 ### What `uninstall.sh` Does:
-1. Disables and removes the Apache virtual host site (`sokrat-crm-v2.conf`).
+1. Disables and removes the Apache virtual host site (`sporttime-crm.conf`).
 2. Re-enables default Apache site (`000-default.conf`).
 3. Drops the MySQL database (`sokrat_crm_v2`) and database user (`sokrat_crm_v2_app`).
-4. Purges the application directory `/var/www/html/crm-v2`.
-5. Removes `/root/sokrat-crm-v2-credentials.txt`.
+4. Safely purges the application directory `/var/www/html/sporttime-crm` (with strict path validation).
+5. Removes `/root/sporttime-crm-credentials.txt`.
 
 ---
 
 ## Repository Structure
 
 ```text
-sokrat-crm-v2/
+sporttime-crm/
 ├── app/
 │   ├── Http/Controllers/    # Dashboard, Lead, Followup, Quotation, Task controllers
 │   ├── Models/              # Lead, LeadFollowup, LeadStatus, PipelineStage, Quotation, User
@@ -164,6 +164,9 @@ sokrat-crm-v2/
 ├── storage/                 # Logs, framework cache, compiled views
 ├── tests/                   # Unit & feature tests
 ├── .env.example             # Example environment file
+├── docker.env.example       # Example Docker environment configuration
+├── docker-compose.yml       # Docker Compose service definitions
+├── docker-entrypoint.sh     # Docker container entrypoint script
 ├── composer.json            # PHP dependencies
 ├── package.json             # JS/Node dependencies & Vite config
 ├── install.sh               # Ubuntu 24.04.4 automated installer
@@ -175,4 +178,4 @@ sokrat-crm-v2/
 
 ## License & Support
 
-Developed for Sokrat CRM systems. Licensed under the MIT License.
+Developed for SportTime CRM systems. Licensed under the MIT License.
