@@ -481,10 +481,16 @@
                    <div class="lead-avatar">
                        <i class="bi bi-person"></i>
                    </div>
-                   <div class="lead-names">
-                       <h2>{{ $lead->name }}</h2>
-                       <p>
-                           @if ($lead->company_name)
+                    <div class="lead-names">
+                        <h2>{{ $lead->name }}</h2>
+                        <p>
+                            @if ($lead->branch)
+                                <span class="badge" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;font-size:12px;font-weight:700">
+                                    <i class="bi bi-geo-alt-fill"></i> {{ $lead->branch->localizedName() }}
+                                </span>
+                                <span>•</span>
+                            @endif
+                            @if ($lead->company_name)
                                <span><i class="bi bi-building"></i> {{ $lead->company_name }}</span>
                                <span>•</span>
                            @endif

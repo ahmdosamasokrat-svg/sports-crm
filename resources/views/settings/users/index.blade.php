@@ -55,6 +55,11 @@
                     <tr>
                         <td>
                             <strong>{{ $managedUser->name }}</strong>
+                            @if($managedUser->branch)
+                                <span class="badge" style="background:#ecfdf5;color:#065f46;font-size:11px;margin-inline-start:4px">
+                                    <i class="bi bi-geo-alt"></i> {{ $managedUser->branch->localizedName() }}
+                                </span>
+                            @endif
                             <div class="hint">{{ $managedUser->email ?: __('crm.no_email') }}</div>
                         </td>
                         <td><code>{{ $managedUser->username }}</code></td>

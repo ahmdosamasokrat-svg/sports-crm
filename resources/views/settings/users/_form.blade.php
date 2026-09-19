@@ -32,6 +32,21 @@
         <label for="email">{{ __('crm.email_optional') }}</label>
         <input id="email" name="email" type="email" dir="ltr" value="{{ old('email', $managedUser->email ?? '') }}">
     </div>
+    <div class="field">
+        <label for="branch_id">{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+        @php
+            $currentBranchId = (int) old('branch_id', $managedUser->branch_id ?? 0);
+        @endphp
+        <select id="branch_id" name="branch_id" style="width:100%;padding:10px;border-radius:10px;border:1px solid var(--line)">
+            <option value="">{{ __('crm.no_branch_assigned') ?: '-- بدون فرع محدد --' }}</option>
+            @foreach(($branches ?? []) as $branch)
+                <option value="{{ $branch->id }}" @selected($currentBranchId === (int) $branch->id)>
+                    {{ $branch->localizedName() }} ({{ $branch->code }})
+                </option>
+            @endforeach
+        </select>
+        <div class="hint">{{ __('crm.user_branch_help') ?: 'تحديد فرع عمل المستخدم للتحكم في وصول وعرض بيانات العملاء' }}</div>
+    </div>
     @if(!empty($isVoipConnected))
     <div class="field">
         <label for="voip_extension">{{ __('crm.extension_label') }}</label>

@@ -118,11 +118,13 @@ class PipelineStageUserAccessTest extends TestCase
 
     public function test_super_admin_bypasses_selected_stage_restrictions(): void
     {
-        $superAdminGroup = Group::query()->create([
-            'name' => 'Super Admin',
-            'code' => Group::SUPER_ADMIN_CODE,
-            'is_system' => true,
-        ]);
+        $superAdminGroup = Group::query()->firstOrCreate(
+            ['code' => Group::SUPER_ADMIN_CODE],
+            [
+                'name' => 'Super Admin',
+                'is_system' => true,
+            ]
+        );
         $superAdmin = User::factory()->create([
             'pipeline_stage_access_mode' => 'selected',
         ]);
@@ -134,11 +136,13 @@ class PipelineStageUserAccessTest extends TestCase
 
     public function test_user_settings_persist_selected_stages_and_show_new_stages_dynamically(): void
     {
-        $superAdminGroup = Group::query()->create([
-            'name' => 'Super Admin',
-            'code' => Group::SUPER_ADMIN_CODE,
-            'is_system' => true,
-        ]);
+        $superAdminGroup = Group::query()->firstOrCreate(
+            ['code' => Group::SUPER_ADMIN_CODE],
+            [
+                'name' => 'Super Admin',
+                'is_system' => true,
+            ]
+        );
         $superAdmin = User::factory()->create();
         $superAdmin->groups()->attach($superAdminGroup);
 

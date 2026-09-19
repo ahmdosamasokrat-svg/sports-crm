@@ -198,6 +198,14 @@ final class EmployeeReportService
             ->where('is_active', true)
             ->with(['groups:id,name,code']);
 
+        if (! $viewer->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($viewer->branch_id !== null) {
+                $query->where('users.branch_id', $viewer->branch_id);
+            } else {
+                $query->whereRaw('0 = 1');
+            }
+        }
+
         if ($viewer->isSuperAdmin() || $viewer->hasPermission(CrmPermission::LEADS_SCOPE_ALL)) {
             return $query;
         }

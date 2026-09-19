@@ -11,8 +11,13 @@
 @endphp
 <article class="kanban-card" draggable="{{ $canCreateFollowup ? 'true' : 'false' }}" data-kanban-lead="{{ $lead->id }}" data-kanban-lead-name="{{ $lead->name }}" data-current-status-id="{{ $columnStatusId }}" data-current-status-name="{{ $columnStatusName }}" data-followup-url="{{ route('v2.leads.followups.index', $lead) }}" data-kanban-lead-scope="{{ $cardScope }}" style="--card-stage-color: {{ $columnStageColor }};">
  <div class="kanban-card-head">
-  <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;">
+  <div style="display:flex;align-items:center;gap:6px;min-width:0;flex:1;flex-wrap:wrap;">
    <a class="kanban-card-name" href="{{ route('v2.leads.show', $lead) }}">{{ $lead->name }}</a>
+   @if ($lead->branch)
+    <span class="badge" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;" title="{{ __('crm.branch') }}">
+     <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+    </span>
+   @endif
    @if ($cardTemp)
     @php
         $cardTempStyle = match($cardTemp) {

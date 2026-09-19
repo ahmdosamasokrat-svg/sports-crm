@@ -962,6 +962,25 @@
         </datalist>
        </div>
 
+       @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+       <div class="field">
+        <label for="branchId">{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+        <select id="branchId" name="branch_id">
+         <option value="">{{ __('crm.no_branch_assigned') ?: '-- بدون فرع --' }}</option>
+         @foreach ($branches as $br)
+          <option value="{{ $br->id }}" @selected((int) old('branch_id', $lead->branch_id) === (int) $br->id)>
+           {{ $br->localizedName() }} ({{ $br->code }})
+          </option>
+         @endforeach
+        </select>
+       </div>
+       @elseif($lead->branch)
+       <div class="field">
+        <label>{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+        <input type="text" value="{{ $lead->branch->localizedName() }}" readonly style="background:var(--bg)">
+       </div>
+       @endif
+
        <div class="field">
         <label for="assignedUserId">
          {{ __('crm.responsible_employee') }}

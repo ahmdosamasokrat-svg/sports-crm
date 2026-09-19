@@ -47,6 +47,12 @@ class LeadTransitionService
                 ->lockForUpdate()
                 ->findOrFail($lead->getKey());
 
+            if (! $lockedLead->isAccessibleTo($actor)) {
+                throw ValidationException::withMessages([
+                    'lead_id' => 'ليس لديك صلاحية للوصول إلى هذا العميل أو تعديل مرحلته.',
+                ]);
+            }
+
             $fromStatus = $lockedLead->status ?? LeadStatus::query()->find($lockedLead->lead_status_id);
             $fromStatusId = $fromStatus?->id ?? (int) $lockedLead->lead_status_id;
             $toStatusId = (int) $toStatus->id;

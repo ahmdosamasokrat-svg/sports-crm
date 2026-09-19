@@ -35,6 +35,12 @@
         </div>
     </div>
     <div class="grid" style="grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px;">
+        @can('branches.view')
+            <a class="stat-card action-card" href="{{ route('v2.settings.branches.index') }}">
+                <span><i class="bi bi-geo-alt-fill" style="color:#10b981"></i> {{ __('crm.branches') ?: 'الفروع والمواقع' }}</span>
+                <b style="font-size:17px;margin-top:8px">{{ __('crm.branches_heading') ?: 'إدارة فروع الصالات الرياضية' }}</b>
+            </a>
+        @endcan
         <a class="stat-card action-card" href="{{ route('v2.settings.stages.index') }}">
             <span><i class="bi bi-diagram-3" style="color:#dc2637"></i> {{ __('crm.stages_and_statuses') }}</span>
             <b style="font-size:17px;margin-top:8px">{{ __('crm.stages_settings_heading') }}</b>

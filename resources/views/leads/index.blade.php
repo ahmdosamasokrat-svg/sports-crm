@@ -926,6 +926,23 @@ html.dark-mode .btn-action {
                     </div>
                 </div>
 
+                @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+                <!-- Branch Filter -->
+                <div class="filter-field">
+                    <label for="leadBranch"><i class="bi bi-geo-alt"></i> {{ __('crm.branch') ?: 'الفرع' }}</label>
+                    <div style="width:100%;">
+                        <select id="leadBranch" name="branch" class="crm-custom-select filter-control" data-crm-dropdown>
+                            <option value="">{{ __('crm.all_branches') ?: 'جميع الفروع' }}</option>
+                            @foreach ($branches as $br)
+                                <option value="{{ $br->id }}" @selected((int) ($selectedBranchId ?? 0) === (int) $br->id)>
+                                    {{ $br->localizedName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Temperature Filter -->
                 @php
                     $dynamicCustomerFields = ($customerFields ?? collect())->filter(fn ($cf) => empty($cf->lead_attribute) || $cf->lead_attribute !== 'company_name');
@@ -1383,6 +1400,11 @@ html.dark-mode .btn-action {
                                             <a href="{{ route('v2.leads.show', array_merge(request()->query(), ['lead' => $lead->id])) }}">
                                                 <strong>{{ $lead->name }}</strong>
                                             </a>
+                                            @if($lead->branch)
+                                                <span class="badge" style="background:#ecfdf5;color:#065f46;font-size:10px;padding:2px 6px;margin-inline-start:4px" title="{{ __('crm.branch') }}">
+                                                    <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+                                                </span>
+                                            @endif
                                             <small>{{ $lead->email ?: __('crm.no_email') }}</small>
                                         </div>
                                     </div>

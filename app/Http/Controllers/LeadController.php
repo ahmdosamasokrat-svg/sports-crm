@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
+use App\Models\Campaign;
 use App\Models\Lead;
-use App\Models\LeadFollowup;
 use App\Models\LeadDocument;
+use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\PipelineStage;
-use App\Models\Campaign;
 use App\Models\User;
 use App\Security\CrmPermission;
 use App\Security\LeadAssignment;
@@ -185,8 +186,14 @@ class LeadController extends Controller
                 'status.stage:id,name_ar,color,pipeline_stage_category_id',
                 'status.stage.category',
                 'assignedUser:id,name',
+                'branch:id,name_ar,name_en,code',
                 'stageValues:id,lead_id,pipeline_stage_field_id,value',
             ]);
+
+        $selectedBranchId = $request->filled('branch') ? (int) $request->query('branch') : null;
+        if ($selectedBranchId && $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            $query->where('leads.branch_id', $selectedBranchId);
+        }
 
         if ($filters['q'] !== '') {
             $search = '%'.$filters['q'].'%';
@@ -361,6 +368,10 @@ class LeadController extends Controller
         $queryWithoutStatus = $activeQuery;
         unset($queryWithoutStatus['status'], $queryWithoutStatus['stage']);
 
+        $branches = $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
+            ? Branch::query()->active()->orderBy('name_ar')->get()
+            : collect();
+
         return view(
             'leads.index',
             compact(
@@ -379,7 +390,9 @@ class LeadController extends Controller
                 'activeQuery',
                 'queryWithoutStatus',
                 'totalLeads',
-                'customerFields'
+                'customerFields',
+                'branches',
+                'selectedBranchId'
             )
         );
     }
@@ -447,6 +460,10 @@ class LeadController extends Controller
             ->count();
 
         $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+        $branches = $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
+            ? Branch::query()->active()->orderBy('name_ar')->get()
+            : collect();
+        $userBranch = $actor->branch;
 
         return view(
             'leads.create',
@@ -461,7 +478,9 @@ class LeadController extends Controller
                 'assignableUsers',
                 'totalLeads',
                 'campaign',
-                'campaigns'
+                'campaigns',
+                'branches',
+                'userBranch'
             )
         );
     }
@@ -537,6 +556,13 @@ class LeadController extends Controller
         /* CRM NEW EXECUTION NO FOLLOWUP V7 */
 
         $rules = [
+            'branch_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('branches', 'id')->where(
+                    static fn ($query) => $query->where('is_active', true)->whereNull('deleted_at')
+                ),
+            ],
             'first_name' => [
                 'required',
                 'string',
@@ -769,8 +795,24 @@ class LeadController extends Controller
                 );
         }
 
+        // Resolve branch assignment
+        $assignedBranchId = null;
+        if ($actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($request->filled('branch_id')) {
+                $assignedBranchId = (int) $validated['branch_id'];
+            } else {
+                $assignedBranchId = $actor->branch_id ?? (int) (Branch::query()->value('id') ?? 1);
+            }
+        } else {
+            if ($request->filled('branch_id') && (int) $request->input('branch_id') !== (int) $actor->branch_id) {
+                abort(403, 'غير مصرح بتحديد فرع آخر');
+            }
+            $assignedBranchId = $actor->branch_id ?? (int) (Branch::query()->value('id') ?? 1);
+        }
+
         $leadData = [
             'lead_status_id' => $status->id,
+            'branch_id' => $assignedBranchId,
             'name' => $fullName,
             'first_name' => $firstName,
             'last_name' => $lastName === ''
@@ -1024,6 +1066,7 @@ $stage = $status->stage;
         $leadRecord = Lead::query()
             ->with([
                 'status.stage',
+                'branch:id,name_ar,name_en,code',
                 'assignedUser:id,name',
                 'creator:id,name',
                 'stageValues.field',
@@ -1490,7 +1533,7 @@ $stage = $status->stage;
         $this->assertCrmV2Database();
 
         $leadRecord = Lead::query()
-            ->with('assignedUser:id,name,username')
+            ->with(['assignedUser:id,name,username', 'branch:id,name_ar,name_en,code'])
             ->findOrFail(
                 (int) $lead
             );
@@ -1571,6 +1614,9 @@ $stage = $status->stage;
                 'latestStageValues' => $latestStageValues,
                 'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
                 'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
+                'branches' => $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
+                    ? Branch::query()->active()->orderBy('name_ar')->get()
+                    : collect(),
             ]
         );
     }
@@ -2176,6 +2222,13 @@ $stage = $status->stage;
 
         $validated = $request->validate(
             [
+                'branch_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('branches', 'id')->where(
+                        static fn ($query) => $query->where('is_active', true)->whereNull('deleted_at')
+                    ),
+                ],
                 'first_name' => [
                     'required',
                     'string',
@@ -2360,7 +2413,19 @@ $stage = $status->stage;
             $newQuotationPath = $storedPath;
         }
 
+        $branchIdToUpdate = $leadRecord->branch_id;
+        if ($actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($request->has('branch_id')) {
+                $branchIdToUpdate = ! empty($validated['branch_id']) ? (int) $validated['branch_id'] : null;
+            }
+        } else {
+            if ($request->filled('branch_id') && (int) $request->input('branch_id') !== (int) $leadRecord->branch_id) {
+                abort(403, 'غير مصرح بتغيير فرع العميل');
+            }
+        }
+
         $leadData = [
+            'branch_id' => $branchIdToUpdate,
             'name' => $fullName,
             'first_name' => $firstName,
             'last_name' => $lastName,

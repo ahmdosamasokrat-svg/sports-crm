@@ -41,6 +41,11 @@
         </div>
 
         <div class="task-ticket-pills">
+            @if ($lead->branch)
+                <span class="badge" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;font-size:11px;font-weight:700;display:inline-flex;align-items:center;gap:3px;" title="{{ __('crm.branch') }}">
+                    <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+                </span>
+            @endif
             @if ($lead->status?->stage?->category)
                 <span class="task-category-pill" style="background: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'18' : '#f1f5f9' }}; color: {{ $lead->status->stage->category->color ?: '#475569' }}; border-color: {{ $lead->status->stage->category->color ? $lead->status->stage->category->color.'33' : '#e2e8f0' }};" title="{{ __('crm.stage_category') }}: {{ $lead->status->stage->category->name_ar }}">
                     <i class="bi {{ $lead->status->stage->category->icon ?: 'bi-collection' }}"></i>

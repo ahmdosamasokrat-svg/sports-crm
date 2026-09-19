@@ -481,6 +481,26 @@ body.kanban-followup-popup .crm-side {
                         </select>
                     </div>
 
+                    @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+                    <div class="field">
+                        <label for="branchId">
+                            {{ __('crm.branch') ?: 'الفرع / الموقع' }} <span class="required">*</span>
+                        </label>
+                        <select class="control" id="branchId" name="branch_id" required>
+                            @foreach ($branches as $br)
+                                <option value="{{ $br->id }}" @selected((int) old('branch_id', auth()->user()?->branch_id) === (int) $br->id)>
+                                    {{ $br->localizedName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @elseif(!empty($userBranch))
+                    <div class="field">
+                        <label>{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+                        <input class="control" type="text" value="{{ $userBranch->localizedName() }}" readonly style="background:var(--bg)">
+                    </div>
+                    @endif
+
                     <div class="field">
                         <label for="assignedUserId">
                             {{ __('crm.responsible_employee') }} <span class="required">*</span>
