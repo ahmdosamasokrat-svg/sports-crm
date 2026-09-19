@@ -1,7 +1,7 @@
 # PROJECT KNOWLEDGE BASE
 
-**Generated:** 2026-09-13
-**Commit:** 12cfd58
+**Generated:** 2026-09-17
+**Commit:** 6e34f17
 **Branch:** main
 
 ## OVERVIEW
@@ -12,7 +12,7 @@ SokratCRM V2 is a Laravel 13 CRM on PHP 8.3 & MySQL running on Ubuntu 24.04. It 
 sokrat-crm-v2/
 ├── app/
 │   ├── Http/Controllers/   # Web route handlers & settings controllers (no separate API tree)
-│   ├── Models/             # 26 Eloquent entities with accessibleTo/visibleTo scopes
+│   ├── Models/             # 27 Eloquent entities with accessibleTo/visibleTo scopes
 │   ├── Services/           # Transactional domain logic (transitions, distribution, notifications, VoIP)
 │   ├── Support/            # CrmDatabaseGuard, StageFieldSchema, dynamic filters
 │   ├── Security/           # CrmPermission enum & LeadAssignment logic
@@ -21,7 +21,7 @@ sokrat-crm-v2/
 ├── resources/views/        # Blade templates with bilingual Arabic/English RTL/LTR shell
 ├── public/                 # Assets, crm-notifications.js, quotation-generator module
 ├── routes/                 # web.php (all authenticated web routes) & console.php (notification scheduler)
-└── tests/                  # PHPUnit test suites guarded by strict testing DB isolation
+└── tests/                  # PHPUnit + Playwright suites guarded by strict testing DB isolation
 ```
 
 ## WHERE TO LOOK
@@ -82,8 +82,7 @@ php artisan test --filter {TestName} # Run focused test on sokrat_crm_v2_testing
 ```
 
 ## NOTES
-- Testing DB: `tests/TestCase.php` hard-fails if DB is not `sokrat_crm_v2_testing`.
+- Testing DB: `tests/TestCase.php` requires MySQL, `APP_ENV=testing`, and the active database `sokrat_crm_v2_testing`. It marks `RefreshDatabaseState::$migrated = true`, so prepare the test schema before running tests; `RefreshDatabase` will not migrate it automatically.
 - CLI Notification Schedule: `routes/console.php` requires external cron/systemd executing `schedule:run`.
 - Queue Listener: Queued notifications and digests require an active `queue:listen` or worker process.
 - MicroSIP: Windows `tel:` handler integration requires IP/host configuration in `open-crm-caller.cmd`.
-

@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     image: ghcr.io/ahmdosamasokrat-svg/sokrat-crm-v2:latest
@@ -10,7 +8,7 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
-    environment:
+    environment: &crm_env
       APP_NAME: "SOKRAT CRM V2"
       APP_ENV: production
       APP_DEBUG: "false"
@@ -31,11 +29,33 @@ services:
     depends_on:
       db:
         condition: service_healthy
-    volumes:
+    volumes: &crm_volumes
       - ./:/var/www/html
       - /var/www/html/vendor
       - /var/www/html/public/build
       - crm_v2_storage:/var/www/html/storage
+
+  queue:
+    image: ghcr.io/ahmdosamasokrat-svg/sokrat-crm-v2:latest
+    container_name: sokrat-crm-v2-queue
+    restart: unless-stopped
+    command: ["php", "artisan", "queue:work", "--tries=1", "--timeout=0"]
+    environment: *crm_env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes: *crm_volumes
+
+  scheduler:
+    image: ghcr.io/ahmdosamasokrat-svg/sokrat-crm-v2:latest
+    container_name: sokrat-crm-v2-scheduler
+    restart: unless-stopped
+    command: ["php", "artisan", "schedule:work"]
+    environment: *crm_env
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes: *crm_volumes
 
   db:
     image: mysql:8.0
