@@ -73,8 +73,8 @@
   html.dark-mode *::-webkit-scrollbar-thumb{background:#475569}
   :focus-visible{outline:2px solid rgba(220,38,55,.4);outline-offset:2px}
 
-  .team-shell{display:flex;min-height:100vh;max-width:100vw;overflow-x:hidden}
-  .team-main{min-width:0;flex:1;max-width:100%;padding:20px 28px 44px}
+  .team-shell{display:flex;min-height:100vh;max-width:100vw;overflow:hidden}
+  .team-main{min-width:0;flex:1;max-width:100%;padding:20px 28px 44px;height:100vh;overflow-y:auto;overflow-x:hidden;box-sizing:border-box}
   .team-stack{display:grid;gap:18px}
 
   /* 1. Header & Metric Cards */
