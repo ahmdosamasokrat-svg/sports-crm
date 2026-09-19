@@ -316,17 +316,18 @@ html.dark-mode .crm-toggle.active .crm-ico{
 .crm-toggle .crm-label,
 .crm-side .crm-toggle .label,
 #crmSidebar .crm-toggle .label {
- min-width:0 !important;
- flex:0 1 auto !important;
+ min-width:max-content !important;
+ flex:0 0 auto !important;
  white-space:nowrap !important;
- text-overflow:ellipsis !important;
+ text-overflow:clip !important;
+ overflow:visible !important;
 }
 
 .crm-count,
 .crm-side .count,
 #crmSidebar .count{
  min-width:max-content !important;
- height:24px;
+ height:20px;
  display:inline-flex !important;
  align-items:center !important;
  justify-content:center !important;
@@ -335,13 +336,13 @@ html.dark-mode .crm-toggle.active .crm-ico{
  flex-shrink:0 !important;
  white-space:nowrap !important;
  margin-inline-start:0 !important;
- padding:0 5px;
+ padding:0 2px !important;
  border-radius:0;
  background:transparent !important;
  border:none !important;
  box-shadow:none !important;
  color:var(--red, #ef4444) !important;
- font:900 13px var(--font-mono);
+ font:800 11px var(--font-mono) !important;
  font-family:'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace !important;
  line-height:1 !important;
  vertical-align:middle !important;
