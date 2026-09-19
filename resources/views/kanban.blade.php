@@ -563,11 +563,11 @@ a{color:inherit}
 }
 
 .kc-actions .btn span{
- overflow:hidden !important;
- text-overflow:ellipsis !important;
+ overflow:visible !important;
  white-space:nowrap !important;
  font-size:11.5px !important;
- line-height:1 !important;
+ line-height:1.4 !important;
+ display:inline-block !important;
 }
 
 .kc-actions .btn svg{
