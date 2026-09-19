@@ -2,7 +2,7 @@
 
 @section('title', __('crm.groups'))
 @section('heading', __('crm.groups'))
-@section('subheading', 'اجمع المستخدمين تحت أدوار واضحة ثم امنح الصلاحيات للمجموعة')
+@section('subheading', __('crm.groups_subheading') ?? (app()->getLocale() === 'en' ? 'Group users under distinct roles and assign group permissions' : 'اجمع المستخدمين تحت أدوار واضحة ثم امنح الصلاحيات للمجموعة'))
 @section('page-icon', 'bi-diagram-2')
 
 @section('top-actions')

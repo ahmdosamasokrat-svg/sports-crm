@@ -13,7 +13,7 @@
 		</a>
 	@endcan
 	@can('campaigns.create')
-		<a class="btn primary" href="{{ route('v2.campaigns.create') }}">
+		<a class="btn success" href="{{ route('v2.campaigns.create') }}">
 			<i class="bi bi-plus-lg"></i> {{ __('crm.new_campaign') }}
 		</a>
 	@endcan
@@ -21,6 +21,17 @@
 
 @push('styles')
 <style>
+	.btn.success {
+		background: #16a34a;
+		border-color: #16a34a;
+		color: #fff;
+		box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+	}
+	.btn.success:hover {
+		background: #15803d;
+		border-color: #15803d;
+		color: #fff;
+	}
 	.campaign-grid {
 		display: grid;
 		grid-template-columns: repeat(auto-fill, minmax(330px, 1fr));
@@ -417,7 +428,7 @@
 
 @section('content')
 	@can('campaigns.create')
-		<a class="btn primary campaign-mobile-create" href="{{ route('v2.campaigns.create') }}">
+		<a class="btn success campaign-mobile-create" href="{{ route('v2.campaigns.create') }}">
 			<i class="bi bi-plus-lg"></i> {{ __('crm.new_campaign') }}
 		</a>
 	@endcan
@@ -560,12 +571,7 @@
 	@else
 		<div class="campaign-empty" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
 			<i class="bi bi-megaphone" style="font-size:36px;display:block;margin-bottom:12px;color:var(--muted)"></i>
-			<p style="margin:0 0 16px;font-size:15px">{{ __('crm.no_campaigns_found') }}</p>
-			@can('campaigns.create')
-				<a class="btn primary" href="{{ route('v2.campaigns.create') }}">
-					<i class="bi bi-plus-lg"></i> {{ __('crm.new_campaign') }}
-				</a>
-			@endcan
+			<p style="margin:0;font-size:15px">{{ __('crm.no_campaigns_found') }}</p>
 		</div>
 	@endif
 @endsection

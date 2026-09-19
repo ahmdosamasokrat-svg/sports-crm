@@ -799,7 +799,7 @@ html.dark-mode .crm-dashboard-v2 {
 .crm-dashboard-v2 .kpi-stage-select-item {
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  gap: 4px;
 }
 .crm-dashboard-v2 .kpi-stage-select-tag {
   font-size: 10px;
@@ -807,33 +807,40 @@ html.dark-mode .crm-dashboard-v2 {
   color: var(--d-text-subtle);
   white-space: nowrap;
 }
-.crm-dashboard-v2 .kpi-stage-select {
+.crm-dashboard-v2 .kpi-stage-select-item .crm-dropdown {
+  min-width: 95px;
+  max-width: 130px;
+}
+.crm-dashboard-v2 .kpi-stage-select-item .crm-dropdown-trigger {
   height: 24px;
-  line-height: 22px;
+  min-height: 24px;
   padding: 0 6px;
   font-size: 11px;
-  font-weight: 700;
-  border: 1px solid var(--d-border);
   border-radius: var(--d-radius-sm);
   background: var(--d-surface-alt);
-  color: var(--d-text);
-  cursor: pointer;
-  outline: none;
-  max-width: 130px;
-  width: fit-content;
-  white-space: nowrap;
-  text-overflow: ellipsis;
-  transition: all var(--d-transition);
+  border-color: var(--d-border);
 }
-.crm-dashboard-v2 .kpi-stage-select-item .kpi-stage-select {
-  max-width: 100px;
-  font-size: 10.5px;
-  padding: 0 4px;
+.crm-dashboard-v2 #kpiCardStage1 .crm-dropdown,
+.crm-dashboard-v2 #kpiCardStage2 .crm-dropdown {
+  min-width: 110px;
+  max-width: 140px;
 }
-.crm-dashboard-v2 .kpi-stage-select:hover,
-.crm-dashboard-v2 .kpi-stage-select:focus {
-  border-color: var(--d-primary);
-  background: var(--d-surface);
+.crm-dashboard-v2 #kpiCardStage1 .crm-dropdown-trigger,
+.crm-dashboard-v2 #kpiCardStage2 .crm-dropdown-trigger {
+  height: 24px;
+  min-height: 24px;
+  padding: 0 8px;
+  font-size: 11px;
+  border-radius: var(--d-radius-sm);
+  background: var(--d-surface-alt);
+  border-color: var(--d-border);
+}
+.crm-dashboard-v2 .stage-activity-title-wrap .crm-dropdown-trigger {
+  height: 26px;
+  min-height: 26px;
+  padding: 0 8px;
+  font-size: 11.5px;
+  border-radius: var(--d-radius-sm);
 }
 .crm-dashboard-v2 .dash-chart-controls {
   display: flex;
@@ -2440,17 +2447,17 @@ html.dark-mode .toast {
   <!-- TOP HEADER (Unified Shared Topbar Partial) -->
   @include('partials.topbar', [
     'title' => __('crm.dashboard'),
-    'subtitle' => __('نظرة عامة على أداء فريق المبيعات'),
+    'subtitle' => __('crm.dashboard_subtitle') ?? (app()->getLocale() === 'en' ? 'Overview of sales team performance' : 'نظرة عامة على أداء فريق المبيعات'),
     'icon' => 'bi-speedometer2',
   ])
 
   <!-- COMPACT FILTER TOOLBAR -->
   <form class="dash-filter-bar" id="filters" method="GET" action="{{ route('dashboard') }}">
     <div class="dash-filter-item">
-      <label for="dashFilterEmployee">{{ __('الموظف') }}:</label>
+      <label for="dashFilterEmployee">{{ __('crm.employee') }}:</label>
       <div style="width:100%;min-width:180px;">
         <select class="crm-custom-select" id="dashFilterEmployee" name="employee" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10.02 12c.005-.184.02-.375.034-.555.056-.704.14-1.282.266-1.745A4.9 4.9 0 0 0 8 9c-1.378 0-2.496.53-2.92 1.077-.184.238-.309.522-.387.828a.5.5 0 0 0 .97.234c.05-.195.13-.38.252-.538C6.27 10.158 7.08 9.8 8 9.8c.92 0 1.73.358 2.085.801.074.092.127.202.164.321.037.119.06.252.073.403.014.16.023.325.027.475H3.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 .5-.5c0-.368-.008-.687-.02-1z"/></svg>'>
-          <option value="">{{ __('جميع الموظفين') }}</option>
+          <option value="">{{ __('crm.all_employees') }}</option>
           @foreach ($employees as $employee)
             <option value="{{ $employee }}" @selected($filters['employee'] === $employee)>
               {{ $employee }}
@@ -2461,33 +2468,35 @@ html.dark-mode .toast {
     </div>
 
     <div class="dash-filter-item">
-      <label><i class="bi bi-calendar-range"></i> {{ __('الفترة') }}:</label>
-      <select name="period">
-        <option value="all" @selected($filters['period'] === 'all')>{{ __('كل الفترات') }}</option>
-        <option value="today" @selected($filters['period'] === 'today')>{{ __('اليوم') }}</option>
-        <option value="week" @selected($filters['period'] === 'week')>{{ __('هذا الأسبوع') }}</option>
-        <option value="month" @selected($filters['period'] === 'month')>{{ __('هذا الشهر') }}</option>
-      </select>
+      <label><i class="bi bi-calendar-range"></i> {{ __('crm.period') }}:</label>
+      <div style="width:100%;min-width:140px;">
+        <select class="crm-custom-select" name="period">
+          <option value="all" @selected($filters['period'] === 'all')>{{ __('crm.all_periods') ?? (app()->getLocale() === 'en' ? 'All Periods' : 'كل الفترات') }}</option>
+          <option value="today" @selected($filters['period'] === 'today')>{{ __('crm.today') }}</option>
+          <option value="week" @selected($filters['period'] === 'week')>{{ __('crm.this_week') }}</option>
+          <option value="month" @selected($filters['period'] === 'month')>{{ __('crm.this_month') }}</option>
+        </select>
+      </div>
     </div>
 
     <div class="dash-filter-item">
-      <label><i class="bi bi-calendar-event"></i> {{ __('من') }}:</label>
+      <label><i class="bi bi-calendar-event"></i> {{ __('crm.date_from') }}:</label>
       <input type="date" name="from" value="{{ $filters['from'] }}">
     </div>
 
     <div class="dash-filter-item">
-      <label><i class="bi bi-calendar-check"></i> {{ __('إلى') }}:</label>
+      <label><i class="bi bi-calendar-check"></i> {{ __('crm.date_to') }}:</label>
       <input type="date" name="to" value="{{ $filters['to'] }}">
     </div>
 
     <div class="dash-filter-actions">
       <button class="btn-filter-submit" type="submit">
         <i class="bi bi-funnel-fill"></i>
-        <span>{{ __('تطبيق') }}</span>
+        <span>{{ __('crm.filter') }}</span>
       </button>
       <a class="btn-filter-clear" href="{{ route('dashboard') }}">
         <i class="bi bi-arrow-counterclockwise"></i>
-        <span>{{ __('إعادة ضبط') }}</span>
+        <span>{{ __('crm.reset_filter') }}</span>
       </a>
     </div>
   </form>
@@ -2533,6 +2542,9 @@ html.dark-mode .toast {
       }
       if (str_contains($icon, 'patch-check')) {
           return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2l3.09 3.26L19.5 5.5l1.24 4.24 3.26 3.09L20.74 16l-.24 4.26-4.24 1.24L12 22l-4.26-1.24L3.5 19.5l-1.24-4.24L2 12l1.24-4.26 1.26-4.24L8.74 2.26 12 2z"/><polyline points="9 12 11 14 15 10"/></svg>';
+      }
+      if (preg_match('/\bbi-[a-z0-9-]+\b/', $icon, $m) === 1) {
+          return '<i class="' . e($m[0]) . '" style="font-size:22px; line-height:1;"></i>';
       }
       return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 14 14"/></svg>';
   };
@@ -2587,23 +2599,23 @@ html.dark-mode .toast {
       @can('leads.view')
         <a href="{{ route('v2.leads') }}" class="kpi-card-modern" style="--card-accent: #3b82f6;">
           <div class="kpi-card-head">
-            <span class="kpi-card-label">{{ __('إجمالي العملاء') }}</span>
+            <span class="kpi-card-label">{{ __('crm.total_leads') }}</span>
             <div class="kpi-card-icon">{!! $renderStageVectorIcon('bi-people', 'people') !!}</div>
           </div>
           <div>
             <div class="kpi-card-value counter-num" data-target="{{ $totalLeads ?? 0 }}">{{ number_format($totalLeads ?? 0) }}</div>
-            <div class="kpi-card-sub"><i class="bi bi-arrow-up-short" style="color: #10b981; font-size: 14px;"></i> {{ __('قاعدة العملاء النشطة') }}</div>
+            <div class="kpi-card-sub"><i class="bi bi-arrow-up-short" style="color: #10b981; font-size: 14px;"></i> {{ __('crm.active_customer_base') ?? (app()->getLocale() === 'en' ? 'Active Customer Base' : 'قاعدة العملاء النشطة') }}</div>
           </div>
         </a>
       @else
         <div class="kpi-card-modern" style="--card-accent: #3b82f6;">
           <div class="kpi-card-head">
-            <span class="kpi-card-label">{{ __('إجمالي العملاء') }}</span>
+            <span class="kpi-card-label">{{ __('crm.total_leads') }}</span>
             <div class="kpi-card-icon">{!! $renderStageVectorIcon('bi-people', 'people') !!}</div>
           </div>
           <div>
             <div class="kpi-card-value counter-num" data-target="{{ $totalLeads ?? 0 }}">{{ number_format($totalLeads ?? 0) }}</div>
-            <div class="kpi-card-sub">{{ __('قاعدة العملاء') }}</div>
+            <div class="kpi-card-sub">{{ __('crm.customer_base') ?? (app()->getLocale() === 'en' ? 'Customer Base' : 'قاعدة العملاء') }}</div>
           </div>
         </div>
       @endcan
@@ -2616,7 +2628,7 @@ html.dark-mode .toast {
             <div class="kpi-stage-selectors-pair">
               <div class="kpi-stage-select-item">
                 <span class="kpi-stage-select-tag">{{ __('crm.from_stage_prefix') ?? 'من:' }}</span>
-                <select class="kpi-stage-select" id="conversionFromStageSelect" data-no-crm-dropdown aria-label="{{ __('crm.from_stage_label') ?? 'من المرحلة' }}">
+                <select class="kpi-stage-select crm-custom-select" id="conversionFromStageSelect" aria-label="{{ __('crm.from_stage_label') ?? 'من المرحلة' }}">
                   @foreach(($activePipelineStages ?? []) as $pStage)
                     <option value="{{ $pStage['id'] }}" @selected(($conversionMetrics['from_stage_id'] ?? null) == $pStage['id'])>
                       {{ $pStage['name'] }}
@@ -2626,7 +2638,7 @@ html.dark-mode .toast {
               </div>
               <div class="kpi-stage-select-item">
                 <span class="kpi-stage-select-tag">{{ __('crm.to_stage_prefix') ?? 'إلى:' }}</span>
-                <select class="kpi-stage-select" id="conversionStageSelect" data-no-crm-dropdown aria-label="{{ __('crm.to_stage_label') ?? 'إلى المرحلة' }}">
+                <select class="kpi-stage-select crm-custom-select" id="conversionStageSelect" aria-label="{{ __('crm.to_stage_label') ?? 'إلى المرحلة' }}">
                   @foreach(($activePipelineStages ?? []) as $pStage)
                     <option value="{{ $pStage['id'] }}" @selected(($conversionMetrics['to_stage_id'] ?? $conversionMetrics['stage_id'] ?? null) == $pStage['id'])>
                       {{ $pStage['name'] }}
@@ -2654,7 +2666,7 @@ html.dark-mode .toast {
         <div class="kpi-card-head">
           <div class="kpi-head-title-wrap">
             <span class="kpi-card-label" id="stageKpi1Label">{{ $stageKpi1['stage_name'] ?? __('crm.stage') }}</span>
-            <select class="kpi-stage-select" id="stageKpi1Select" data-no-crm-dropdown aria-label="{{ __('crm.select_stage') }}">
+            <select class="kpi-stage-select crm-custom-select" id="stageKpi1Select" aria-label="{{ __('crm.select_stage') }}">
               @foreach(($activePipelineStages ?? []) as $pStage)
                 <option value="{{ $pStage['id'] }}" @selected(($stageKpi1['stage_id'] ?? null) == $pStage['id'])>
                   {{ $pStage['name'] }}
@@ -2680,7 +2692,7 @@ html.dark-mode .toast {
         <div class="kpi-card-head">
           <div class="kpi-head-title-wrap">
             <span class="kpi-card-label" id="stageKpi2Label">{{ $stageKpi2['stage_name'] ?? __('crm.stage') }}</span>
-            <select class="kpi-stage-select" id="stageKpi2Select" data-no-crm-dropdown aria-label="{{ __('crm.select_stage') }}">
+            <select class="kpi-stage-select crm-custom-select" id="stageKpi2Select" aria-label="{{ __('crm.select_stage') }}">
               @foreach(($activePipelineStages ?? []) as $pStage)
                 <option value="{{ $pStage['id'] }}" @selected(($stageKpi2['stage_id'] ?? null) == $pStage['id'])>
                   {{ $pStage['name'] }}
@@ -2878,13 +2890,15 @@ html.dark-mode .toast {
         <div class="metric-box-head">
           <div class="stage-activity-title-wrap">
             <h4><i class="bi bi-calendar-check-fill" style="color: #f59e0b;"></i> {{ __('crm.stage_activity') }}</h4>
-            <select class="stage-activity-select" id="stageActivitySelect" aria-label="{{ __('crm.select_stage') }}">
-              @foreach(($activePipelineStages ?? []) as $pStage)
-                <option value="{{ $pStage['id'] }}" @selected(($stageActivity['stage_id'] ?? null) == $pStage['id'])>
-                  {{ $pStage['name'] }}
-                </option>
-              @endforeach
-            </select>
+            <div style="min-width:130px; display:inline-block;">
+              <select class="stage-activity-select crm-custom-select" id="stageActivitySelect" aria-label="{{ __('crm.select_stage') }}">
+                @foreach(($activePipelineStages ?? []) as $pStage)
+                  <option value="{{ $pStage['id'] }}" @selected(($stageActivity['stage_id'] ?? null) == $pStage['id'])>
+                    {{ $pStage['name'] }}
+                  </option>
+                @endforeach
+              </select>
+            </div>
           </div>
           <button type="button" class="stage-activity-total-badge stage-activity-clickable-tile" id="stageActivityTotal" data-bucket="all" role="button" aria-label="{{ __('crm.all') }}" title="{{ __('crm.all') }}">
             {{ number_format($stageActivity['total_count'] ?? 0) }} {{ __('crm.all') }}

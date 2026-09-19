@@ -234,10 +234,19 @@ a { color: inherit; text-decoration: none; }
   font-size: 12px;
   font-weight: 800;
   color: var(--muted);
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 5px;
+  justify-content: center;
+  gap: 6px;
   margin-inline-end: 4px;
+  line-height: 1;
+}
+.exec-preset-tag i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  line-height: 1;
 }
 .exec-preset-pill {
   padding: 5px 13px;
@@ -390,15 +399,27 @@ a { color: inherit; text-decoration: none; }
   box-shadow: var(--shadow-hover);
 }
 .exec-stage-pill-icon {
-  width: 32px;
-  height: 32px;
-  flex: 0 0 32px;
-  border-radius: 8px;
-  display: grid;
-  place-items: center;
-  font-size: 15px;
-  background: var(--stage-bg, rgba(59, 130, 246, 0.1));
+  width: 28px;
+  height: 28px;
+  flex: 0 0 28px;
+  border-radius: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
   color: var(--stage-theme, #3b82f6);
+}
+.exec-stage-pill-icon svg {
+  width: 20px;
+  height: 20px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  display: block;
 }
 .exec-stage-pill-content {
   display: flex;
@@ -532,18 +553,41 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 6px;
+  line-height: 1;
+}
+.kpi-card-subtext > span:first-child {
+  display: inline-flex;
+  align-items: center;
   gap: 5px;
+  line-height: 1;
+}
+.kpi-card-subtext > span:first-child i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  line-height: 1;
 }
 .kpi-click-hint {
   font-size: 10.5px;
   font-weight: 800;
-  padding: 2px 7px;
-  border-radius: 4px;
+  padding: 3px 8px;
+  border-radius: 5px;
   background: rgba(0, 0, 0, 0.04);
   color: var(--muted);
   display: inline-flex;
   align-items: center;
-  gap: 3px;
+  justify-content: center;
+  gap: 4px;
+  line-height: 1;
+}
+.kpi-click-hint i {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  line-height: 1;
 }
 .kpi-summary-split {
   display: grid;
@@ -1033,7 +1077,6 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
         @endphp
         @include('partials.topbar', [
             'title' => __('crm.employee_reports_title'),
-            'subtitle' => __('crm.employee_reports_subtitle') . ' — ' . __('تحليل أداء الموظفين ومعدلات التحويل والمتابعات'),
             'icon' => 'bi-bar-chart-line-fill',
             'actions' => $reportTopActions
         ])
@@ -1047,7 +1090,7 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                 <!-- Quick Date Presets Row -->
                 <div class="exec-presets-strip">
                     <span class="exec-preset-tag">
-                        <i class="bi bi-clock-history"></i> {{ __('فلترة الوقت') }}:
+                        <i class="bi bi-clock-history"></i> {{ __('crm.time_filter') ?? (app()->getLocale() === 'en' ? 'Time Filter:' : 'فلترة الوقت:') }}
                     </span>
                     @php
                         $presets = [
@@ -1074,7 +1117,7 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                 <div class="exec-filter-controls-row">
                     <!-- Period / Preset Selector Dropdown -->
                     <div class="exec-filter-cell" style="max-width: 170px;">
-                        <label for="selectPresetDropdown"><i class="bi bi-calendar3"></i> {{ __('الفترة') }}:</label>
+                        <label for="selectPresetDropdown"><i class="bi bi-calendar3"></i> {{ __('crm.period') }}:</label>
                         <select name="preset" id="selectPresetDropdown" onchange="handlePresetChange(this.value)">
                             <option value="today" {{ ($filters['preset'] ?? 'this_month') === 'today' ? 'selected' : '' }}>{{ __('crm.preset_today') }}</option>
                             <option value="yesterday" {{ ($filters['preset'] ?? 'this_month') === 'yesterday' ? 'selected' : '' }}>{{ __('crm.preset_yesterday') }}</option>
@@ -1088,11 +1131,11 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                     <!-- Custom Duration Range Picker (Appears when Custom is chosen) -->
                     <div class="custom-date-picker-box" id="customDatePickerBox" style="{{ ($filters['preset'] ?? 'this_month') === 'custom' ? 'display:flex;' : 'display:none;' }}">
                         <div class="exec-filter-cell" style="min-width: 130px;">
-                            <label for="inputFrom">{{ __('من') }}:</label>
+                            <label for="inputFrom">{{ __('crm.date_from') }}:</label>
                             <input type="date" name="from" id="inputFrom" value="{{ $dateRange['from']->format('Y-m-d') }}" onchange="handleDateChange()">
                         </div>
                         <div class="exec-filter-cell" style="min-width: 130px;">
-                            <label for="inputTo">{{ __('إلى') }}:</label>
+                            <label for="inputTo">{{ __('crm.date_to') }}:</label>
                             <input type="date" name="to" id="inputTo" value="{{ $dateRange['to']->format('Y-m-d') }}" onchange="handleDateChange()">
                         </div>
                     </div>
@@ -1152,14 +1195,14 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
         </section>
 
         <!-- 3. PIPELINE STAGES SHOWCASE (FIRST RIGHT AFTER FILTERS, SLEEK & COMPACT) -->
-        <section class="exec-pipeline-showcase" aria-label="{{ __('مراحل مسار المبيعات') }}">
+        <section class="exec-pipeline-showcase" aria-label="{{ __('crm.sales_pipeline_stages') ?? (app()->getLocale() === 'en' ? 'Sales Pipeline Stages' : 'مراحل مسار المبيعات') }}">
             <div class="exec-pipeline-showcase-head">
                 <div class="exec-pipeline-showcase-title">
                     <i class="bi bi-diagram-3-fill" style="color:var(--red);"></i>
-                    <span>{{ __('مراحل مسار المبيعات') }}</span>
+                    <span>{{ __('crm.sales_pipeline_stages') ?? (app()->getLocale() === 'en' ? 'Sales Pipeline Stages' : 'مراحل مسار المبيعات') }}</span>
                 </div>
                 <span style="font-size:12px;font-weight:800;color:var(--muted);">
-                    {{ count($pipelinePerformance) }} {{ __('مراحل') }}
+                    {{ count($pipelinePerformance) }} {{ app()->getLocale() === 'en' ? 'Stages' : 'مراحل' }}
                 </span>
             </div>
 
@@ -1168,10 +1211,26 @@ html[dir="ltr"] .crm-drawer.active { transform: translateX(0) !important; }
                     @php
                         $stColor = $stMetric['color'] ?: '#3b82f6';
                         $pctOfTotal = $kpis['total_leads'] > 0 ? round(($stMetric['current_count'] / $kpis['total_leads']) * 100, 1) : 0;
+                        $code = strtolower((string) ($stMetric['code'] ?? ''));
+                        $iconClass = (string) ($stMetric['icon'] ?? '');
+
+                        $stageSvg = match(true) {
+                            str_contains($iconClass, 'person-plus') || str_contains($code, 'new') || str_contains($code, 'start') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>',
+                            str_contains($iconClass, 'thumbs-up') || str_contains($iconClass, 'heart') || str_contains($code, 'interest') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3zM7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3"/></svg>',
+                            str_contains($iconClass, 'thumbs-down') || str_contains($iconClass, 'x-circle') || str_contains($code, 'not_interested') || str_contains($code, 'not-interested') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M10 15v4a3 3 0 0 0 3 3l4-9V2H5.72a2 2 0 0 0-2 1.7l-1.38 9a2 2 0 0 0 2 2.3zm7-13h3a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-3"/></svg>',
+                            str_contains($iconClass, 'telephone-x') || str_contains($code, 'no_answer') || str_contains($code, 'no-answer') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/><line x1="23" y1="1" x2="17" y2="7"/><line x1="17" y1="1" x2="23" y2="7"/></svg>',
+                            str_contains($iconClass, 'calendar') || str_contains($code, 'meeting') || str_contains($code, 'negotiation') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/></svg>',
+                            str_contains($iconClass, 'file-earmark') || str_contains($code, 'quotation') || str_contains($code, 'offer') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>',
+                            str_contains($iconClass, 'chat-dots') || str_contains($code, 'discussion') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/><line x1="8" y1="10" x2="8.01" y2="10"/><line x1="12" y1="10" x2="12.01" y2="10"/><line x1="16" y1="10" x2="16.01" y2="10"/></svg>',
+                            str_contains($iconClass, 'check-circle') || str_contains($code, 'contract') || str_contains($code, 'closing') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>',
+                            str_contains($iconClass, 'gear') || str_contains($code, 'execution') || str_contains($code, 'operations') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0 2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>',
+                            str_contains($iconClass, 'hourglass') || str_contains($iconClass, 'clock') || str_contains($code, 'postponed') || str_contains($code, 'delayed') => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
+                            default => '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="10"/><polygon points="12 6 12 12 14 14"/></svg>',
+                        };
                     @endphp
                     <div class="exec-stage-pill" style="--stage-theme: {{ $stColor }}; --stage-bg: {{ $stColor }}18;">
                         <div class="exec-stage-pill-icon">
-                            <i class="bi {{ $stMetric['icon'] }}"></i>
+                            {!! $stageSvg !!}
                         </div>
                         <div class="exec-stage-pill-content">
                             <div class="exec-stage-pill-top">

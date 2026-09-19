@@ -107,6 +107,17 @@
             border-color: var(--red-hover);
             color: #fff;
         }
+        .btn.success {
+            background: #16a34a;
+            border-color: #16a34a;
+            color: #fff;
+            box-shadow: 0 4px 14px rgba(22, 163, 74, 0.25);
+        }
+        .btn.success:hover {
+            background: #15803d;
+            border-color: #15803d;
+            color: #fff;
+        }
         .btn.soft {
             background: #f1f5f9;
             border-color: transparent;

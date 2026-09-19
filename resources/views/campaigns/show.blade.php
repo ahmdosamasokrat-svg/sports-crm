@@ -539,6 +539,130 @@
 		color: #cbd5e1;
 		margin-bottom: 10px;
 	}
+
+	.campaign-status-section {
+		margin-bottom: 20px;
+	}
+	.campaign-status-head {
+		display: flex;
+		align-items: flex-start;
+		justify-content: space-between;
+		gap: 12px;
+		flex-wrap: wrap;
+		margin-bottom: 14px;
+	}
+	.campaign-status-head h3 {
+		margin: 0;
+		font-size: 16px;
+		font-weight: 800;
+		color: var(--dark);
+	}
+	.campaign-status-head p {
+		margin: 3px 0 0;
+		font-size: 12px;
+		color: var(--muted);
+	}
+	.campaign-all-statuses {
+		font-size: 12px;
+		font-weight: 800;
+		color: var(--dark);
+		text-decoration: none;
+		padding: 8px 14px;
+		border: 1px solid var(--line);
+		border-radius: 12px;
+		background: var(--bg);
+		transition: all 0.15s ease;
+	}
+	.campaign-all-statuses:hover,
+	.campaign-all-statuses.active {
+		border-color: var(--red);
+		background: color-mix(in srgb, var(--red) 8%, var(--card));
+		color: var(--red);
+	}
+	.campaign-status-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+		gap: 12px;
+	}
+	.campaign-status-card {
+		--status-color: #64748b;
+		min-width: 0;
+		min-height: 92px;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: 11px 13px;
+		border: 1px solid var(--line);
+		border-radius: 13px;
+		background: var(--card);
+		color: inherit;
+		text-decoration: none;
+		transition: all 0.2s ease;
+		box-shadow: var(--shadow);
+	}
+	.campaign-status-card:hover,
+	.campaign-status-card.selected {
+		border-color: var(--status-color);
+		transform: translateY(-2px);
+		box-shadow: 0 10px 25px rgba(23, 32, 51, 0.08);
+	}
+	.campaign-status-card.selected {
+		background: color-mix(in srgb, var(--status-color) 6%, var(--card));
+	}
+	.campaign-status-name {
+		display: flex;
+		align-items: center;
+		gap: 7px;
+		min-width: 0;
+	}
+	.campaign-status-name i {
+		width: 9px;
+		height: 9px;
+		flex: 0 0 9px;
+		border-radius: 50%;
+		background: var(--status-color);
+		box-shadow: 0 0 8px color-mix(in srgb, var(--status-color) 60%, transparent);
+	}
+	.campaign-status-name strong {
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
+		font-size: 11px;
+		font-weight: 800;
+	}
+	.campaign-status-card b {
+		color: var(--status-color);
+		font-size: 24px;
+		font-weight: 900;
+		line-height: 1.1;
+	}
+	.campaign-status-card small {
+		color: var(--muted);
+		font-size: 9px;
+		font-weight: 700;
+	}
+	.campaign-status-card.selected small {
+		color: var(--dark);
+	}
+	html.dark-mode .campaign-status-card {
+		background: rgba(24, 24, 27, 0.75);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		color: var(--text-primary, #f4f4f5);
+	}
+	html.dark-mode .campaign-status-card:hover {
+		background: rgba(39, 39, 42, 0.75);
+		border-color: var(--status-color);
+	}
+	html.dark-mode .campaign-status-card.selected {
+		background: color-mix(in srgb, var(--status-color) 14%, #18181b);
+		border-color: var(--status-color);
+		color: #ffffff;
+	}
+	html.dark-mode .campaign-status-card.selected b,
+	html.dark-mode .campaign-status-card.selected .campaign-status-name strong,
+	html.dark-mode .campaign-status-card.selected small {
+		color: #ffffff;
+	}
 </style>
 @endpush
 
@@ -713,6 +837,51 @@
 	</form>
 </section>
 @endif
+
+<!-- CUSTOMER STAGES CARDS -->
+<section class="transfer-card campaign-status-section">
+	<header class="campaign-status-head">
+		<div>
+			<h3>{{ __('crm.customer_stages') }}</h3>
+			<p>{{ __('crm.campaign_stage_filter_notice') }}</p>
+		</div>
+		<a
+			class="campaign-all-statuses {{ $selectedStage === null && $selectedStatus === null ? 'active' : '' }}"
+			href="{{ route('v2.campaigns.show', array_filter([
+				'campaign' => $campaign,
+				'assigned_user_id' => $canManage ? ($showUnassigned ? 'unassigned' : $selectedAssignee?->id) : null,
+			])) }}"
+		>
+			{{ __('crm.all_stages') }}
+		</a>
+	</header>
+	<div class="campaign-status-grid">
+		@foreach ($pipelineStages as $stage)
+			@php
+				$cardColor = preg_match('/^#[0-9a-fA-F]{6}$/', (string) $stage->color)
+					? $stage->color
+					: '#64748b';
+				$isSelected = ($selectedStage?->id === $stage->id) || ($selectedStatus && $selectedStatus->pipeline_stage_id === $stage->id);
+			@endphp
+			<a
+				class="campaign-status-card {{ $isSelected ? 'selected' : '' }}"
+				href="{{ route('v2.campaigns.show', array_filter([
+					'campaign' => $campaign,
+					'assigned_user_id' => $canManage ? ($showUnassigned ? 'unassigned' : $selectedAssignee?->id) : null,
+					'stage' => $stage->id,
+				])) }}"
+				style="--status-color:{{ $cardColor }}"
+			>
+				<span class="campaign-status-name">
+					<i style="background:{{ $cardColor }}"></i>
+					<strong>{{ (app()->getLocale() === 'en' && !empty($stage->name_en)) ? $stage->name_en : $stage->name_ar }}</strong>
+				</span>
+				<b>{{ number_format($stage->campaign_leads_count ?? 0) }}</b>
+				<small>{{ $stage->isPrimary() ? __('crm.stage_type_primary') : __('crm.stage_type_additional') }}</small>
+			</a>
+		@endforeach
+	</div>
+</section>
 
 <!-- BULK ASSIGNMENT TOOLBAR (Appears smoothly only when leads are checked) -->
 @if ($canManage && $assignableUsers->isNotEmpty())

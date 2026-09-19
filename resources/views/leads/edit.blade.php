@@ -836,7 +836,7 @@
  <main class="crm-main">
   <div class="shell">
    @include('partials.topbar', [
-       'title' => 'تعديل بيانات العميل',
+       'title' => __('crm.edit_lead_title') ?? (app()->getLocale() === 'en' ? 'Edit Lead Details' : 'تعديل بيانات العميل'),
        'subtitle' => __('crm.enter_lead_basics'),
        'icon' => 'bi-pencil-square',
        'backUrl' => route('v2.leads'),
@@ -847,11 +847,11 @@
    <article class="form-card">
     <div class="form-hero">
      <div class="form-hero-head">
-      <div class="form-hero-copy">       <small>تعديل عميل حالي</small>
-       <h2>تعديل بيانات العميل</h2>
+      <div class="form-hero-copy">
+       <small>{{ __('crm.edit_current_lead') ?? (app()->getLocale() === 'en' ? 'Edit Current Lead' : 'تعديل عميل حالي') }}</small>
+       <h2>{{ __('crm.edit_lead_title') ?? (app()->getLocale() === 'en' ? 'Edit Lead Details' : 'تعديل بيانات العميل') }}</h2>
        <p>
-         قم بمراجعة وتحديث بيانات
-         {{ $lead->name }} ثم احفظ التعديلات.
+         {{ app()->getLocale() === 'en' ? "Review and update details for {$lead->name} then save changes." : "قم بمراجعة وتحديث بيانات {$lead->name} ثم احفظ التعديلات." }}
         </p>
       </div>
 

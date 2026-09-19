@@ -365,8 +365,8 @@ body.kanban-followup-popup .crm-side {
             <!-- CARD 1: PRIMARY CONTACT & IDENTITY -->
             <section class="form-card">
                 <div class="section-head">
-                    <h2><i class="bi bi-person-badge"></i> بيانات العميل والتواصل الأساسية</h2>
-                    <p>الاسم ورقم الهاتف والمصدر وموظف المبيعات المسؤول</p>
+                    <h2><i class="bi bi-person-badge"></i> {{ __('crm.primary_lead_data') ?? (app()->getLocale() === 'en' ? 'Primary Customer & Contact Information' : 'بيانات العميل والتواصل الأساسية') }}</h2>
+                    <p>{{ __('crm.primary_lead_data_desc') ?? (app()->getLocale() === 'en' ? 'Name, phone number, source and assigned sales representative' : 'الاسم ورقم الهاتف والمصدر وموظف المبيعات المسؤول') }}</p>
                 </div>
 
                 <div class="form-grid">

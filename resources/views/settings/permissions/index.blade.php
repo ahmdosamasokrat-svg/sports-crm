@@ -18,11 +18,28 @@
     <div class="panel-head">
         <div>
             <h2>{{ __('crm.permissions_by_group') }}</h2>
-            <p>صلاحيات مدير النظام كاملة ومحمية. ويمكن ضبط صلاحيات بقية المجموعات من هذه المصفوفة. عند منح «عرض العملاء» دون نطاق «جميع العملاء» أو «مجموعات المستخدم»، يقتصر العرض تلقائيًا على العملاء المسندة للمستخدم أو المنشأة بواسطته.</p>
+            <p>{{ __('crm.permissions_notice') ?? (app()->getLocale() === 'en' ? 'Super Admin permissions are protected. Configure group permissions via this matrix. When Leads View is granted without All or Group scope, access is automatically scoped to user-assigned leads.' : 'صلاحيات مدير النظام كاملة ومحمية. ويمكن ضبط صلاحيات بقية المجموعات من هذه المصفوفة. عند منح «عرض العملاء» دون نطاق «جميع العملاء» أو «مجموعات المستخدم»، يقتصر العرض تلقائيًا على العملاء المسندة للمستخدم أو المنشأة بواسطته.') }}</p>
         </div>
     </div>
 
-    @php($canEditPermissions = auth()->user()->can('groups.assign_permissions'))
+    @php
+        $canEditPermissions = auth()->user()->can('groups.assign_permissions');
+        $moduleIcons = [
+            'dashboard' => 'bi-speedometer2',
+            'settings' => 'bi-gear-wide-connected',
+            'notifications' => 'bi-bell-fill',
+            'leads' => 'bi-people-fill',
+            'tasks' => 'bi-check2-square',
+            'quotations' => 'bi-file-earmark-text-fill',
+            'campaigns' => 'bi-megaphone-fill',
+            'reports' => 'bi-bar-chart-line-fill',
+            'users' => 'bi-person-badge-fill',
+            'groups' => 'bi-shield-lock-fill',
+            'voip' => 'bi-telephone-fill',
+            'calendar' => 'bi-calendar-event-fill',
+            'technical_support' => 'bi-headset',
+        ];
+    @endphp
     <form method="POST" action="{{ route('v2.settings.permissions.update') }}" id="permissionsForm">
         @csrf
         @method('PUT')
@@ -30,7 +47,7 @@
             <table class="permission-table">
                 <thead>
                     <tr>
-                        <th>الصلاحية</th>
+                        <th>{{ __('crm.permission') ?? (app()->getLocale() === 'en' ? 'Permission' : 'الصلاحية') }}</th>
                         @foreach ($groups as $group)
                             <th>
                                 {{ $group->name }}
@@ -43,12 +60,21 @@
                     @foreach ($permissionsByModule as $module => $permissions)
                         <tr class="module-row">
                             <td colspan="{{ $groups->count() + 1 }}">
-                                {{ $moduleLabels[$module] ?? $module }}
+                                <div class="module-header-wrap">
+                                    <div class="module-header-main">
+                                        <span class="module-icon-box">
+                                            <i class="bi {{ $moduleIcons[$module] ?? 'bi-folder2-open' }}"></i>
+                                        </span>
+                                        <span class="module-title-text">{{ $moduleLabels[$module] ?? $module }}</span>
+                                    </div>
+                                    <span class="module-count-badge">{{ $permissions->count() }} {{ __('crm.permissions') ?? 'صلاحيات' }}</span>
+                                </div>
                             </td>
                         </tr>
                         @foreach ($permissions as $permission)
                             <tr>
                                 <td>
+                                    <span class="permission-bullet"></span>
                                     <strong>{{ $permission->name_ar }}</strong>
                                 </td>
                                 @foreach ($groups as $group)
