@@ -584,6 +584,12 @@ a{color:inherit}
  max-width:38% !important;
 }
 
+html[dir="rtl"] .kc-action-call,
+html[lang="ar"] .kc-action-call{
+ flex:0 0 45% !important;
+ max-width:45% !important;
+}
+
 .kc-action-call:hover{
  opacity:0.92 !important;
  transform:translateY(-1px) !important;
@@ -595,6 +601,11 @@ a{color:inherit}
  border:1px solid var(--line, #e2e8f0) !important;
  color:var(--dark, #334155) !important;
  flex:1 1 62% !important;
+}
+
+html[dir="rtl"] .kc-action-followup,
+html[lang="ar"] .kc-action-followup{
+ flex:1 1 55% !important;
 }
 
 .kc-action-followup:hover{
