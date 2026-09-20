@@ -747,53 +747,69 @@
                 <!-- STAGE DATA SECTION -->
                 @if (!empty($stageSections))
                 <section class="panel" id="lead-stage-panel">
-                    <div class="panel-head">
+                    <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
                         <h2>
                             <i class="bi bi-diagram-3-fill" style="color:var(--red);"></i>
                             <span>{{ __('crm.stage_data') }}</span>
                         </h2>
-                    </div>
 
-                    <!-- Stage Choice Field (حقل اختيارات المرحلة) -->
-                    <div class="stage-selector-field-group">
-                        <label for="stageDetailsSelector" class="stage-selector-label">
-                            <i class="bi bi-ui-radios-grid" style="color:var(--red);"></i>
-                            <span>{{ app()->getLocale() === 'ar' ? 'اختر المرحلة لعرض بياناتها' : 'Select stage to view its data' }}</span>
-                        </label>
-                        <div class="stage-select-wrap">
-                            <select id="stageDetailsSelector" class="stage-select-input" aria-label="{{ __('crm.stage_data') }}">
-                                @foreach ($stageSections as $section)
-                                    <option value="{{ $section['id'] }}" {{ $section['id'] === $currentStageId ? 'selected' : '' }}>
-                                        {{ $section['name'] }}{{ $section['is_current'] ? ' (' . __('crm.current_stage') . ')' : '' }}
-                                    </option>
-                                @endforeach
-                            </select>
-                            <i class="bi bi-chevron-down stage-select-icon"></i>
+                        <!-- Display Filter: All Stages vs Current Stage -->
+                        <div class="stage-view-filter-dock" style="display:inline-flex; align-items:center; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:3px; gap:4px;">
+                            <button type="button" class="btn small stage-filter-btn is-active" data-stage-filter="all" id="btnStageModeAll" style="font-size:12px; padding:4px 12px; border-radius:8px; border:none; background:var(--card); color:var(--dark); font-weight:700; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+                                <i class="bi bi-grid-fill"></i>
+                                <span>{{ app()->getLocale() === 'ar' ? 'عرض جميع المراحل' : 'All Stages' }}</span>
+                            </button>
+                            <button type="button" class="btn small stage-filter-btn" data-stage-filter="current" id="btnStageModeCurrent" style="font-size:12px; padding:4px 12px; border-radius:8px; border:none; background:transparent; color:var(--muted); font-weight:700; cursor:pointer;">
+                                <i class="bi bi-check-circle-fill" style="color:var(--red);"></i>
+                                <span>{{ app()->getLocale() === 'ar' ? 'المرحلة الحالية فقط' : 'Current Stage Only' }}</span>
+                            </button>
                         </div>
                     </div>
 
-                    <!-- Stage Panes -->
-                    <div class="stage-panes-wrapper">
+                    <!-- Quick Stage Jump Bar -->
+                    <div class="stage-jump-pills-bar" style="display:flex; gap:8px; overflow-x:auto; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--bg); border-radius:10px; margin:12px 0 16px;">
+                        @foreach ($stageSections as $section)
+                            <button
+                                type="button"
+                                class="stage-jump-pill {{ $section['id'] === $currentStageId ? 'is-current' : '' }}"
+                                data-jump-to-stage="{{ $section['id'] }}"
+                                style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px; border:1px solid {{ $section['id'] === $currentStageId ? $section['color'] : 'var(--line)' }}; background:{{ $section['id'] === $currentStageId ? 'var(--card)' : 'transparent' }}; font-size:12px; font-weight:700; color:var(--dark); cursor:pointer; white-space:nowrap; flex-shrink:0;"
+                            >
+                                <span style="width:8px; height:8px; border-radius:50%; background:{{ $section['color'] }};"></span>
+                                <span>{{ $section['name'] }}</span>
+                                @if ($section['is_current'])
+                                    <span style="font-size:10px; background:{{ $section['color'] }}; color:#fff; border-radius:4px; padding:1px 4px;">{{ app()->getLocale() === 'en' ? 'Current' : 'الحالية' }}</span>
+                                @elseif ($section['filled_count'] > 0)
+                                    <span style="font-size:10px; background:var(--line); color:var(--muted); border-radius:4px; padding:1px 4px;">{{ $section['filled_count'] }}</span>
+                                @endif
+                            </button>
+                        @endforeach
+                    </div>
+
+                    <!-- All Stages Stacked Cards -->
+                    <div class="stage-panes-wrapper" id="stagePanesWrapper" style="display:grid; gap:16px;">
                         @foreach ($stageSections as $section)
                             <div
-                                class="stage-pane {{ $section['id'] === $currentStageId ? 'is-active' : '' }}"
-                                id="stage-pane-{{ $section['id'] }}"
-                                style="{{ $section['id'] === $currentStageId ? '' : 'display:none;' }}"
+                                class="stage-pane stage-card-block {{ $section['id'] === $currentStageId ? 'is-current-stage' : '' }}"
+                                id="stage-card-{{ $section['id'] }}"
+                                data-stage-id="{{ $section['id'] }}"
+                                data-is-current="{{ $section['is_current'] ? '1' : '0' }}"
+                                style="border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); transition: box-shadow 0.2s ease;"
                             >
                                 <!-- Stage Header Card -->
-                                <div class="stage-pane-header" style="border-inline-start: 4px solid {{ $section['color'] }};">
-                                    <div class="stage-pane-header-info">
-                                        <span class="stage-pane-name" style="color: {{ $section['color'] }};">
+                                <div class="stage-pane-header" style="border-inline-start: 5px solid {{ $section['color'] }}; padding: 12px 16px; background: {{ $section['is_current'] ? 'rgba(239, 68, 68, 0.04)' : 'var(--bg)' }}; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
+                                    <div class="stage-pane-header-info" style="display:flex; align-items:center; gap:8px;">
+                                        <span class="stage-pane-name" style="color: {{ $section['color'] }}; font-weight:800; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
                                             <i class="bi bi-layers-half"></i> {{ $section['name'] }}
                                         </span>
                                         @if ($section['is_current'])
-                                            <span class="badge active" style="margin-inline-start: 8px;">
+                                            <span class="badge active" style="font-size:11px; font-weight:700;">
                                                 <i class="bi bi-check-circle-fill"></i> {{ __('crm.current_stage') }}{{ $section['current_status'] ? ': ' . $section['current_status'] : '' }}
                                             </span>
                                         @endif
                                     </div>
-                                    <div class="stage-pane-header-meta">
-                                        <span class="badge" style="font-size: 11px;">
+                                    <div class="stage-pane-header-meta" style="display:flex; align-items:center; gap:8px;">
+                                        <span class="badge {{ $section['filled_count'] > 0 ? 'success' : '' }}" style="font-size: 11px; font-weight:700;">
                                             {{ $section['filled_count'] }} / {{ $section['fields_count'] }} {{ app()->getLocale() === 'ar' ? 'حقل مكتمل' : 'fields filled' }}
                                         </span>
                                     </div>
@@ -801,21 +817,21 @@
 
                                 <!-- Fields List -->
                                 @if (!empty($section['fields']))
-                                    <div class="info-list">
+                                    <div class="info-list" style="padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
                                         @foreach ($section['fields'] as $field)
-                                            <div class="info-row">
-                                                <span class="info-label" style="display:flex; align-items:center; gap:6px;">
-                                                    <i class="bi bi-dot" style="font-size:20px; color:{{ $section['color'] }}; line-height:0.5;"></i>
+                                            <div class="info-row" style="background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px;">
+                                                <span class="info-label" style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--muted); font-weight:700;">
+                                                    <i class="bi bi-dot" style="font-size:18px; color:{{ $section['color'] }}; line-height:0.5;"></i>
                                                     {{ $field['label'] }}
                                                 </span>
-                                                <span class="info-value {{ $field['has_value'] ? '' : 'text-muted' }}" style="{{ $field['has_value'] ? '' : 'color:var(--muted); font-weight:normal;' }}">
+                                                <span class="info-value {{ $field['has_value'] ? '' : 'text-muted' }}" style="font-size:13px; color:{{ $field['has_value'] ? 'var(--dark)' : 'var(--muted)' }}; font-weight:{{ $field['has_value'] ? '700' : 'normal' }};">
                                                     {{ $field['value'] }}
                                                 </span>
                                             </div>
                                         @endforeach
                                     </div>
                                 @else
-                                    <div class="stage-empty-box">
+                                    <div class="stage-empty-box" style="padding: 16px; text-align: center; color: var(--muted); font-size: 12.5px;">
                                         <i class="bi bi-inbox"></i>
                                         <span>{{ app()->getLocale() === 'ar' ? 'لا توجد حقول معرفة لهذه المرحلة' : 'No fields defined for this stage' }}</span>
                                     </div>
@@ -823,15 +839,15 @@
 
                                 <!-- Stage History / Past Submissions if any -->
                                 @if ($section['history']->isNotEmpty())
-                                    <div class="stage-history-subpanel">
-                                        <div class="stage-history-subhead">
+                                    <div class="stage-history-subpanel" style="border-top: 1px dashed var(--line); padding: 12px 16px; background: rgba(0,0,0,0.015);">
+                                        <div class="stage-history-subhead" style="font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
                                             <i class="bi bi-clock-history"></i>
                                             <span>{{ app()->getLocale() === 'ar' ? 'سجل الإدخالات السابقة في مرحلة ' . $section['name'] : 'Past submissions in ' . $section['name'] }}</span>
                                         </div>
-                                        <div class="stage-history-list">
+                                        <div class="stage-history-list" style="display: grid; gap: 8px;">
                                             @foreach ($section['history'] as $historyGroup)
-                                                <div class="stage-history-card">
-                                                    <div class="stage-history-top">
+                                                <div class="stage-history-card" style="background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;">
+                                                    <div class="stage-history-top" style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-bottom:6px;">
                                                         <span class="stage-history-actor">
                                                             <i class="bi bi-person"></i> {{ $historyGroup['actor'] }}
                                                         </span>
@@ -840,9 +856,9 @@
                                                         </span>
                                                     </div>
                                                     @if (!empty($historyGroup['values']))
-                                                        <div class="stage-history-values">
+                                                        <div class="stage-history-values" style="display:flex; flex-wrap:wrap; gap:6px;">
                                                             @foreach ($historyGroup['values'] as $hVal)
-                                                                <span class="stage-history-pill">
+                                                                <span class="stage-history-pill" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line);">
                                                                     <b>{{ $hVal['label'] }}:</b> {{ $hVal['value'] }}
                                                                 </span>
                                                             @endforeach
@@ -1585,30 +1601,48 @@
 </script>
 <script>
 (() => {
-    const stageSelector = document.getElementById('stageDetailsSelector');
-    const stagePanes = document.querySelectorAll('.stage-pane');
+    const filterBtns = document.querySelectorAll('[data-stage-filter]');
+    const jumpPills = document.querySelectorAll('[data-jump-to-stage]');
+    const stageCards = document.querySelectorAll('.stage-card-block');
 
-    if (!stageSelector) {
-        return;
-    }
+    function applyFilter(filterMode, activeStageId = null) {
+        filterBtns.forEach(btn => {
+            const isActive = btn.dataset.stageFilter === filterMode;
+            btn.classList.toggle('is-active', isActive);
+            btn.style.background = isActive ? 'var(--card)' : 'transparent';
+            btn.style.color = isActive ? 'var(--dark)' : 'var(--muted)';
+        });
 
-    function switchStage(stageId) {
-        if (!stageId) return;
-        const targetId = String(stageId);
-
-        stagePanes.forEach(pane => {
-            if (pane.id === `stage-pane-${targetId}`) {
-                pane.style.display = '';
-                pane.classList.add('is-active');
-            } else {
-                pane.style.display = 'none';
-                pane.classList.remove('is-active');
+        stageCards.forEach(card => {
+            if (filterMode === 'all') {
+                card.style.display = '';
+            } else if (filterMode === 'current') {
+                card.style.display = card.dataset.isCurrent === '1' ? '' : 'none';
+            } else if (filterMode === 'single' && activeStageId) {
+                card.style.display = card.dataset.stageId === String(activeStageId) ? '' : 'none';
             }
         });
     }
 
-    stageSelector.addEventListener('change', (e) => {
-        switchStage(e.target.value);
+    filterBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+            applyFilter(btn.dataset.stageFilter);
+        });
+    });
+
+    jumpPills.forEach(pill => {
+        pill.addEventListener('click', () => {
+            const stageId = pill.dataset.jumpToStage;
+            applyFilter('all');
+            const targetCard = document.getElementById(`stage-card-${stageId}`);
+            if (targetCard) {
+                targetCard.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                targetCard.style.boxShadow = '0 0 0 3px rgba(239, 68, 68, 0.35)';
+                setTimeout(() => {
+                    targetCard.style.boxShadow = '';
+                }, 1500);
+            }
+        });
     });
 })();
 </script>
