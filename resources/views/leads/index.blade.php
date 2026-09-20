@@ -437,19 +437,20 @@ html.dark-mode .dynamic-field-picker-count {
 }
 .dynamic-field-picker-menu {
   position: absolute;
-  inset-block-start: calc(100% + 7px);
-  inset-inline-end: 0;
-  z-index: 30;
-  width: min(360px, calc(100vw - 40px));
-  max-height: 340px;
+  top: calc(100% + 6px);
+  inset-inline-start: 0;
+  z-index: 150;
+  width: min(340px, calc(100vw - 20px));
+  max-height: 480px;
   overflow-y: auto;
-  padding: 8px;
+  padding: 0;
   border: 1px solid var(--line);
   border-radius: 12px;
   background: var(--card);
-  box-shadow: none !important;
+  box-shadow: var(--shadow-dropdown, 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)) !important;
+  box-sizing: border-box;
 }
-.dynamic-field-picker-menu[hidden] { display: none; }
+.dynamic-field-picker-menu[hidden] { display: none !important; }
 .dynamic-field-option {
   display: flex;
   align-items: center;
@@ -1114,7 +1115,6 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                         role="group"
                         aria-labelledby="chooseFieldsToggle"
                         hidden
-                        style="position:absolute; top:calc(100% + 6px); inset-inline-end:0; z-index:150; max-height:480px; overflow-y:auto; width:340px; background:var(--card); border:1px solid var(--line); border-radius:12px; box-shadow:var(--shadow-dropdown); box-sizing:border-box;"
                     >
                         <div style="padding: 10px 12px 6px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; border-bottom:1px solid var(--line);">
                             الأعمدة الأساسية (إلزامية واختيارية)
@@ -2039,6 +2039,47 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
     };
 
     // Column Picker Toggle and Actions
+    const positionFieldPicker = () => {
+        if (!fieldPickerMenu || !fieldPickerToggle) return;
+        // Reset positioning to calculate natural rect
+        fieldPickerMenu.style.left = '';
+        fieldPickerMenu.style.right = '';
+        fieldPickerMenu.style.insetInlineStart = '0';
+        fieldPickerMenu.style.insetInlineEnd = 'auto';
+
+        const sidebar = document.getElementById('crmSidebar') || document.querySelector('.crm-side');
+        const sRect = sidebar ? sidebar.getBoundingClientRect() : null;
+        const mRect = fieldPickerMenu.getBoundingClientRect();
+        const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+
+        if (isRtl && sRect) {
+            // In RTL, sidebar is on the right
+            if (mRect.right > sRect.left) {
+                // Overflowing sidebar boundary, flip to align end (leftwards)
+                fieldPickerMenu.style.insetInlineStart = 'auto';
+                fieldPickerMenu.style.insetInlineEnd = '0';
+            }
+            // Ensure it does not overflow viewport left edge
+            const recheck = fieldPickerMenu.getBoundingClientRect();
+            if (recheck.left < 10) {
+                fieldPickerMenu.style.left = '10px';
+                fieldPickerMenu.style.right = 'auto';
+            }
+        } else if (!isRtl && sRect) {
+            // In LTR, sidebar is on the left
+            if (mRect.left < sRect.right) {
+                fieldPickerMenu.style.insetInlineStart = 'auto';
+                fieldPickerMenu.style.insetInlineEnd = '0';
+            }
+            // Ensure it does not overflow viewport right edge
+            const recheck = fieldPickerMenu.getBoundingClientRect();
+            if (recheck.right > window.innerWidth - 10) {
+                fieldPickerMenu.style.right = '10px';
+                fieldPickerMenu.style.left = 'auto';
+            }
+        }
+    };
+
     const toggleFieldPicker = (e) => {
         if (e) e.stopPropagation();
         if (!fieldPickerMenu) return;
@@ -2047,6 +2088,7 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
             fieldPickerMenu.hidden = false;
             fieldPickerMenu.style.display = 'block';
             fieldPickerToggle?.setAttribute('aria-expanded', 'true');
+            positionFieldPicker();
         } else {
             fieldPickerMenu.hidden = true;
             fieldPickerMenu.style.display = 'none';
@@ -2054,6 +2096,11 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
         }
     };
     fieldPickerToggle?.addEventListener('click', toggleFieldPicker);
+    window.addEventListener('resize', () => {
+        if (fieldPickerMenu && !fieldPickerMenu.hidden && fieldPickerMenu.style.display !== 'none') {
+            positionFieldPicker();
+        }
+    });
 
     document.addEventListener('click', (e) => {
         if (fieldPickerMenu && !fieldPickerMenu.hidden && fieldPickerMenu.style.display !== 'none') {
