@@ -185,6 +185,7 @@ class LeadController extends Controller
             ->with([
                 'status.stage:id,name_ar,color,pipeline_stage_category_id',
                 'status.stage.category',
+                'guardian:id,name,phone',
                 'assignedUser:id,name',
                 'branch:id,name_ar,name_en,code',
                 'stageValues:id,lead_id,pipeline_stage_field_id,value',
@@ -249,6 +250,11 @@ class LeadController extends Controller
                 'source',
                 $filters['source']
             );
+        }
+
+        $selectedGuardianId = $request->filled('guardian_id') ? (int) $request->query('guardian_id') : null;
+        if ($selectedGuardianId) {
+            $query->where('leads.guardian_id', $selectedGuardianId);
         }
 
         if ($filters['temperature'] !== '') {
@@ -375,6 +381,8 @@ class LeadController extends Controller
         $branches = ($user && $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL))
             ? Branch::query()->active()->orderBy('name_ar')->get()
             : collect();
+        $guardians = \App\Models\Guardian::query()->orderBy('name')->get(['id', 'name', 'phone']);
+
 
         return view(
             'leads.index',
@@ -397,7 +405,9 @@ class LeadController extends Controller
                 'assignableUsers',
                 'customerFields',
                 'branches',
-                'selectedBranchId'
+                'selectedBranchId',
+                'guardians',
+                'selectedGuardianId'
             )
         );
     }
@@ -1074,6 +1084,8 @@ $stage = $status->stage;
                 'status.stage.category',
                 'parentLead.status.stage.category',
                 'clonedLeads.status.stage.category',
+                'guardian',
+                'siblings.status.stage.category',
                 'branch:id,name_ar,name_en,code',
                 'assignedUser:id,name',
                 'creator:id,name',

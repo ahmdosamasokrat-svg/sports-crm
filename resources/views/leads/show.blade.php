@@ -669,6 +669,72 @@
                                 @endif
                             </span>
                         </div>
+                        <!-- GUARDIAN & SIBLINGS (DYNAMIC INTERFACE) -->
+                        <div class="info-row" style="flex-direction: column; align-items: stretch; gap: 8px; background: rgba(248, 250, 252, 0.6); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 6px 0;">
+                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                <span class="info-label" style="font-weight:800; color:var(--dark); display:flex; align-items:center; gap:6px;">
+                                    <i class="bi bi-people-fill" style="color:#4f46e5;"></i> {{ __('ولي الأمر (Guardian)') }}
+                                </span>
+                                <div id="guardianActionBtns">
+                                    @if ($lead->guardian)
+                                        <button type="button" class="btn small soft" onclick="unlinkGuardian()" style="color:#dc2626; padding:3px 8px; font-size:11px;" title="{{ __('فك ارتباط ولي الأمر') }}">
+                                            <i class="bi bi-x-circle"></i> {{ __('إلغاء الربط') }}
+                                        </button>
+                                    @endif
+                                </div>
+                            </div>
+
+                            <!-- CURRENT LINKED GUARDIAN BADGE -->
+                            <div id="linkedGuardianDisplay" style="{{ $lead->guardian ? 'display:block;' : 'display:none;' }}">
+                                @if ($lead->guardian)
+                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                        <span class="badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; font-size:13px; font-weight:700; padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                                            <i class="bi bi-person-check-fill"></i>
+                                            <span id="guardianDisplayName">{{ $lead->guardian->name }}</span>
+                                            <small style="color:#6366f1; font-weight:600;">(#ID {{ $lead->guardian->id }})</small>
+                                            @if ($lead->guardian->relationship)
+                                                <span style="opacity:0.7;">• {{ $lead->guardian->relationship }}</span>
+                                            @endif
+                                            @if ($lead->guardian->phone)
+                                                <span style="direction:ltr; font-family:var(--font-mono); font-size:12px;">• {{ $lead->guardian->phone }}</span>
+                                            @endif
+                                        </span>
+                                    </div>
+                                @endif
+                            </div>
+
+                            <!-- GUARDIAN SEARCH & ADD INTERFACE -->
+                            <div id="unlinkedGuardianControls" style="{{ $lead->guardian ? 'display:none;' : 'display:block;' }}">
+                                <div style="display:flex; gap:8px; align-items:center;">
+                                    <div style="position:relative; flex:1;">
+                                        <input type="text" id="guardianSearchInput" placeholder="🔍 ابحث عن ولي أمر بالاسم أو الهاتف..." 
+                                               style="width:100%; height:36px; padding:0 10px; font-size:12.5px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--dark);" autocomplete="off">
+                                        <div id="guardianSearchResults" style="display:none; position:absolute; top:calc(100% + 4px); inset-inline-start:0; width:100%; max-height:200px; overflow-y:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; z-index:120; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+                                    </div>
+                                    <button type="button" class="btn small primary" onclick="openCreateGuardianModal()" style="height:36px; font-size:12px; white-space:nowrap; padding:0 12px; display:inline-flex; align-items:center; gap:4px;">
+                                        <i class="bi bi-plus-lg"></i> {{ __('ولي أمر جديد') }}
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- SIBLINGS SECTION (DYNAMIC RADAR) -->
+                            <div id="guardianSiblingsWrap" style="{{ ($lead->guardian && $lead->siblings->isNotEmpty()) ? 'display:block;' : 'display:none;' }} margin-top:6px; border-top:1px dashed var(--line); padding-top:8px;">
+                                <span style="font-size:11px; font-weight:700; color:var(--muted); display:block; margin-bottom:4px;">
+                                    <i class="bi bi-diagram-2"></i> {{ __('الأشقاء المسجلون لنفس ولي الأمر:') }}
+                                </span>
+                                <div id="siblingsList" style="display:flex; flex-wrap:wrap; gap:6px;">
+                                    @if ($lead->guardian)
+                                        @foreach ($lead->siblings as $sibling)
+                                            <a href="{{ route('v2.leads.show', $sibling) }}" class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;">
+                                                <i class="bi bi-person"></i> #{{ $sibling->id }} {{ $sibling->name }}
+                                                <small style="color:#64748b;">({{ $sibling->status?->stage?->localizedName() ?? '—' }})</small>
+                                            </a>
+                                        @endforeach
+                                    @endif
+                                </div>
+                            </div>
+                        </div>
+
                         <div class="info-row">
                             <span class="info-label">{{ __('crm.address') }}</span>
                             <span class="info-value">{{ trim(($lead->governorate ?? '').' '.($lead->address ?? '')) ?: '—' }}</span>
@@ -1700,6 +1766,230 @@
         });
     });
 })();
+</script>
+
+<!-- CREATE GUARDIAN MODAL -->
+<div id="createGuardianModal" class="crm-body-modal-shell" style="display:none;" onclick="if(event.target.id === 'createGuardianModal') closeCreateGuardianModal()">
+    <div class="crm-body-modal-dialog" style="max-width: 500px;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+            <h3 style="margin:0; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; color:var(--dark);">
+                <i class="bi bi-person-plus-fill" style="color:#4f46e5;"></i> {{ __('تسجيل ولي أمر جديد') }}
+            </h3>
+            <button type="button" onclick="closeCreateGuardianModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+
+        <form id="createGuardianForm" onsubmit="submitCreateGuardian(event)">
+            <div style="margin-bottom:14px;">
+                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('اسم ولي الأمر بالكامل') }} <span style="color:var(--red)">*</span></label>
+                <input type="text" id="newGuardianName" required placeholder="مثال: محمد أحمد علي"
+                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('رقم الهاتف الأساسي') }}</label>
+                    <input type="tel" id="newGuardianPhone" placeholder="05xxxxxxxx"
+                           style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); direction:ltr; text-align:start;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('صلة القرابة') }}</label>
+                    <select id="newGuardianRelationship" style="width:100%; height:38px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                        <option value="أب">أب (Father)</option>
+                        <option value="أم">أم (Mother)</option>
+                        <option value="ولي أمر">ولي أمر (Guardian)</option>
+                        <option value="أخ / أخت">أخ / أخت (Sibling)</option>
+                        <option value="اللاعب نفسه">اللاعب نفسه (Self)</option>
+                    </select>
+                </div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الأسرة (اختياري)') }}</label>
+                <textarea id="newGuardianNotes" rows="2" placeholder="أي تفاصيل خاصة بالتواصل أو العائلة..."
+                          style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+            </div>
+
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--line); padding-top:12px;">
+                <button type="button" class="btn small light" onclick="closeCreateGuardianModal()">{{ __('crm.cancel') }}</button>
+                <button type="submit" id="saveGuardianBtn" class="btn small primary">{{ __('حفظ وربط باللاعب') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+const leadId = {{ $lead->id }};
+const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+function openCreateGuardianModal() {
+    document.getElementById('createGuardianModal').style.display = 'flex';
+    document.body.classList.add('modal-open');
+    setTimeout(() => document.getElementById('newGuardianName')?.focus(), 50);
+}
+
+function closeCreateGuardianModal() {
+    document.getElementById('createGuardianModal').style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+let guardianSearchTimeout = null;
+const guardianSearchInput = document.getElementById('guardianSearchInput');
+const guardianSearchResults = document.getElementById('guardianSearchResults');
+
+if (guardianSearchInput) {
+    guardianSearchInput.addEventListener('input', () => {
+        clearTimeout(guardianSearchTimeout);
+        const q = guardianSearchInput.value.trim();
+        if (q.length === 0) {
+            guardianSearchResults.style.display = 'none';
+            guardianSearchResults.innerHTML = '';
+            return;
+        }
+        guardianSearchTimeout = setTimeout(() => {
+            fetch(`{{ route('v2.guardians.search') }}?q=${encodeURIComponent(q)}`)
+                .then(r => r.json())
+                .then(data => {
+                    if (!data.guardians || data.guardians.length === 0) {
+                        guardianSearchResults.innerHTML = '<div style="padding:10px 12px; font-size:12px; color:var(--muted); text-align:center;">لم يتم العثور على أولياء أمور مطابقين.</div>';
+                    } else {
+                        guardianSearchResults.innerHTML = data.guardians.map(g => `
+                            <div class="guardian-search-item" onclick="linkExistingGuardian(${g.id})" 
+                                 style="padding:8px 12px; border-bottom:1px solid var(--line); cursor:pointer; font-size:12.5px; display:flex; justify-content:space-between; align-items:center;">
+                                <div>
+                                    <strong style="color:var(--dark); display:block;">${g.name} <small style="color:#6366f1;">(#${g.id})</small></strong>
+                                    <small style="color:var(--muted);">${g.phone || 'بدون هاتف'} • ${g.relationship || 'ولي أمر'}</small>
+                                </div>
+                                <button type="button" class="btn small soft" style="font-size:11px; padding:2px 8px;">ربط</button>
+                            </div>
+                        `).join('');
+                    }
+                    guardianSearchResults.style.display = 'block';
+                });
+        }, 250);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!guardianSearchInput.contains(e.target) && !guardianSearchResults.contains(e.target)) {
+            guardianSearchResults.style.display = 'none';
+        }
+    });
+}
+
+function renderLinkedGuardian(guardian, siblings = []) {
+    const display = document.getElementById('linkedGuardianDisplay');
+    const controls = document.getElementById('unlinkedGuardianControls');
+    const actionBtns = document.getElementById('guardianActionBtns');
+    const siblingsWrap = document.getElementById('guardianSiblingsWrap');
+    const siblingsList = document.getElementById('siblingsList');
+
+    display.innerHTML = `
+        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+            <span class="badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; font-size:13px; font-weight:700; padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                <i class="bi bi-person-check-fill"></i>
+                <span>${guardian.name}</span>
+                <small style="color:#6366f1; font-weight:600;">(#ID ${guardian.id})</small>
+                ${guardian.relationship ? `<span style="opacity:0.7;">• ${guardian.relationship}</span>` : ''}
+                ${guardian.phone ? `<span style="direction:ltr; font-family:var(--font-mono); font-size:12px;">• ${guardian.phone}</span>` : ''}
+            </span>
+        </div>
+    `;
+    display.style.display = 'block';
+    controls.style.display = 'none';
+    actionBtns.innerHTML = `
+        <button type="button" class="btn small soft" onclick="unlinkGuardian()" style="color:#dc2626; padding:3px 8px; font-size:11px;" title="فك ارتباط ولي الأمر">
+            <i class="bi bi-x-circle"></i> إلغاء الربط
+        </button>
+    `;
+
+    if (siblings && siblings.length > 0) {
+        siblingsList.innerHTML = siblings.map(s => `
+            <a href="/leads/${s.id}" class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;">
+                <i class="bi bi-person"></i> #${s.id} ${s.name}
+                <small style="color:#64748b;">(${s.stage})</small>
+            </a>
+        `).join('');
+        siblingsWrap.style.display = 'block';
+    } else {
+        siblingsWrap.style.display = 'none';
+    }
+}
+
+function linkExistingGuardian(guardianId) {
+    fetch(`{{ url('leads') }}/${leadId}/guardian/link`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify({ guardian_id: guardianId })
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            renderLinkedGuardian(data.guardian, data.siblings);
+            guardianSearchResults.style.display = 'none';
+            guardianSearchInput.value = '';
+        }
+    });
+}
+
+function unlinkGuardian() {
+    if (!confirm('هل أنت متأكد من فك ارتباط ولي الأمر عن هذا اللاعب؟')) return;
+    fetch(`{{ url('leads') }}/${leadId}/guardian/unlink`, {
+        method: 'POST',
+        headers: {
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        }
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            document.getElementById('linkedGuardianDisplay').style.display = 'none';
+            document.getElementById('unlinkedGuardianControls').style.display = 'block';
+            document.getElementById('guardianActionBtns').innerHTML = '';
+            document.getElementById('guardianSiblingsWrap').style.display = 'none';
+        }
+    });
+}
+
+function submitCreateGuardian(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveGuardianBtn');
+    btn.disabled = true;
+
+    const payload = {
+        name: document.getElementById('newGuardianName').value,
+        phone: document.getElementById('newGuardianPhone').value,
+        relationship: document.getElementById('newGuardianRelationship').value,
+        notes: document.getElementById('newGuardianNotes').value,
+        lead_id: leadId,
+    };
+
+    fetch(`{{ route('v2.guardians.store') }}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': csrfToken,
+            'Accept': 'application/json',
+        },
+        body: JSON.stringify(payload)
+    })
+    .then(r => r.json())
+    .then(data => {
+        btn.disabled = false;
+        if (data.success) {
+            closeCreateGuardianModal();
+            renderLinkedGuardian(data.guardian, data.siblings);
+            document.getElementById('createGuardianForm').reset();
+        } else {
+            alert(data.message || 'حدث خطأ أثناء حفظ ولي الأمر.');
+        }
+    })
+    .catch(() => {
+        btn.disabled = false;
+        alert('حدث خطأ في الاتصال بالخادم.');
+    });
+}
 </script>
 <script src="{{ asset('crm-notifications.js') }}?v=1.0.0"></script>
 </body>

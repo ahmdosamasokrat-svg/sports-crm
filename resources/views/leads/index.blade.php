@@ -1025,6 +1025,23 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                 </div>
                 @endif
 
+                <!-- Guardian (Parent) Filter -->
+                @if (isset($guardians) && $guardians->isNotEmpty())
+                <div class="filter-field">
+                    <label for="leadGuardian"><i class="bi bi-people"></i> {{ __('ولي الأمر (Guardian)') }}</label>
+                    <div style="width:100%;">
+                        <select id="leadGuardian" name="guardian_id" class="crm-custom-select filter-control" data-crm-dropdown>
+                            <option value="">{{ __('جميع أولياء الأمور') }}</option>
+                            @foreach ($guardians as $g)
+                                <option value="{{ $g->id }}" @selected((int) ($selectedGuardianId ?? 0) === (int) $g->id)>
+                                    {{ $g->name }} @if ($g->phone) ({{ $g->phone }}) @endif
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Temperature Filter -->
                 @php
                     $dynamicCustomerFields = ($customerFields ?? collect())->filter(fn ($cf) => empty($cf->lead_attribute) || $cf->lead_attribute !== 'company_name');

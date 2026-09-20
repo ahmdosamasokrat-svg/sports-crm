@@ -17,6 +17,7 @@ class Lead extends Model
     use LogsActivity, SoftDeletes;
     protected $fillable = [
         'parent_lead_id',
+        'guardian_id',
         'lead_status_id',
         'branch_id',
         'name',
@@ -214,6 +215,17 @@ class Lead extends Model
     public function clonedLeads(): HasMany
     {
         return $this->hasMany(self::class, 'parent_lead_id');
+    }
+
+    public function guardian(): BelongsTo
+    {
+        return $this->belongsTo(Guardian::class, 'guardian_id');
+    }
+
+    public function siblings(): HasMany
+    {
+        return $this->hasMany(self::class, 'guardian_id', 'guardian_id')
+            ->where('id', '!=', $this->id);
     }
 
     public function getAgeAttribute(): ?int

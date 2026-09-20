@@ -279,6 +279,18 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             ->name('v2.leads.temperature.update');
    });
 
+        // Guardian management routes
+        Route::get('/guardians/search', [\App\Http\Controllers\GuardianController::class, 'search'])
+            ->name('v2.guardians.search');
+        Route::post('/guardians', [\App\Http\Controllers\GuardianController::class, 'store'])
+            ->name('v2.guardians.store');
+        Route::post('/leads/{lead}/guardian/link', [\App\Http\Controllers\GuardianController::class, 'link'])
+            ->whereNumber('lead')
+            ->name('v2.leads.guardian.link');
+        Route::post('/leads/{lead}/guardian/unlink', [\App\Http\Controllers\GuardianController::class, 'unlink'])
+            ->whereNumber('lead')
+            ->name('v2.leads.guardian.unlink');
+
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])
         ->whereNumber('lead')
         ->middleware('can:leads.delete')
