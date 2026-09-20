@@ -234,8 +234,8 @@
                         <option value="bi-headset">{{ __('crm.icon_support') }} (bi-headset)</option>
                         <option value="bi-check2-all">{{ __('crm.icon_check') }} (bi-check2-all)</option>
                     </select>
+                </div>
             </div>
-
             <div style="margin-bottom:20px;">
                 <label style="display:block; margin-bottom:8px; font-weight:700; font-size:13px;">
                     {{ __('crm.assign_stages_to_category') }}
