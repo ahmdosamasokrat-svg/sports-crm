@@ -291,6 +291,10 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             ->whereNumber('lead')
             ->name('v2.leads.guardian.unlink');
 
+        // Referral creator route
+        Route::post('/leads/{lead}/referrals', [\App\Http\Controllers\ReferralController::class, 'store'])
+            ->whereNumber('lead')
+            ->name('v2.leads.referrals.store');
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])
         ->whereNumber('lead')
         ->middleware('can:leads.delete')

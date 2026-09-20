@@ -501,9 +501,12 @@
                     $showTopActions .= '<a class="btn primary" href="tel:' . $callPhone . '" title="' . __('crm.call_action') . '"><i class="bi bi-telephone-outbound"></i> ' . __('crm.call_action') . '</a>';
                 }
             }
+            if (auth()->user()?->can('leads.create')) {
+                $showTopActions .= '<button type="button" class="btn soft" onclick="openReferralModal()" title="إحالة عميل جديد من خلال هذا المشترك" style="color:#059669; border-color:#a7f3d0; background:#ecfdf5;"><i class="bi bi-person-plus"></i> إحالة صديق</button>';
+            }
         @endphp
 
-       @include('partials.topbar', [
+        @include('partials.topbar', [
            'title' => __('crm.lead_details'),
            'subtitle' => '<span>' . __('crm.lead_code_label') . ': #' . $lead->id . '</span> <span style="margin:0 6px">•</span> <span>' . __('crm.registered_at') . ': ' . ($lead->created_at?->format('Y-m-d') ?? '—') . '</span>',
            'icon' => 'bi-person-badge-fill',
@@ -804,6 +807,40 @@
                                 </div>
                             </div>
                         </div>
+
+                        <!-- REFERRALS & REFERRER NETWORK SECTION -->
+                        @if ($lead->referredBy || $lead->referrals->isNotEmpty())
+                            <div class="info-row" style="flex-direction: column; align-items: stretch; gap: 8px; background: rgba(236, 253, 245, 0.5); border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; margin: 6px 0;">
+                                @if ($lead->referredBy)
+                                    <div>
+                                        <span class="info-label" style="font-weight:800; color:#065f46; display:flex; align-items:center; gap:6px; font-size:12px;">
+                                            <i class="bi bi-gift-fill"></i> مُحال من المشترك:
+                                        </span>
+                                        <a href="{{ route('v2.leads.show', $lead->referredBy) }}" style="display:inline-flex; align-items:center; gap:6px; margin-top:4px; font-weight:700; color:#047857; text-decoration:none; background:#fff; padding:4px 10px; border-radius:6px; border:1px solid #6ee7b7; font-size:12px;">
+                                            <i class="bi bi-person-heart"></i> #{{ $lead->referredBy->id }} {{ $lead->referredBy->name }}
+                                        </a>
+                                    </div>
+                                @endif
+
+                                @if ($lead->referrals->isNotEmpty())
+                                    <div style="{{ $lead->referredBy ? 'margin-top:6px; border-top:1px dashed #a7f3d0; padding-top:6px;' : '' }}">
+                                        <span class="info-label" style="font-weight:800; color:#065f46; display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:6px;">
+                                            <i class="bi bi-people"></i> إحالات قام بها هذا المشترك ({{ $lead->referrals->count() }}):
+                                        </span>
+                                        <div style="display:flex; flex-wrap:wrap; gap:6px;" id="referralsListContainer">
+                                            @foreach ($lead->referrals as $refLead)
+                                                <a href="{{ route('v2.leads.show', $refLead) }}" class="badge" style="background:#fff; color:#065f46; border:1px solid #6ee7b7; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px;">
+                                                    <i class="bi bi-person"></i> #{{ $refLead->id }} {{ $refLead->name }}
+                                                    <small style="color:#047857;">({{ $refLead->status?->stage?->localizedName() ?? '—' }})</small>
+                                                </a>
+                                            @endforeach
+                                        </div>
+                                    </div>
+                                @endif
+                            </div>
+                        @else
+                            <div id="dynamicReferralsNetwork" style="display:none;" class="info-row"></div>
+                        @endif
 
                         <div class="info-row">
                             <span class="info-label">{{ __('crm.address') }}</span>
@@ -1906,6 +1943,51 @@
     </div>
 </div>
 
+<!-- CREATE REFERRAL MODAL -->
+<div id="createReferralModal" class="crm-body-modal-shell" onclick="if(event.target.id === 'createReferralModal') closeReferralModal()">
+    <div class="crm-body-modal-dialog" style="max-width: 500px;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+            <h3 style="margin:0; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; color:var(--dark);">
+                <i class="bi bi-person-plus-fill" style="color:#059669;"></i> {{ __('إحالة صديق / عميل جديد') }}
+            </h3>
+            <button type="button" onclick="closeReferralModal()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+
+        <div style="background:#ecfdf5; border:1px solid #a7f3d0; border-radius:8px; padding:10px 12px; margin-bottom:14px; font-size:12px; color:#065f46;">
+            <i class="bi bi-info-circle-fill"></i>
+            سيتم إنشاء عميل محتمل جديد بمصدر <strong>(إحالة / Referral)</strong> وربطه تلقائيًا بالمشترك <strong>{{ $lead->name }}</strong>.
+        </div>
+
+        <form id="createReferralForm" onsubmit="submitCreateReferral(event)">
+            <div style="margin-bottom:14px;">
+                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('اسم اللاعب أو الصديق المُحال') }} <span style="color:var(--red)">*</span></label>
+                <input type="text" id="newReferralName" required placeholder="مثال: يوسف خالد"
+                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+            </div>
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('رقم الهاتف / واتساب') }} <span style="color:var(--red)">*</span></label>
+                    <input type="tel" id="newReferralPhone" required placeholder="05xxxxxxxx"
+                           style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); direction:ltr; text-align:start;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('النشاط المهتم به') }}</label>
+                    <input type="text" id="newReferralActivity" placeholder="مثال: كرة قدم / جمباز" value="{{ $lead->activity }}"
+                           style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                </div>
+            </div>
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الإحالة (اختياري)') }}</label>
+                <textarea id="newReferralNotes" rows="2" placeholder="أي تفاصيل عن اللاعب أو ولي أمره أو معرفته بالمشترك..."
+                          style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--line); padding-top:12px;">
+                <button type="button" class="btn small soft" onclick="closeReferralModal()">{{ __('إلغاء') }}</button>
+                <button type="submit" id="saveReferralBtn" class="btn small primary" style="background:#059669; border-color:#059669;">{{ __('تسجيل الإحالة الآن') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
 <script>
 const leadId = {{ $lead->id }};
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
@@ -1925,6 +2007,61 @@ function closeCreateGuardianModal() {
     document.body.classList.remove('modal-open');
 }
 
+function openReferralModal() {
+    const modal = document.getElementById('createReferralModal');
+    modal.classList.add('is-open');
+    modal.style.display = 'flex';
+    document.body.classList.add('modal-open');
+    setTimeout(() => document.getElementById('newReferralName')?.focus(), 50);
+}
+
+function closeReferralModal() {
+    const modal = document.getElementById('createReferralModal');
+    modal.classList.remove('is-open');
+    modal.style.display = 'none';
+    document.body.classList.remove('modal-open');
+}
+
+async function submitCreateReferral(e) {
+    e.preventDefault();
+    const btn = document.getElementById('saveReferralBtn');
+    btn.disabled = true;
+    btn.textContent = 'جاري التسجيل...';
+
+    const payload = {
+        name: document.getElementById('newReferralName').value.trim(),
+        phone: document.getElementById('newReferralPhone').value.trim(),
+        activity: document.getElementById('newReferralActivity').value.trim(),
+        notes: document.getElementById('newReferralNotes').value.trim(),
+    };
+
+    try {
+        const res = await fetch(`/leads/${leadId}/referrals`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': csrfToken,
+                'Accept': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        const data = await res.json();
+        if (res.ok && data.success) {
+            closeReferralModal();
+            document.getElementById('createReferralForm').reset();
+            alert(data.message || 'تم تسجيل الإحالة بنجاح!');
+            window.location.reload();
+        } else {
+            alert(data.message || 'حدث خطأ أثناء حفظ الإحالة. تحقق من البيانات.');
+        }
+    } catch (err) {
+        alert('تعذر الاتصال بالخادم. حاول مرة أخرى.');
+    } finally {
+        btn.disabled = false;
+        btn.textContent = 'تسجيل الإحالة الآن';
+    }
+}
 let guardianSearchTimeout = null;
 const guardianSearchInput = document.getElementById('guardianSearchInput');
 const guardianSearchResults = document.getElementById('guardianSearchResults');

@@ -17,6 +17,7 @@ class Lead extends Model
     use LogsActivity, SoftDeletes;
     protected $fillable = [
         'parent_lead_id',
+        'referred_by_lead_id',
         'guardian_id',
         'lead_status_id',
         'branch_id',
@@ -218,6 +219,16 @@ class Lead extends Model
     public function parentLead(): BelongsTo
     {
         return $this->belongsTo(self::class, 'parent_lead_id');
+    }
+
+    public function referredBy(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'referred_by_lead_id');
+    }
+
+    public function referrals(): HasMany
+    {
+        return $this->hasMany(self::class, 'referred_by_lead_id')->orderByDesc('created_at');
     }
 
     public function clonedLeads(): HasMany
