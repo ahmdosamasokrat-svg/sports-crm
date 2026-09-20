@@ -258,6 +258,15 @@ display:grid;
  transform:translateX(-2px) !important
 }
 
+html[dir="rtl"] .crm-link:hover,
+html[dir="rtl"] .crm-toggle:hover,
+html[dir="rtl"] .crm-side .link:hover,
+html[dir="rtl"] .crm-side .toggle:hover,
+html[dir="rtl"] #crmSidebar .link:hover,
+html[dir="rtl"] #crmSidebar .toggle:hover{
+ transform:translateX(2px) !important
+}
+
 .crm-link.active,
 .crm-toggle.active,
 .crm-side .link.active,
@@ -285,14 +294,17 @@ html.dark-mode .crm-toggle.active .crm-ico{
  width:26px !important;
  height:26px !important;
  flex:0 0 26px !important;
- display:grid !important;
- place-items:center !important;
+ display:flex !important;
+ align-items:center !important;
+ justify-content:center !important;
  border-radius:0 !important;
  border:none !important;
  background:transparent !important;
  background-color:transparent !important;
  font-size:18px !important;
- box-shadow:none !important
+ box-shadow:none !important;
+ margin:0 !important;
+ padding:0 !important;
 }
 
 .crm-label,
@@ -309,8 +321,8 @@ html.dark-mode .crm-toggle.active .crm-ico{
 .crm-toggle,
 .crm-side .toggle,
 #crmSidebar .toggle{
- gap:8px !important;
- padding:8px 8px !important;
+ gap:10px !important;
+ padding:8px 10px !important;
 }
 
 .crm-toggle .crm-label,
