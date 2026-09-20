@@ -70,6 +70,15 @@ class PipelineStageField extends Model
             'placeholder_ar' => 'example@domain.com',
             'placeholder_en' => 'example@domain.com',
         ],
+        'birth_date' => [
+            'target' => 'birth_date',
+            'label_ar' => 'تاريخ الميلاد',
+            'label_en' => 'Date of Birth',
+            'type' => 'date',
+            'rules' => ['nullable', 'date'],
+            'placeholder_ar' => 'YYYY-MM-DD',
+            'placeholder_en' => 'YYYY-MM-DD',
+        ],
         'company_name' => [
             'target' => 'company_name',
             'label_ar' => 'اسم الشركة / المؤسسة',

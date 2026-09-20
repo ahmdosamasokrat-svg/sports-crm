@@ -647,6 +647,29 @@
                             </div>
                         @endif
                         <div class="info-row">
+                            <span class="info-label">{{ __('crm.birth_date') ?? 'تاريخ الميلاد' }}</span>
+                            <span class="info-value">
+                                @if ($lead->birth_date)
+                                    {{ $lead->birth_date->format('Y-m-d') }}
+                                    <span class="badge" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-weight:700;margin-inline-start:6px;font-size:12px;">
+                                        <i class="bi bi-cake2"></i> {{ $lead->age }} {{ __('سنة') }}
+                                    </span>
+                                @else
+                                    —
+                                @endif
+                            </span>
+                        </div>
+                        <div class="info-row">
+                            <span class="info-label">{{ __('crm.age') ?? 'العمر (محسوب تلقائيًا)' }}</span>
+                            <span class="info-value">
+                                @if ($lead->age !== null)
+                                    <strong style="color:var(--dark); font-size:14px;">{{ $lead->age }}</strong> {{ __('سنوات') }}
+                                @else
+                                    <span style="color:var(--muted)">{{ __('غير محدد (يتطلب تاريخ الميلاد)') }}</span>
+                                @endif
+                            </span>
+                        </div>
+                        <div class="info-row">
                             <span class="info-label">{{ __('crm.address') }}</span>
                             <span class="info-value">{{ trim(($lead->governorate ?? '').' '.($lead->address ?? '')) ?: '—' }}</span>
                         </div>

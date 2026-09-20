@@ -37,8 +37,8 @@ class Lead extends Model
         'quotation_file_path',
         'phone',
         'email',
+        'birth_date',
         'source',
-        'quotation_sent',
         'assigned_employee',
         'assigned_user_id',
         'created_by',
@@ -58,6 +58,7 @@ class Lead extends Model
             'branches_count' => 'integer',
             'lines_count' => 'integer',
             'custom_fields' => 'array',
+            'birth_date' => 'date',
             'next_follow_up_at' => 'datetime',
             'deleted_at' => 'datetime',
         ];
@@ -213,6 +214,19 @@ class Lead extends Model
     public function clonedLeads(): HasMany
     {
         return $this->hasMany(self::class, 'parent_lead_id');
+    }
+
+    public function getAgeAttribute(): ?int
+    {
+        if (empty($this->birth_date)) {
+            return null;
+        }
+
+        try {
+            return \Carbon\Carbon::parse($this->birth_date)->age;
+        } catch (\Throwable) {
+            return null;
+        }
     }
 
     public function currentStage(): ?PipelineStage

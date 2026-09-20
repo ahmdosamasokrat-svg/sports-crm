@@ -1880,6 +1880,8 @@ return [
     'icon_collection' => 'مجموعة',
     'icon_folder' => 'مجلد',
     'icon_tags' => 'وسوم',
+    'birth_date' => 'تاريخ الميلاد',
+    'age' => 'العمر (محسوب تلقائيًا)',
     'icon_funnel' => 'قمع بيع',
     'icon_briefcase' => 'أعمال',
     'icon_diagram' => 'مخطط',

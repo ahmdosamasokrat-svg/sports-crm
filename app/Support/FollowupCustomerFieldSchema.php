@@ -71,6 +71,7 @@ class FollowupCustomerFieldSchema
                 'governorate' => ['string', 'max:100'],
                 'address' => ['string', 'max:255'],
                 'users_count', 'branches_count' => ['integer', 'min:0', 'max:1000000'],
+                'birth_date' => ['date'],
                 default => null,
             };
 

@@ -407,6 +407,49 @@
             }
         }
 
+        // Auto-calculate and display age dynamically whenever birth_date is entered
+        function autoCalculateAge() {
+            const birthDateInputs = wrap.querySelectorAll('[data-sf-key="birth_date"] input, input[name*="[birth_date]"]');
+            birthDateInputs.forEach(input => {
+                let badge = input.parentElement.querySelector('.auto-calculated-age-badge');
+                const val = input.value ? input.value.trim() : '';
+
+                if (!val) {
+                    if (badge) badge.remove();
+                    return;
+                }
+
+                const birth = new Date(val);
+                if (isNaN(birth.getTime())) {
+                    if (badge) badge.remove();
+                    return;
+                }
+
+                const today = new Date();
+                let age = today.getFullYear() - birth.getFullYear();
+                const m = today.getMonth() - birth.getMonth();
+                if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+                    age--;
+                }
+
+                if (age >= 0 && age <= 120) {
+                    if (!badge) {
+                        badge = document.createElement('div');
+                        badge.className = 'auto-calculated-age-badge';
+                        badge.style.cssText = 'margin-top:6px; font-size:12px; font-weight:700; color:#2563eb; display:flex; align-items:center; gap:5px; background:#eff6ff; border:1px solid #bfdbfe; padding:4px 10px; border-radius:8px; width:fit-content;';
+                        input.parentElement.appendChild(badge);
+                    }
+                    badge.innerHTML = `<i class="bi bi-cake2"></i> العمر المحسوب تلقائيًا: <strong>${age} سنة</strong>`;
+                } else if (badge) {
+                    badge.remove();
+                }
+            });
+        }
+
+        wrap.addEventListener('input', autoCalculateAge);
+        wrap.addEventListener('change', autoCalculateAge);
+        autoCalculateAge();
+
         wrap.addEventListener('input', autoCalculatePricing);
         wrap.addEventListener('change', autoCalculatePricing);
         autoCalculatePricing();
