@@ -24,6 +24,15 @@ class UpdateUserRequest extends FormRequest
         $managedUser = $this->route('user');
 
         return [
+            'branch_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('branches', 'id')->where(
+                    static fn ($query) => $query
+                        ->where('is_active', true)
+                        ->whereNull('deleted_at')
+                ),
+            ],
             'name' => ['required', 'string', 'max:150'],
             'username' => [
                 'required',

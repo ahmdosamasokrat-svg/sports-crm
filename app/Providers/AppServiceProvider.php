@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use App\Models\Branch;
 use App\Models\CalendarEvent;
 use App\Models\Group;
 use App\Models\Lead;
@@ -12,6 +13,7 @@ use App\Models\TechnicalSupportTask;
 use App\Models\User;
 use App\Observers\CalendarEventNotificationObserver;
 use App\Observers\LeadNotificationObserver;
+use App\Policies\BranchPolicy;
 use App\Policies\CalendarEventPolicy;
 use App\Policies\GroupPolicy;
 use App\Policies\LeadFollowupPolicy;
@@ -48,6 +50,7 @@ class AppServiceProvider extends ServiceProvider
         Gate::policy(User::class, UserPolicy::class);
         Gate::policy(Group::class, GroupPolicy::class);
         Gate::policy(CalendarEvent::class, CalendarEventPolicy::class);
+        Gate::policy(Branch::class, BranchPolicy::class);
 
         Lead::observe(LeadNotificationObserver::class);
         CalendarEvent::observe(CalendarEventNotificationObserver::class);

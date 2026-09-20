@@ -8,6 +8,10 @@
     $phoneDigits = $lead->phone ? preg_replace('/[^0-9+]/', '', (string) $lead->phone) : '';
     $initial = mb_substr(trim($lead->name ?: 'U'), 0, 1);
     
+    // Custom fields & temperature
+    $cardCustom = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+    $cardTemp = $cardCustom['lead_temperature'] ?? null;
+
     // Follow-up status calculation
     $followupState = 'none';
     if ($lead->next_follow_up_at) {
@@ -26,15 +30,41 @@
  <div class="kc-header">
   <div class="kc-avatar" title="{{ $lead->name }}">{{ $initial }}</div>
   <div class="kc-title-wrap">
-   <a class="kanban-card-name kc-name" href="{{ route('v2.leads.show', $lead) }}" data-kanban-customer-popup title="{{ $lead->name }}">
-    {{ $lead->name }}
-   </a>
+   <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+    <a class="kanban-card-name kc-name" href="{{ route('v2.leads.show', $lead) }}" data-kanban-customer-popup title="{{ $lead->name }}">
+     {{ $lead->name }}
+    </a>
+    @if ($lead->branch)
+     <span class="badge" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0;background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;" title="{{ __('crm.branch') }}">
+      <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+     </span>
+    @endif
+    @if ($cardTemp)
+     @php
+         $cardTempStyle = match($cardTemp) {
+             'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+             'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+             'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+             default => 'background:var(--bg);color:var(--muted);'
+         };
+         $cardTempLabel = match($cardTemp) {
+             'hot' => '🔥 Hot',
+             'warm' => '⚡ Warm',
+             'cold' => '❄️ Cold',
+             default => ucfirst((string) $cardTemp)
+         };
+     @endphp
+     <span class="badge" style="font-size:10px;padding:1px 5px;border-radius:4px;font-weight:700;flex-shrink:0;{{ $cardTempStyle }}">{{ $cardTempLabel }}</span>
+    @endif
+   </div>
    @if ($lead->company_name || $lead->source)
     <span class="kc-source" title="{{ $lead->company_name ?: $lead->source }}">
      <svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="2" width="16" height="20" rx="2" ry="2"/><line x1="9" y1="22" x2="9" y2="22.01"/><line x1="15" y1="22" x2="15" y2="22.01"/><line x1="9" y1="18" x2="9" y2="18.01"/><line x1="15" y1="18" x2="15" y2="18.01"/><line x1="9" y1="14" x2="9" y2="14.01"/><line x1="15" y1="14" x2="15" y2="14.01"/><line x1="9" y1="10" x2="9" y2="10.01"/><line x1="15" y1="10" x2="15" y2="10.01"/><line x1="9" y1="6" x2="9" y2="6.01"/><line x1="15" y1="6" x2="15" y2="6.01"/></svg>
      <span>{{ $lead->company_name ?: $lead->source }}</span>
     </span>
    @endif
+  </div>
+ </div>
   </div>
  </div>
 

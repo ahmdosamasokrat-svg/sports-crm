@@ -66,6 +66,10 @@ enum CrmPermission: string
     case LEADS_TRASH_FORCE_DELETE = 'leads.trash.force_delete';
 
     case AUDIT_LOGS_VIEW = 'audit_logs.view';
+    case BRANCHES_VIEW = 'branches.view';
+    case BRANCHES_MANAGE = 'branches.manage';
+    case BRANCHES_SCOPE_ASSIGNED = 'branches.scope.assigned';
+    case BRANCHES_SCOPE_ALL = 'branches.scope.all';
 
     public function module(): string
     {
@@ -124,6 +128,10 @@ enum CrmPermission: string
             self::LEADS_TRASH_RESTORE => 'استعادة العملاء من سلة المهملات',
             self::LEADS_TRASH_FORCE_DELETE => 'الحذف النهائي للعملاء من سلة المهملات',
             self::AUDIT_LOGS_VIEW => 'عرض سجل العمليات والنشاطات (Logs)',
+            self::BRANCHES_VIEW => 'عرض الفروع',
+            self::BRANCHES_MANAGE => 'إدارة الفروع (إضافة/تعديل/تفعيل)',
+            self::BRANCHES_SCOPE_ASSIGNED => 'نطاق الفروع: الفرع المسند فقط',
+            self::BRANCHES_SCOPE_ALL => 'نطاق الفروع: جميع الفروع',
         };
     }
 
@@ -158,6 +166,7 @@ enum CrmPermission: string
             'calendar' => 'التقويم والأحداث',
             'technical_support' => 'الدعم الفني',
             'audit_logs' => 'سجل العمليات والنشاطات',
+            'branches' => 'الفروع والمواقع',
         ];
     }
 }

@@ -2,12 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Branch;
+use App\Models\Campaign;
 use App\Models\Lead;
-use App\Models\LeadFollowup;
 use App\Models\LeadDocument;
+use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\PipelineStage;
-use App\Models\Campaign;
 use App\Models\User;
 use App\Security\CrmPermission;
 use App\Security\LeadAssignment;
@@ -71,6 +72,7 @@ class LeadController extends Controller
             'status' => mb_substr(trim((string) $request->query('status', '')), 0, 50),
             'employee' => mb_substr(trim((string) $request->query('employee', '')), 0, 150),
             'source' => mb_substr(trim((string) $request->query('source', '')), 0, 100),
+            'temperature' => mb_substr(trim((string) $request->query('temperature', '')), 0, 50),
             'follow_up' => mb_substr(trim((string) $request->query('follow_up', '')), 0, 20),
             'sort' => mb_substr(trim((string) $request->query('sort', 'latest')), 0, 20),
         ];
@@ -165,13 +167,7 @@ class LeadController extends Controller
             ->sort()
             ->values();
 
-        $sources = Lead::query()
-            ->accessibleTo($user)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($user);
 
         if (
             $filters['source'] !== ''
@@ -190,8 +186,14 @@ class LeadController extends Controller
                 'status.stage:id,name_ar,color,pipeline_stage_category_id',
                 'status.stage.category',
                 'assignedUser:id,name',
+                'branch:id,name_ar,name_en,code',
                 'stageValues:id,lead_id,pipeline_stage_field_id,value',
             ]);
+
+        $selectedBranchId = $request->filled('branch') ? (int) $request->query('branch') : null;
+        if ($selectedBranchId && $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            $query->where('leads.branch_id', $selectedBranchId);
+        }
 
         if ($filters['q'] !== '') {
             $search = '%'.$filters['q'].'%';
@@ -247,6 +249,27 @@ class LeadController extends Controller
                 'source',
                 $filters['source']
             );
+        }
+
+        if ($filters['temperature'] !== '') {
+            $query->where('custom_fields->lead_temperature', $filters['temperature']);
+        }
+
+        // Dynamically filter any custom customer fields passed via cf[key]=val
+        $cfFilters = (array) $request->query('cf', []);
+        if (! empty($cfFilters)) {
+            $allCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)->keyBy('key');
+            foreach ($cfFilters as $cfKey => $cfVal) {
+                if ($cfVal === null || $cfVal === '') {
+                    continue;
+                }
+                $cfModel = $allCustomerFields->get((string) $cfKey);
+                if ($cfModel && $cfModel->lead_attribute) {
+                    $query->where($cfModel->lead_attribute, $cfVal);
+                } else {
+                    $query->where('custom_fields->' . $cfKey, $cfVal);
+                }
+            }
         }
 
         switch ($filters['follow_up']) {
@@ -322,6 +345,8 @@ class LeadController extends Controller
 
         $totalLeads = (int) (clone $leadCountBase)->count();
 
+        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+
         $activeQuery = array_filter(
             $filters,
             static fn (string $value): bool => $value !== ''
@@ -347,6 +372,10 @@ class LeadController extends Controller
             ? LeadAssignment::assignableUsers($user)
             : collect();
 
+        $branches = ($user && $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL))
+            ? Branch::query()->active()->orderBy('name_ar')->get()
+            : collect();
+
         return view(
             'leads.index',
             compact(
@@ -365,7 +394,10 @@ class LeadController extends Controller
                 'activeQuery',
                 'queryWithoutStatus',
                 'totalLeads',
-                'assignableUsers'
+                'assignableUsers',
+                'customerFields',
+                'branches',
+                'selectedBranchId'
             )
         );
     }
@@ -426,17 +458,17 @@ class LeadController extends Controller
                 : 'بدون مرحلة'
         );
 
-        $sources = Lead::query()
-            ->accessibleTo($actor)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
 
         $totalLeads = Lead::query()
             ->accessibleTo($actor)
             ->count();
+
+        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+        $branches = $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
+            ? Branch::query()->active()->orderBy('name_ar')->get()
+            : collect();
+        $userBranch = $actor->branch;
 
         return view(
             'leads.create',
@@ -445,12 +477,15 @@ class LeadController extends Controller
                 'statusGroups',
                 'activeStages',
                 'sources',
+                'customerFields',
                 'assignedEmployee',
                 'canAssignLead',
                 'assignableUsers',
                 'totalLeads',
                 'campaign',
-                'campaigns'
+                'campaigns',
+                'branches',
+                'userBranch'
             )
         );
     }
@@ -526,6 +561,13 @@ class LeadController extends Controller
         /* CRM NEW EXECUTION NO FOLLOWUP V7 */
 
         $rules = [
+            'branch_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('branches', 'id')->where(
+                    static fn ($query) => $query->where('is_active', true)->whereNull('deleted_at')
+                ),
+            ],
             'first_name' => [
                 'required',
                 'string',
@@ -758,8 +800,24 @@ class LeadController extends Controller
                 );
         }
 
+        // Resolve branch assignment
+        $assignedBranchId = null;
+        if ($actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($request->filled('branch_id')) {
+                $assignedBranchId = (int) $validated['branch_id'];
+            } else {
+                $assignedBranchId = $actor->branch_id ?? (int) (Branch::query()->value('id') ?? 1);
+            }
+        } else {
+            if ($request->filled('branch_id') && (int) $request->input('branch_id') !== (int) $actor->branch_id) {
+                abort(403, 'غير مصرح بتحديد فرع آخر');
+            }
+            $assignedBranchId = $actor->branch_id ?? (int) (Branch::query()->value('id') ?? 1);
+        }
+
         $leadData = [
             'lead_status_id' => $status->id,
+            'branch_id' => $assignedBranchId,
             'name' => $fullName,
             'first_name' => $firstName,
             'last_name' => $lastName === ''
@@ -866,7 +924,29 @@ class LeadController extends Controller
             'quotation_file_path' => $quotationPath,
         ];
 
-        $stage = $status->stage;
+$stage = $status->stage;
+
+        // Extract dynamic customer fields
+        $customFieldsInput = $request->input('customer_fields', $request->input('custom_fields', []));
+        if (! empty($customFieldsInput) && is_array($customFieldsInput)) {
+            $cleanedCustom = [];
+            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $fieldsByKey = $allFields->keyBy('key');
+            foreach ($customFieldsInput as $cKey => $cVal) {
+                if ($cVal === null || $cVal === '') {
+                    continue;
+                }
+                $fieldModel = $fieldsByKey->get($cKey);
+                if ($fieldModel && $fieldModel->lead_attribute) {
+                    $leadData[$fieldModel->lead_attribute] = is_string($cVal) ? trim($cVal) : $cVal;
+                } else {
+                    $cleanedCustom[$cKey] = is_string($cVal) ? trim($cVal) : $cVal;
+                }
+            }
+            if (! empty($cleanedCustom)) {
+                $leadData['custom_fields'] = $cleanedCustom;
+            }
+        }
         $normalizedStageValues = [];
         if ($stage !== null) {
             $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);
@@ -992,6 +1072,7 @@ class LeadController extends Controller
         $leadRecord = Lead::query()
             ->with([
                 'status.stage',
+                'branch:id,name_ar,name_en,code',
                 'assignedUser:id,name',
                 'creator:id,name',
                 'stageValues.field',
@@ -1444,6 +1525,8 @@ class LeadController extends Controller
                 'stageHistoryGroups' => $stageHistoryGroups,
                 'stageSections' => $stageSections,
                 'currentStageId' => $currentStageId,
+                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
             ]
         );
     }
@@ -1456,7 +1539,7 @@ class LeadController extends Controller
         $this->assertCrmV2Database();
 
         $leadRecord = Lead::query()
-            ->with('assignedUser:id,name,username')
+            ->with(['assignedUser:id,name,username', 'branch:id,name_ar,name_en,code'])
             ->findOrFail(
                 (int) $lead
             );
@@ -1487,13 +1570,7 @@ class LeadController extends Controller
             ->orderBy('id')
             ->get();
 
-        $sources = Lead::query()
-            ->accessibleTo($actor)
-            ->whereNotNull('source')
-            ->where('source', '<>', '')
-            ->distinct()
-            ->orderBy('source')
-            ->pluck('source');
+        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
 
         $quotationPath = trim(
             (string) $leadRecord->quotation_file_path
@@ -1541,6 +1618,11 @@ class LeadController extends Controller
                 'quotationFileHelpText' => $quotationFileHelpText,
                 'stageFields' => $stageFields,
                 'latestStageValues' => $latestStageValues,
+                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
+                'branches' => $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
+                    ? Branch::query()->active()->orderBy('name_ar')->get()
+                    : collect(),
             ]
         );
     }
@@ -1623,6 +1705,9 @@ class LeadController extends Controller
             'One or more selected leads could not be loaded.'
         );
 
+        $dynamicCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)
+            ->filter(fn ($f) => empty($f->lead_attribute) || !in_array($f->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address', 'source', 'users_count', 'branches_count'], true));
+
         $headers = [
             'رقم العميل',
             'اسم العميل',
@@ -1653,6 +1738,10 @@ class LeadController extends Controller
             'آخر تحديث',
         ];
 
+        foreach ($dynamicCustomerFields as $cField) {
+            $headers[] = $cField->localizedLabel();
+        }
+
         $solutionLabels = [
             'call_center' => 'Call Center',
             'erp' => 'ERP',
@@ -1680,7 +1769,8 @@ class LeadController extends Controller
                     Lead $lead
                 ) use (
                     $formatDate,
-                    $solutionLabels
+                    $solutionLabels,
+                    $dynamicCustomerFields
                 ): array {
                     $quotationPath = trim(
                         (string)
@@ -1709,7 +1799,7 @@ class LeadController extends Controller
                         (string) $lead->solution_type
                     );
 
-                    return [
+                    $leadRow = [
                         (int) $lead->id,
                         (string) $lead->name,
                         (string) $lead->phone,
@@ -1781,6 +1871,33 @@ class LeadController extends Controller
                             $lead->updated_at
                         ),
                     ];
+
+                    $leadCust = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+                    foreach ($dynamicCustomerFields as $cField) {
+                        $rawVal = $cField->lead_attribute
+                            ? $lead->getAttribute($cField->lead_attribute)
+                            : ($leadCust[$cField->key] ?? null);
+
+                        if ($rawVal === null || $rawVal === '') {
+                            $leadRow[] = '';
+                            continue;
+                        }
+
+                        if (in_array($cField->type, ['select', 'multiselect'], true)) {
+                            $opts = collect($cField->normalizedOptions())->keyBy('value');
+                            if (is_array($rawVal)) {
+                                $leadRow[] = implode(', ', array_map(fn ($v) => $opts->get($v)['label_ar'] ?? $opts->get($v)['label_en'] ?? $v, $rawVal));
+                            } else {
+                                $leadRow[] = (string) ($opts->get($rawVal)['label_ar'] ?? $opts->get($rawVal)['label_en'] ?? $rawVal);
+                            }
+                        } elseif ($cField->type === 'checkbox') {
+                            $leadRow[] = $rawVal ? 'نعم' : 'لا';
+                        } else {
+                            $leadRow[] = is_array($rawVal) ? implode(', ', $rawVal) : (string) $rawVal;
+                        }
+                    }
+
+                    return $leadRow;
                 }
             )
             ->all();
@@ -2215,6 +2332,13 @@ class LeadController extends Controller
 
         $validated = $request->validate(
             [
+                'branch_id' => [
+                    'nullable',
+                    'integer',
+                    Rule::exists('branches', 'id')->where(
+                        static fn ($query) => $query->where('is_active', true)->whereNull('deleted_at')
+                    ),
+                ],
                 'first_name' => [
                     'required',
                     'string',
@@ -2399,7 +2523,19 @@ class LeadController extends Controller
             $newQuotationPath = $storedPath;
         }
 
+        $branchIdToUpdate = $leadRecord->branch_id;
+        if ($actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($request->has('branch_id')) {
+                $branchIdToUpdate = ! empty($validated['branch_id']) ? (int) $validated['branch_id'] : null;
+            }
+        } else {
+            if ($request->filled('branch_id') && (int) $request->input('branch_id') !== (int) $leadRecord->branch_id) {
+                abort(403, 'غير مصرح بتغيير فرع العميل');
+            }
+        }
+
         $leadData = [
+            'branch_id' => $branchIdToUpdate,
             'name' => $fullName,
             'first_name' => $firstName,
             'last_name' => $lastName,
@@ -2516,6 +2652,27 @@ class LeadController extends Controller
             $leadData['assigned_employee'] = $assignedEmployee;
         }
         $stage = $status->stage;
+
+        // Extract dynamic customer fields
+        $customerFieldsInput = $request->input('customer_fields', $request->input('custom_fields', null));
+        if ($customerFieldsInput !== null && is_array($customerFieldsInput)) {
+            $existingCustom = is_array($leadRecord->custom_fields) ? $leadRecord->custom_fields : [];
+            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $fieldsByKey = $allFields->keyBy('key');
+            foreach ($customerFieldsInput as $cKey => $cVal) {
+                $fieldModel = $fieldsByKey->get($cKey);
+                if ($fieldModel && $fieldModel->lead_attribute) {
+                    $leadData[$fieldModel->lead_attribute] = ($cVal === '' || $cVal === null) ? null : (is_string($cVal) ? trim($cVal) : $cVal);
+                } else {
+                    if ($cVal === '' || $cVal === null) {
+                        unset($existingCustom[$cKey]);
+                    } else {
+                        $existingCustom[$cKey] = is_string($cVal) ? trim($cVal) : $cVal;
+                    }
+                }
+            }
+            $leadData['custom_fields'] = empty($existingCustom) ? null : $existingCustom;
+        }
         $normalizedStageValues = [];
         if ($stage !== null) {
             $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);
@@ -3232,11 +3389,39 @@ XML;
             );
         }
 
-        return $columnName;
+       return $columnName;
+   }
+
+    public function updateTemperature(
+        Request $request,
+        string $lead
+    ): RedirectResponse {
+        $this->assertCrmV2Database();
+
+        $leadRecord = Lead::query()->findOrFail((int) $lead);
+        Gate::authorize('update', $leadRecord);
+
+        $validated = $request->validate([
+            'temperature' => ['nullable', 'string', Rule::in(['cold', 'warm', 'hot', ''])],
+        ]);
+
+        $tempVal = ! empty($validated['temperature']) ? trim((string) $validated['temperature']) : null;
+
+        $existingCustom = is_array($leadRecord->custom_fields) ? $leadRecord->custom_fields : [];
+        if ($tempVal === null) {
+            unset($existingCustom['lead_temperature']);
+        } else {
+            $existingCustom['lead_temperature'] = $tempVal;
+        }
+
+        $leadRecord->custom_fields = empty($existingCustom) ? null : $existingCustom;
+        $leadRecord->save();
+
+        return back()->with('success', __('crm.updated_successfully') ?: 'تم تحديث درجة حرارة العميل بنجاح');
     }
 
-    private function assertCrmV2Database(): void
-    {
+   private function assertCrmV2Database(): void
+   {
         CrmDatabaseGuard::ensureConnected();
     }
 }

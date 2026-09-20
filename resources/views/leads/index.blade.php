@@ -1007,6 +1007,49 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                     </div>
                 </div>
 
+                @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+                <!-- Branch Filter -->
+                <div class="filter-field">
+                    <label for="leadBranch"><i class="bi bi-geo-alt"></i> {{ __('crm.branch') ?: 'الفرع' }}</label>
+                    <div style="width:100%;">
+                        <select id="leadBranch" name="branch" class="crm-custom-select filter-control" data-crm-dropdown>
+                            <option value="">{{ __('crm.all_branches') ?: 'جميع الفروع' }}</option>
+                            @foreach ($branches as $br)
+                                <option value="{{ $br->id }}" @selected((int) ($selectedBranchId ?? 0) === (int) $br->id)>
+                                    {{ $br->localizedName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
+
+                <!-- Temperature Filter -->
+                @php
+                    $dynamicCustomerFields = ($customerFields ?? collect())->filter(fn ($cf) => empty($cf->lead_attribute) || $cf->lead_attribute !== 'company_name');
+                    $tempField = ($customerFields ?? collect())->firstWhere('key', 'lead_temperature');
+                    $tempOptions = $tempField ? $tempField->normalizedOptions() : [
+                        ['value' => 'hot', 'label_ar' => '🔥 حار (Hot)', 'label_en' => 'Hot'],
+                        ['value' => 'warm', 'label_ar' => '⚡ متوسط (Warm)', 'label_en' => 'Warm'],
+                        ['value' => 'cold', 'label_ar' => '❄️ بارد (Cold)', 'label_en' => 'Cold'],
+                    ];
+                @endphp
+                @if ($tempField || count($tempOptions) > 0)
+                <div class="filter-field">
+                    <label for="leadTemperature"><i class="bi bi-thermometer-half"></i> {{ $tempField ? $tempField->localizedLabel() : __('حرارة العميل') }}</label>
+                    <div style="width:100%;">
+                        <select id="leadTemperature" name="temperature" class="crm-custom-select filter-control" data-crm-dropdown>
+                            <option value="">{{ __('جميع التصنيفات') }}</option>
+                            @foreach ($tempOptions as $tOpt)
+                                <option value="{{ $tOpt['value'] }}" @selected(($filters['temperature'] ?? '') === $tOpt['value'])>
+                                    {{ app()->getLocale() === 'en' && !empty($tOpt['label_en']) ? $tOpt['label_en'] : $tOpt['label_ar'] }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                </div>
+                @endif
+
                 <!-- Employee Filter -->
                 <div class="filter-field col-employee">
                     <label for="leadEmployee"><i class="bi bi-person-check"></i> {{ __('crm.assigned_employee') }}</label>
@@ -1148,6 +1191,40 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                                 <small>تاريخ الإضافة</small>
                             </span>
                         </label>
+
+                        @if ($dynamicCustomerFields->isNotEmpty())
+                            <div style="padding: 12px 12px 6px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--line); border-bottom:1px solid var(--line);">
+                                {{ app()->getLocale() === 'en' ? 'Customer Profile Fields' : 'بيانات وحقول العميل' }}
+                            </div>
+                            @foreach ($dynamicCustomerFields as $custField)
+                                @php
+                                    $cfIcon = match ($custField->type) {
+                                        'number' => 'bi-123',
+                                        'date', 'datetime' => 'bi-calendar3',
+                                        'select' => $custField->key === 'lead_temperature' ? 'bi-thermometer-half' : 'bi-list-check',
+                                        'multiselect' => 'bi-ui-checks-grid',
+                                        'checkbox' => 'bi-check2-square',
+                                        'email' => 'bi-envelope',
+                                        'tel' => 'bi-telephone',
+                                        'url' => 'bi-link-45deg',
+                                        'textarea' => 'bi-card-text',
+                                        default => 'bi-input-cursor-text',
+                                    };
+                                @endphp
+                                <label class="dynamic-field-option">
+                                    <input
+                                        type="checkbox"
+                                        data-col-toggle="cf_{{ $custField->key }}"
+                                        @checked($custField->key === 'lead_temperature')
+                                    >
+                                    <i class="bi {{ $cfIcon }}" aria-hidden="true"></i>
+                                    <span class="dynamic-field-option-copy">
+                                        <span>{{ $custField->localizedLabel() }}</span>
+                                        <small>{{ $custField->lead_attribute ? (app()->getLocale() === 'en' ? 'Standard' : 'أساسي') : (app()->getLocale() === 'en' ? 'Custom' : 'حقل مخصص') }}</small>
+                                    </span>
+                                </label>
+                            @endforeach
+                        @endif
 
                         <div style="padding: 12px 12px 6px; font-size: 11px; font-weight: 800; color: var(--muted); text-transform: uppercase; border-top: 1px solid var(--line); border-bottom:1px solid var(--line);">
                             حقول وأسئلة المراحل (أعمدة وفلاتر ديناميكية)
@@ -1411,6 +1488,11 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                             <th data-col="client" style="min-width:160px">{{ __('crm.client') }}</th>
                             <th data-col="contact" style="min-width:95px">{{ __('crm.contact_data') }}</th>
                             <th data-col="company_source" style="min-width:105px">{{ __('crm.company_source') }}</th>
+                            @foreach ($dynamicCustomerFields as $custField)
+                                <th data-col="cf_{{ $custField->key }}" style="min-width:110px;" @if($custField->key !== 'lead_temperature') hidden @endif>
+                                    {{ $custField->localizedLabel() }}
+                                </th>
+                            @endforeach
                             <th data-col="status" style="min-width:95px">{{ __('crm.current_status') }}</th>
                             <th data-col="category" style="min-width:85px">{{ __('crm.stage_category') }}</th>
                             <th data-col="employee" style="min-width:85px">{{ __('crm.responsible_employee') }}</th>
@@ -1429,6 +1511,7 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                         @forelse ($leads as $lead)
                             @php
                                 $leadStatusColor = preg_match('/^#[0-9a-fA-F]{6}$/', (string) $lead->status?->color) ? $lead->status->color : '#64748b';
+                                $leadCust = is_array($lead->custom_fields) ? $lead->custom_fields : [];
                                 $leadPhoneRaw = trim((string) $lead->phone);
                                 $leadPhoneDigits = preg_replace('/\D+/', '', $leadPhoneRaw) ?? '';
                                 $callPhone = preg_match('/^[0-9]{2,20}$/', $leadPhoneDigits) === 1 ? $leadPhoneDigits : null;
@@ -1456,6 +1539,11 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                                             <a href="{{ route('v2.leads.show', array_merge(request()->query(), ['lead' => $lead->id])) }}">
                                                 <strong>{{ $lead->name }}</strong>
                                             </a>
+                                            @if($lead->branch)
+                                                <span class="badge" style="background:#ecfdf5;color:#065f46;font-size:10px;padding:2px 6px;margin-inline-start:4px" title="{{ __('crm.branch') }}">
+                                                    <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+                                                </span>
+                                            @endif
                                             <small>{{ $lead->email ?: __('crm.no_email') }}</small>
                                         </div>
                                     </div>
@@ -1494,6 +1582,81 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                                     <strong>{{ $lead->company_name ?: __('crm.no_company') }}</strong>
                                     <span class="stage-name">{{ $lead->source ? __($lead->source) : __('غير محدد') }}</span>
                                 </td>
+
+                                @foreach ($dynamicCustomerFields as $custField)
+                                    @php
+                                        $rawVal = $custField->lead_attribute
+                                            ? $lead->getAttribute($custField->lead_attribute)
+                                            : ($leadCust[$custField->key] ?? null);
+                                    @endphp
+                                    <td data-col="cf_{{ $custField->key }}" @if($custField->key !== 'lead_temperature') hidden @endif>
+                                        @if ($custField->key === 'lead_temperature')
+                                            @if ($rawVal)
+                                                @php
+                                                    $tempStyle = match((string) $rawVal) {
+                                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                                        default => 'background:var(--card);color:var(--dark);border:1px solid var(--line);'
+                                                    };
+                                                    $tempOptMap = collect($custField->normalizedOptions())->keyBy('value');
+                                                    $opt = $tempOptMap->get((string) $rawVal);
+                                                    $tempLabel = $opt
+                                                        ? (app()->getLocale() === 'en' && !empty($opt['label_en']) ? $opt['label_en'] : $opt['label_ar'])
+                                                        : match((string) $rawVal) {
+                                                            'hot' => '🔥 ' . (app()->getLocale() === 'en' ? 'Hot' : 'حار'),
+                                                            'warm' => '⚡ ' . (app()->getLocale() === 'en' ? 'Warm' : 'متوسط'),
+                                                            'cold' => '❄️ ' . (app()->getLocale() === 'en' ? 'Cold' : 'بارد'),
+                                                            default => (string) $rawVal
+                                                        };
+                                                @endphp
+                                                <span class="badge" style="font-size:11px;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;font-weight:700;white-space:nowrap;{{ $tempStyle }}">
+                                                    <i class="bi bi-thermometer-half"></i> {{ $tempLabel }}
+                                                </span>
+                                            @else
+                                                <span style="color:var(--muted)">—</span>
+                                            @endif
+                                        @elseif (in_array($custField->type, ['select', 'multiselect'], true))
+                                            @if ($rawVal !== null && $rawVal !== '' && $rawVal !== [])
+                                                @php
+                                                    $optMap = collect($custField->normalizedOptions())->keyBy('value');
+                                                    $valItems = (array) $rawVal;
+                                                    $labels = array_map(function ($item) use ($optMap) {
+                                                        $opt = $optMap->get((string) $item);
+                                                        return $opt ? (app()->getLocale() === 'en' && !empty($opt['label_en']) ? $opt['label_en'] : $opt['label_ar']) : (string) $item;
+                                                    }, $valItems);
+                                                @endphp
+                                                <span class="badge soft" style="font-size:11px;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;font-weight:600;background:rgba(99,102,241,0.08);color:#4f46e5;border:1px solid rgba(99,102,241,0.2);white-space:nowrap;">
+                                                    {{ implode('، ', $labels) }}
+                                                </span>
+                                            @else
+                                                <span style="color:var(--muted)">—</span>
+                                            @endif
+                                        @elseif ($custField->type === 'checkbox')
+                                            @if ($rawVal !== null && $rawVal !== '')
+                                                @if (filter_var($rawVal, FILTER_VALIDATE_BOOLEAN))
+                                                    <span class="badge" style="background:#dcfce7;color:#15803d;border:1px solid #86efac;font-size:11px;padding:2px 6px;">{{ __('crm.yes') }}</span>
+                                                @else
+                                                    <span class="badge" style="background:#f1f5f9;color:#64748b;border:1px solid #cbd5e1;font-size:11px;padding:2px 6px;">{{ __('crm.no') }}</span>
+                                                @endif
+                                            @else
+                                                <span style="color:var(--muted)">—</span>
+                                            @endif
+                                        @elseif ($custField->type === 'url')
+                                            @if ($rawVal)
+                                                <a href="{{ $rawVal }}" target="_blank" rel="noopener noreferrer" style="color:#2563eb;text-decoration:underline;font-size:12px;">{{ Str::limit((string) $rawVal, 20) }}</a>
+                                            @else
+                                                <span style="color:var(--muted)">—</span>
+                                            @endif
+                                        @else
+                                            @if ($rawVal !== null && $rawVal !== '')
+                                                <span style="font-size:12px;font-weight:600;">{{ $rawVal }}</span>
+                                            @else
+                                                <span style="color:var(--muted)">—</span>
+                                            @endif
+                                        @endif
+                                    </td>
+                                @endforeach
 
                                 <td data-col="status">
                                     <span class="status-badge" style="--status-color:{{ $leadStatusColor }}">
@@ -1655,7 +1818,7 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
 
     // 1. Column Management (Mandatory + Optional + Dynamic)
     const MANDATORY_COLS = ['select', 'client', 'status', 'category', 'actions'];
-    const DEFAULT_COLS = ['client', 'contact', 'company_source', 'status', 'category', 'employee', 'followup', 'created_date', 'actions'];
+    const DEFAULT_COLS = ['client', 'contact', 'company_source', 'cf_lead_temperature', 'status', 'category', 'employee', 'followup', 'created_date', 'actions'];
 
     const getStoredColumns = () => {
         try {
@@ -1663,6 +1826,16 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
             if (saved) {
                 const parsed = JSON.parse(saved);
                 if (Array.isArray(parsed) && parsed.length > 0) {
+                    if (!parsed.includes('cf_lead_temperature') && !localStorage.getItem('sokrat.crm.leads.columns.v2_temp_col')) {
+                        const idx = parsed.indexOf('company_source');
+                        if (idx !== -1) {
+                            parsed.splice(idx + 1, 0, 'cf_lead_temperature');
+                        } else {
+                            parsed.push('cf_lead_temperature');
+                        }
+                        localStorage.setItem('sokrat.crm.leads.columns.v2_temp_col', '1');
+                        saveColumns(parsed);
+                    }
                     return parsed;
                 }
             }
@@ -1714,7 +1887,7 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
 
         const dynamicEmpty = document.querySelector('[data-dynamic-filter-empty]');
         const dynamicCountEl = document.querySelector('[data-dynamic-field-count]');
-        const dynamicActiveCount = Array.from(activeCols).filter(c => c.startsWith('stage_field_')).length;
+        const dynamicActiveCount = Array.from(activeCols).filter(c => c.startsWith('stage_field_') || c.startsWith('cf_')).length;
         if (dynamicCountEl) dynamicCountEl.textContent = String(dynamicActiveCount);
         if (dynamicEmpty) dynamicEmpty.hidden = dynamicActiveCount > 0;
 

@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 set -Eeuo pipefail
 
-APP_NAME="SOKRAT CRM V2"
-APP_DIR="/var/www/html/crm-v2"
+APP_NAME="SportTime CRM"
+APP_DIR="/var/www/html/sporttime-crm"
 DB_NAME="sokrat_crm_v2"
 DB_USER="sokrat_crm_v2_app"
-SITE_NAME="sokrat-crm-v2"
+SITE_NAME="sporttime-crm"
 SITE_CONF="/etc/apache2/sites-available/${SITE_NAME}.conf"
-CREDENTIALS_FILE="/root/sokrat-crm-v2-credentials.txt"
+CREDENTIALS_FILE="/root/sporttime-crm-credentials.txt"
 
 log() {
     printf '\n[%s] %s\n' "$(date '+%H:%M:%S')" "$*"
@@ -19,6 +19,8 @@ fail() {
 }
 
 [ "${EUID}" -eq 0 ] || fail "Run this uninstaller as root or with sudo."
+
+[ "$APP_DIR" = "/var/www/html/sporttime-crm" ] || fail "Safety check failed: APP_DIR must be exactly '/var/www/html/sporttime-crm'. Aborting."
 
 FORCE=0
 for arg in "$@"; do
@@ -78,9 +80,11 @@ if command -v mysql >/dev/null 2>&1; then
 fi
 
 log "Removing application directory ${APP_DIR}"
-if [ -d "$APP_DIR" ]; then
+if [ "$APP_DIR" = "/var/www/html/sporttime-crm" ] && [ -d "$APP_DIR" ]; then
     rm -rf "$APP_DIR"
     log "Removed ${APP_DIR}"
+elif [ "$APP_DIR" != "/var/www/html/sporttime-crm" ]; then
+    fail "Safety check failed: refusing to remove directory other than /var/www/html/sporttime-crm."
 fi
 
 log "Removing saved credentials file"

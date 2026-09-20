@@ -49,6 +49,11 @@
         {{ $lead->name }}
        </a>
       </strong>
+      @if ($lead->branch)
+       <span class="badge" style="background:#ecfdf5;color:#065f46;border:1px solid #a7f3d0;font-size:10px;padding:1px 5px;margin-inline-start:4px" title="{{ __('crm.branch') }}">
+        <i class="bi bi-geo-alt"></i> {{ $lead->branch->localizedName() }}
+       </span>
+      @endif
       @if ($lead->company_name)
        <small class="task-table-company">{{ $lead->company_name }}</small>
       @endif

@@ -17,6 +17,7 @@ use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\NotificationPreferenceController;
 use App\Http\Controllers\PushSubscriptionController;
 use App\Http\Controllers\QuotationController;
+use App\Http\Controllers\Settings\BranchController;
 use App\Http\Controllers\Settings\FollowupCustomerFieldController;
 use App\Http\Controllers\Settings\GroupController;
 use App\Http\Controllers\Settings\NotificationRuleController;
@@ -270,10 +271,13 @@ Route::middleware(['auth', 'active'])->group(function (): void {
         Route::get('/leads/{lead}/edit', [LeadController::class, 'edit'])
             ->whereNumber('lead')
             ->name('v2.leads.edit');
-        Route::patch('/leads/{lead}', [LeadController::class, 'update'])
+       Route::patch('/leads/{lead}', [LeadController::class, 'update'])
+           ->whereNumber('lead')
+           ->name('v2.leads.update');
+        Route::patch('/leads/{lead}/temperature', [LeadController::class, 'updateTemperature'])
             ->whereNumber('lead')
-            ->name('v2.leads.update');
-    });
+            ->name('v2.leads.temperature.update');
+   });
 
     Route::delete('/leads/{lead}', [LeadController::class, 'destroy'])
         ->whereNumber('lead')
@@ -467,6 +471,9 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             ->whereNumber('user')
             ->name('v2.reports.employees.show');
     });
+    Route::get('/reports/employees-alias', static fn () => redirect()->route('v2.reports.employees.index'))
+        ->middleware('can:reports.view')
+        ->name('v2.reports.employees');
 
     Route::get('/campaigns', [CampaignController::class, 'index'])
         ->middleware('can:campaigns.view')
@@ -576,6 +583,37 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->whereNumber('stage')
                 ->whereNumber('field')
                 ->name('.stages.fields.toggle');
+
+                        // Lead Sources Settings GUI
+            Route::get('/lead-sources', [\App\Http\Controllers\Settings\LeadSourceController::class, 'index'])
+                ->name('.lead-sources.index');
+            Route::post('/lead-sources', [\App\Http\Controllers\Settings\LeadSourceController::class, 'store'])
+                ->name('.lead-sources.store');
+            Route::patch('/lead-sources/{source}', [\App\Http\Controllers\Settings\LeadSourceController::class, 'update'])
+                ->name('.lead-sources.update');
+            Route::patch('/lead-sources/{source}/toggle', [\App\Http\Controllers\Settings\LeadSourceController::class, 'toggle'])
+                ->name('.lead-sources.toggle');
+            Route::post('/lead-sources/{source}/move', [\App\Http\Controllers\Settings\LeadSourceController::class, 'move'])
+                ->name('.lead-sources.move');
+            Route::delete('/lead-sources/{source}', [\App\Http\Controllers\Settings\LeadSourceController::class, 'destroy'])
+                ->name('.lead-sources.destroy');
+
+            // Branches Settings GUI
+            Route::get('/branches', [BranchController::class, 'index'])
+                ->middleware('can:branches.view')
+                ->name('.branches.index');
+            Route::post('/branches', [BranchController::class, 'store'])
+                ->middleware('can:branches.manage')
+                ->name('.branches.store');
+            Route::patch('/branches/{branch}', [BranchController::class, 'update'])
+                ->middleware('can:branches.manage')
+                ->name('.branches.update');
+            Route::patch('/branches/{branch}/toggle', [BranchController::class, 'toggle'])
+                ->middleware('can:branches.manage')
+                ->name('.branches.toggle');
+            Route::delete('/branches/{branch}', [BranchController::class, 'destroy'])
+                ->middleware('can:branches.manage')
+                ->name('.branches.destroy');
 
             Route::get('/followup-customer-fields', [FollowupCustomerFieldController::class, 'index'])
                 ->name('.followup-customer-fields.index');

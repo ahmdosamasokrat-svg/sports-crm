@@ -117,6 +117,16 @@ class CalendarEvent extends Model
 
     public function scopeAccessibleTo(Builder $query, User $user): Builder
     {
+        if (! $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            $query->where(function (Builder $branchQuery) use ($user): void {
+                $branchQuery->whereNull('calendar_events.lead_id')
+                    ->orWhereHas(
+                        'lead',
+                        static fn (Builder $leadQuery): Builder => $leadQuery->accessibleTo($user),
+                    );
+            });
+        }
+
         if (! $user->isSuperAdmin() && ! $user->hasPermission(CrmPermission::LEADS_SCOPE_ALL)) {
             $groupIds = [];
             if ($user->hasPermission(CrmPermission::LEADS_SCOPE_GROUP)) {

@@ -15,15 +15,10 @@ class CalendarEventSeeder extends Seeder
     public function run(): void
     {
         $users = User::all();
-        if ($users->isEmpty()) {
-            $this->call(DemoDataSeeder::class);
-            $users = User::all();
-        }
-
         $leads = Lead::all();
-        if ($leads->isEmpty()) {
-            $this->call(DemoDataSeeder::class);
-            $leads = Lead::all();
+
+        if ($users->isEmpty() || $leads->isEmpty()) {
+            return;
         }
 
         $eventsData = [

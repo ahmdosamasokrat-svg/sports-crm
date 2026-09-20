@@ -481,6 +481,26 @@ body.kanban-followup-popup .crm-side {
                         </select>
                     </div>
 
+                    @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+                    <div class="field">
+                        <label for="branchId">
+                            {{ __('crm.branch') ?: 'الفرع / الموقع' }} <span class="required">*</span>
+                        </label>
+                        <select class="control" id="branchId" name="branch_id" required>
+                            @foreach ($branches as $br)
+                                <option value="{{ $br->id }}" @selected((int) old('branch_id', auth()->user()?->branch_id) === (int) $br->id)>
+                                    {{ $br->localizedName() }}
+                                </option>
+                            @endforeach
+                        </select>
+                    </div>
+                    @elseif(!empty($userBranch))
+                    <div class="field">
+                        <label>{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+                        <input class="control" type="text" value="{{ $userBranch->localizedName() }}" readonly style="background:var(--bg)">
+                    </div>
+                    @endif
+
                     <div class="field">
                         <label for="assignedUserId">
                             {{ __('crm.responsible_employee') }} <span class="required">*</span>
@@ -505,6 +525,23 @@ body.kanban-followup-popup .crm-side {
                     </div>
                 </div>
             </section>
+
+            <!-- CARD: CUSTOMER DYNAMIC FIELDS -->
+            @if (isset($customerFields) && $customerFields->isNotEmpty())
+                <section class="form-card">
+                    <div class="section-head">
+                        <h2><i class="bi bi-card-checklist"></i> {{ __("crm.customer_data") ?: "بيانات وتصنيف العميل" }}</h2>
+                        <p>{{ __("crm.followup_customer_fields_employee_desc") ?: "بيانات وتصنيفات ديناميكية إضافية خاصة بالعميل يتم إدارتها من الإعدادات" }}</p>
+                    </div>
+
+                    @include("partials.stage-field-inputs", [
+                        "fields" => $customerFields,
+                        "recordValues" => old("customer_fields", []),
+                        "prefix" => "customer_fields",
+                        "scope" => "lead_create_customer",
+                    ])
+                </section>
+            @endif
 
             <!-- CARD 2: PIPELINE STAGE & STATUS SELECTION -->
             <section class="form-card">

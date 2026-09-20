@@ -2,14 +2,32 @@
 set -Eeuo pipefail
 umask 027
 
-APP_NAME="SOKRAT CRM V2"
-REPO_URL="https://github.com/ahmdosamasokrat-svg/sokrat-crm-v2.git"
-APP_DIR="/var/www/html/crm-v2"
+APP_NAME="SportTime CRM"
+REPO_URL="https://github.com/ahmdosamasokrat-svg/mpc-crm.git"
+APP_DIR="/var/www/html/sporttime-crm"
 DB_NAME="sokrat_crm_v2"
 DB_USER="sokrat_crm_v2_app"
-SITE_NAME="sokrat-crm-v2"
+SITE_NAME="sporttime-crm"
 SITE_CONF="/etc/apache2/sites-available/${SITE_NAME}.conf"
-CREDENTIALS_FILE="/root/sokrat-crm-v2-credentials.txt"
+CREDENTIALS_FILE="/root/sporttime-crm-credentials.txt"
+
+IS_UPDATE=0
+for arg in "$@"; do
+    case "$arg" in
+        --update|-u|update)
+            IS_UPDATE=1
+            ;;
+    esac
+done
+
+if [ "$IS_UPDATE" -eq 1 ]; then
+    SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if [ -f "${SCRIPT_DIR}/update.sh" ]; then
+        exec bash "${SCRIPT_DIR}/update.sh"
+    elif [ -f "${APP_DIR}/update.sh" ]; then
+        exec bash "${APP_DIR}/update.sh"
+    fi
+fi
 
 APP_CREATED=0
 DB_CREATED=0
@@ -77,11 +95,11 @@ APP_DIR_IS_CURRENT=0
 if [ "$SCRIPT_DIR" = "$APP_DIR" ]; then
     APP_DIR_IS_CURRENT=1
 elif [ -d "$APP_DIR" ] && [ "$(ls -A "$APP_DIR" 2>/dev/null)" ]; then
-    fail "$APP_DIR already exists and is not empty. Please run uninstall.sh or clear $APP_DIR before running a fresh installation."
+    fail "$APP_DIR already exists and is not empty. To update an existing CRM installation without losing data, run: sudo ./install.sh --update or sudo ./update.sh. If you want a clean reinstall, run sudo ./uninstall.sh first."
 fi
 
 if [ -f "$SITE_CONF" ]; then
-    fail "$SITE_CONF already exists. Fresh installation only."
+    fail "$SITE_CONF already exists. To update the existing site without losing data, run: sudo ./install.sh --update or sudo ./update.sh."
 fi
 
 log "Installing Apache, MySQL, PHP 8.3, Composer, and system packages"
@@ -128,11 +146,11 @@ PHP_VERSION="$(php -r 'echo PHP_MAJOR_VERSION.".".PHP_MINOR_VERSION;')"
 
 log "Checking database isolation names"
 if mysql -NBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='${DB_NAME}'" | grep -Fxq "$DB_NAME"; then
-    fail "Database ${DB_NAME} already exists. Fresh installation only or run uninstall.sh first."
+    fail "Database ${DB_NAME} already exists. To update an existing database without losing customer data, run: sudo ./install.sh --update or sudo ./update.sh. If you want a clean reinstall, run sudo ./uninstall.sh first."
 fi
 
 if mysql -NBe "SELECT User FROM mysql.user WHERE User='${DB_USER}' LIMIT 1" | grep -Fxq "$DB_USER"; then
-    fail "MySQL user ${DB_USER} already exists. Fresh installation only or run uninstall.sh first."
+    fail "MySQL user ${DB_USER} already exists. To update without losing data, run: sudo ./install.sh --update or sudo ./update.sh. If you want a clean reinstall, run sudo ./uninstall.sh first."
 fi
 
 log "Preparing application files in ${APP_DIR}"
@@ -162,13 +180,17 @@ COMPOSER_ALLOW_SUPERUSER=1 composer install \
 
 if [ -f package.json ]; then
     log "Installing JavaScript dependencies and building Vite assets"
-    npm install --no-audit --no-fund --no-progress
+    if [ -f package-lock.json ]; then
+        npm ci --no-audit --no-fund --no-progress
+    else
+        npm install --no-audit --no-fund --no-progress
+    fi
     npm run build
 fi
 
 DB_PASSWORD="$(openssl rand -hex 24)"
 CRM_ADMIN_USER="admin"
-CRM_ADMIN_PASSWORD='Admin@123'
+CRM_ADMIN_PASSWORD="${CRM_V2_ADMIN_PASSWORD:-Admin@123}"
 CRM_ADMIN_NAME="مدير النظام"
 CRM_ADMIN_EMAIL="admin@localhost.invalid"
 
@@ -194,7 +216,7 @@ set_env() {
     fi
 }
 
-set_env APP_NAME "SOKRAT CRM V2"
+set_env APP_NAME "SportTime CRM"
 set_env APP_ENV production
 set_env APP_DEBUG false
 set_env APP_URL "http://localhost"
@@ -247,8 +269,8 @@ cat > "$SITE_CONF" <<APACHE
         Require all granted
     </Directory>
 
-    ErrorLog \${APACHE_LOG_DIR}/sokrat-crm-v2-error.log
-    CustomLog \${APACHE_LOG_DIR}/sokrat-crm-v2-access.log combined
+    ErrorLog \${APACHE_LOG_DIR}/sporttime-crm-error.log
+    CustomLog \${APACHE_LOG_DIR}/sporttime-crm-access.log combined
 </VirtualHost>
 APACHE
 SITE_CREATED=1
@@ -267,7 +289,7 @@ php artisan migrate:status --no-ansi >/dev/null
 curl -fsS --max-time 15 "http://localhost/login" >/dev/null || curl -fsS --max-time 15 "http://127.0.0.1/login" >/dev/null
 
 cat > "$CREDENTIALS_FILE" <<CREDS
-SOKRAT CRM V2 INSTALLATION CREDENTIALS
+SportTime CRM INSTALLATION CREDENTIALS
 ======================================
 URL=http://localhost/
 Admin user=${CRM_ADMIN_USER}
@@ -283,7 +305,7 @@ chmod 600 "$CREDENTIALS_FILE"
 trap - ERR
 
 printf '\n==================================================\n'
-printf 'SOKRAT CRM V2 INSTALLATION COMPLETE\n'
+printf 'SportTime CRM INSTALLATION COMPLETE\n'
 printf '==================================================\n'
 printf 'URL: http://localhost/\n'
 printf 'Admin user: %s\n' "$CRM_ADMIN_USER"

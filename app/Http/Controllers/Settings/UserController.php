@@ -7,6 +7,7 @@ namespace App\Http\Controllers\Settings;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Settings\StoreUserRequest;
 use App\Http\Requests\Settings\UpdateUserRequest;
+use App\Models\Branch;
 use App\Models\Group;
 use App\Models\PipelineStage;
 use App\Models\PipelineStageCategory;
@@ -30,7 +31,7 @@ class UserController extends Controller
         );
 
         $users = User::query()
-            ->with('groups:id,name,code')
+            ->with(['groups:id,name,code', 'branch:id,name_ar,name_en,code'])
             ->when(
                 $search !== '',
                 static function ($query) use ($search): void {
@@ -56,6 +57,7 @@ class UserController extends Controller
 
         return view('settings.users.create', [
             'groups' => $this->availableGroups($request->user()),
+            'branches' => Branch::query()->active()->orderBy('name_ar')->get(),
             'pipelineStages' => $this->availablePipelineStages(),
             'pipelineStageCategories' => $this->availablePipelineStageCategories(),
             'voipExtensions' => $this->getVoipExtensions(),
@@ -75,6 +77,7 @@ class UserController extends Controller
         $user = DB::transaction(function () use ($validated, $email): User {
             $voipExt = ! empty($validated['voip_extension']) ? trim((string) $validated['voip_extension']) : null;
             $user = User::query()->create([
+                'branch_id' => ! empty($validated['branch_id']) ? (int) $validated['branch_id'] : null,
                 'name' => trim($validated['name']),
                 'username' => trim($validated['username']),
                 'email' => $email !== '' ? $email : null,
@@ -110,7 +113,7 @@ class UserController extends Controller
     public function edit(Request $request, User $user): View
     {
         $this->ensureCanManageUser($request->user(), $user);
-        $user->load(['groups:id,name,code', 'pipelineStages:id', 'pipelineStageCategories:id']);
+        $user->load(['groups:id,name,code', 'pipelineStages:id', 'pipelineStageCategories:id', 'branch:id,name_ar,name_en,code']);
 
         $voipFilters = $request->validate([
             'from_date' => ['nullable', 'date_format:Y-m-d'],
@@ -141,6 +144,7 @@ class UserController extends Controller
         return view('settings.users.edit', [
             'managedUser' => $user,
             'groups' => $this->availableGroups($request->user()),
+            'branches' => Branch::query()->active()->orderBy('name_ar')->get(),
             'pipelineStages' => $this->availablePipelineStages(),
             'pipelineStageCategories' => $this->availablePipelineStageCategories(),
             'voipExtensions' => $this->getVoipExtensions(),
@@ -170,6 +174,7 @@ class UserController extends Controller
         ): void {
             $voipExt = ! empty($validated['voip_extension']) ? trim((string) $validated['voip_extension']) : null;
             $user->update([
+                'branch_id' => ! empty($validated['branch_id']) ? (int) $validated['branch_id'] : null,
                 'name' => trim($validated['name']),
                 'username' => trim($validated['username']),
                 'email' => $email !== '' ? $email : null,

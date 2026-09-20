@@ -41,6 +41,11 @@ Thumbs.db
 /.env
 /.env.*
 !/.env.example
+/docker.env
+!/docker.env.example
+/.omo/
+/.tmp/
+/bicon
 /auth.json
 
 # Dependencies
@@ -91,3 +96,4 @@ Thumbs.db
 /playwright-report/
 /test-results/
 
+public/debug_boot.txt

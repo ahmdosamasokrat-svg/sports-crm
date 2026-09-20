@@ -20,6 +20,15 @@ class StoreUserRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'branch_id' => [
+                'nullable',
+                'integer',
+                Rule::exists('branches', 'id')->where(
+                    static fn ($query) => $query
+                        ->where('is_active', true)
+                        ->whereNull('deleted_at')
+                ),
+            ],
             'name' => ['required', 'string', 'max:150'],
             'username' => [
                 'required',

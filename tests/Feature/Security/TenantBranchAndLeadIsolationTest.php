@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Tests\Feature\Security;
 
 use App\Http\Middleware\VerifyCsrfToken;
+use App\Models\Branch;
 use App\Models\Group;
 use App\Models\Lead;
 use App\Models\LeadStatus;
@@ -41,6 +42,18 @@ class TenantBranchAndLeadIsolationTest extends TestCase
             );
         }
 
+        // Real Branches
+        $branchRiyadh = Branch::query()->create([
+            'name_ar' => 'فرع الرياض',
+            'code' => 'branch-riyadh',
+            'is_active' => true,
+        ]);
+        $branchJeddah = Branch::query()->create([
+            'name_ar' => 'فرع جدة',
+            'code' => 'branch-jeddah',
+            'is_active' => true,
+        ]);
+
         // Branch A Group & Users
         $groupBranchA = Group::query()->create([
             'name' => 'فرع الرياض',
@@ -59,9 +72,12 @@ class TenantBranchAndLeadIsolationTest extends TestCase
             CrmPermission::TASKS_VIEW->value,
             CrmPermission::QUOTATIONS_VIEW->value,
             CrmPermission::VOIP_VIEW->value,
+            CrmPermission::BRANCHES_VIEW->value,
+            CrmPermission::BRANCHES_SCOPE_ASSIGNED->value,
         ])->pluck('id'));
 
         $this->agentBranchA = User::factory()->create([
+            'branch_id' => $branchRiyadh->id,
             'name' => 'مندوب فرع أ',
             'username' => 'agent_branch_a',
             'is_active' => true,
@@ -81,9 +97,12 @@ class TenantBranchAndLeadIsolationTest extends TestCase
             CrmPermission::LEADS_ASSIGN->value,
             CrmPermission::LEADS_UPDATE->value,
             CrmPermission::LEADS_EXPORT->value,
+            CrmPermission::BRANCHES_VIEW->value,
+            CrmPermission::BRANCHES_SCOPE_ASSIGNED->value,
         ])->pluck('id'));
 
         $this->managerBranchA = User::factory()->create([
+            'branch_id' => $branchRiyadh->id,
             'name' => 'مدير فرع أ',
             'username' => 'manager_branch_a',
             'is_active' => true,
@@ -108,9 +127,12 @@ class TenantBranchAndLeadIsolationTest extends TestCase
             CrmPermission::TASKS_VIEW->value,
             CrmPermission::QUOTATIONS_VIEW->value,
             CrmPermission::VOIP_VIEW->value,
+            CrmPermission::BRANCHES_VIEW->value,
+            CrmPermission::BRANCHES_SCOPE_ASSIGNED->value,
         ])->pluck('id'));
 
         $this->agentBranchB = User::factory()->create([
+            'branch_id' => $branchJeddah->id,
             'name' => 'مندوب فرع ب',
             'username' => 'agent_branch_b',
             'is_active' => true,
@@ -129,6 +151,7 @@ class TenantBranchAndLeadIsolationTest extends TestCase
         $this->status->update(['code' => 'new', 'name_ar' => 'جديد']);
 
         $this->leadBranchA = Lead::query()->create([
+            'branch_id' => $branchRiyadh->id,
             'lead_status_id' => $this->status->id,
             'name' => 'عميل فرع الرياض المميز',
             'phone' => '0501111111',
@@ -138,6 +161,7 @@ class TenantBranchAndLeadIsolationTest extends TestCase
         ]);
 
         $this->leadBranchB = Lead::query()->create([
+            'branch_id' => $branchJeddah->id,
             'lead_status_id' => $this->status->id,
             'name' => 'عميل فرع جدة السري',
             'phone' => '0502222222',

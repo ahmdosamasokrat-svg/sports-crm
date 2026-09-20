@@ -962,6 +962,25 @@
         </datalist>
        </div>
 
+       @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+       <div class="field">
+        <label for="branchId">{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+        <select id="branchId" name="branch_id">
+         <option value="">{{ __('crm.no_branch_assigned') ?: '-- بدون فرع --' }}</option>
+         @foreach ($branches as $br)
+          <option value="{{ $br->id }}" @selected((int) old('branch_id', $lead->branch_id) === (int) $br->id)>
+           {{ $br->localizedName() }} ({{ $br->code }})
+          </option>
+         @endforeach
+        </select>
+       </div>
+       @elseif($lead->branch)
+       <div class="field">
+        <label>{{ __('crm.branch') ?: 'الفرع / الموقع' }}</label>
+        <input type="text" value="{{ $lead->branch->localizedName() }}" readonly style="background:var(--bg)">
+       </div>
+       @endif
+
        <div class="field">
         <label for="assignedUserId">
          {{ __('crm.responsible_employee') }}
@@ -1049,6 +1068,23 @@
        </div>
       </div>
      </section>
+     @if (($customerFields ?? collect())->isNotEmpty())
+     <section class="form-section reveal-panel" id="customerFieldsSection" style="margin-top:20px;">
+      <div class="section-head">
+       <h3><i class="bi bi-card-checklist"></i> {{ __("crm.customer_data") ?: "بيانات وتصنيف العميل" }}</h3>
+       <p>{{ __("crm.followup_customer_fields_employee_desc") ?: "بيانات وتصنيفات ديناميكية إضافية خاصة بالعميل يتم إدارتها من الإعدادات" }}</p>
+      </div>
+      <div class="section-body" style="padding:16px;">
+       @include("partials.stage-field-inputs", [
+        "fields" => $customerFields,
+        "recordValues" => old("customer_fields", $customerFieldValues ?? []),
+        "prefix" => "customer_fields",
+        "scope" => "lead_edit_customer",
+       ])
+      </div>
+     </section>
+     @endif
+
      @if (($stageFields ?? collect())->isNotEmpty())
      <section class="form-section reveal-panel" id="stageQuestionsSection" style="margin-top:20px;">
       <div class="section-head">

@@ -17,6 +17,7 @@ class Lead extends Model
     use LogsActivity, SoftDeletes;
     protected $fillable = [
         'lead_status_id',
+        'branch_id',
         'name',
         'first_name',
         'last_name',
@@ -63,6 +64,22 @@ class Lead extends Model
 
     public function scopeAccessibleTo(Builder $query, User $user): Builder
     {
+        if (! $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)) {
+            if ($user->branch_id !== null) {
+                $query->where('leads.branch_id', $user->branch_id);
+            } else {
+                $fallbackBranchId = Branch::query()->where('code', 'main')->value('id');
+                if ($fallbackBranchId) {
+                    $query->where(function (Builder $bq) use ($fallbackBranchId): void {
+                        $bq->where('leads.branch_id', $fallbackBranchId)
+                            ->orWhereNull('leads.branch_id');
+                    });
+                } else {
+                    $query->whereNull('leads.branch_id');
+                }
+            }
+        }
+
         if (! $user->hasPermission(CrmPermission::LEADS_SCOPE_ALL)) {
             $groupIds = [];
 
@@ -77,8 +94,8 @@ class Lead extends Model
                     $groupIds,
                 ): void {
                     $accessQuery
-                        ->where('assigned_user_id', $user->getKey())
-                        ->orWhere('created_by_user_id', $user->getKey());
+                        ->where('leads.assigned_user_id', $user->getKey())
+                        ->orWhere('leads.created_by_user_id', $user->getKey());
 
                     if ($groupIds !== []) {
                         $accessQuery->orWhereHas(
@@ -115,6 +132,11 @@ class Lead extends Model
             LeadStatus::class,
             'lead_status_id'
         );
+    }
+
+    public function branch(): BelongsTo
+    {
+        return $this->belongsTo(Branch::class);
     }
 
     public function assignedUser(): BelongsTo
