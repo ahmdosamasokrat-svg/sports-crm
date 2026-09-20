@@ -166,11 +166,6 @@
      {{ __('crm.leads') }}
     </span>
 
-    @can('leads.view')
-    <span class="crm-count count">
-     {{ number_format($crmSidebarLeadCount) }}
-    </span>
-    @endcan
 
     <span class="crm-arrow arrow">
      <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
@@ -249,7 +244,7 @@
      {{ __('crm.tasks_and_followups') }}
     </span>
 
-    <span class="crm-count count">{{ number_format($crmSidebarTaskCount) }}</span>
+
     <span class="crm-arrow arrow">
      <svg class="crm-arrow-svg" viewBox="0 0 10 10" width="10" height="10" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
       <path d="M3.5 2L6.5 5L3.5 8" />
