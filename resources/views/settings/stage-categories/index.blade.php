@@ -219,6 +219,11 @@
                         {{ __('crm.icon_class') }}
                     </label>
                     <select name="icon" style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                        <option value="bi-arrow-repeat">تجديد ومتابعة دورية (bi-arrow-repeat)</option>
+                        <option value="bi-repeat">تكرار واشتراكات (bi-repeat)</option>
+                        <option value="bi-person-check">مشترك مؤكد (bi-person-check)</option>
+                        <option value="bi-telephone-outbound">مبيعات وتواصل (bi-telephone-outbound)</option>
+                        <option value="bi-telephone">{{ __('crm.icon_phone') }} (bi-telephone)</option>
                         <option value="bi-collection">{{ __('crm.icon_collection') }} (bi-collection)</option>
                         <option value="bi-folder2-open">{{ __('crm.icon_folder') }} (bi-folder2-open)</option>
                         <option value="bi-tags">{{ __('crm.icon_tags') }} (bi-tags)</option>
@@ -226,11 +231,9 @@
                         <option value="bi-briefcase">{{ __('crm.icon_briefcase') }} (bi-briefcase)</option>
                         <option value="bi-diagram-3">{{ __('crm.icon_diagram') }} (bi-diagram-3)</option>
                         <option value="bi-kanban">{{ __('crm.icon_kanban') }} (bi-kanban)</option>
-                        <option value="bi-telephone">{{ __('crm.icon_phone') }} (bi-telephone)</option>
                         <option value="bi-headset">{{ __('crm.icon_support') }} (bi-headset)</option>
                         <option value="bi-check2-all">{{ __('crm.icon_check') }} (bi-check2-all)</option>
                     </select>
-                </div>
             </div>
 
             <div style="margin-bottom:20px;">
@@ -370,6 +373,11 @@
                         {{ __('crm.icon_class') }}
                     </label>
                     <select name="icon" id="editCategoryIcon" style="width:100%; padding:10px 12px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                        <option value="bi-arrow-repeat">تجديد ومتابعة دورية (bi-arrow-repeat)</option>
+                        <option value="bi-repeat">تكرار واشتراكات (bi-repeat)</option>
+                        <option value="bi-person-check">مشترك مؤكد (bi-person-check)</option>
+                        <option value="bi-telephone-outbound">مبيعات وتواصل (bi-telephone-outbound)</option>
+                        <option value="bi-telephone">{{ __('crm.icon_phone') }}</option>
                         <option value="bi-collection">{{ __('crm.icon_collection') }}</option>
                         <option value="bi-folder2-open">{{ __('crm.icon_folder') }}</option>
                         <option value="bi-tags">{{ __('crm.icon_tags') }}</option>
@@ -377,7 +385,6 @@
                         <option value="bi-briefcase">{{ __('crm.icon_briefcase') }}</option>
                         <option value="bi-diagram-3">{{ __('crm.icon_diagram') }}</option>
                         <option value="bi-kanban">{{ __('crm.icon_kanban') }}</option>
-                        <option value="bi-telephone">{{ __('crm.icon_phone') }}</option>
                         <option value="bi-headset">{{ __('crm.icon_support') }}</option>
                         <option value="bi-check2-all">{{ __('crm.icon_check') }}</option>
                     </select>
