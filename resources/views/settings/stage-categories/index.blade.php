@@ -179,8 +179,8 @@
                     <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
                         {{ __('crm.category_name_ar') }} <span style="color:var(--red)">*</span>
                     </label>
-                    <input type="text" name="name_ar" required placeholder="{{ __('crm.category_name_placeholder') }}"
-                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                    <input type="text" name="name_ar" required placeholder="{{ __('crm.category_name_placeholder') }}" dir="rtl"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); text-align:right;">
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
@@ -195,8 +195,8 @@
                 <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
                     {{ __('crm.description') }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
                 </label>
-                <textarea name="description_ar" rows="2" placeholder="{{ __('crm.category_description_placeholder') }}"
-                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+                <textarea name="description_ar" rows="2" placeholder="{{ __('crm.category_description_placeholder') }}" dir="rtl"
+                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical; text-align:right;"></textarea>
             </div>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
@@ -331,8 +331,8 @@
                     <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
                         {{ __('crm.category_name_ar') }} <span style="color:var(--red)">*</span>
                     </label>
-                    <input type="text" name="name_ar" id="editCategoryNameAr" required
-                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                    <input type="text" name="name_ar" id="editCategoryNameAr" required dir="rtl"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); text-align:right;">
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
@@ -347,8 +347,8 @@
                 <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
                     {{ __('crm.description') }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
                 </label>
-                <textarea name="description_ar" id="editCategoryDescriptionAr" rows="2"
-                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+                <textarea name="description_ar" id="editCategoryDescriptionAr" rows="2" dir="rtl"
+                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical; text-align:right;"></textarea>
             </div>
 
             <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:14px; margin-bottom:16px;">

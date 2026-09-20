@@ -10,9 +10,8 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@200;300;400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v=1.0.0">
+    <link rel="stylesheet" href="{{ asset('css/tajawal.css') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('crm-sidebar-shared.css') }}?v={{ time() }}">
-    <link rel="stylesheet" href="{{ asset('crm-notifications.css') }}?v=1.0.0">
     <style>
         :root {
             --red: #ef4444;
@@ -302,7 +301,7 @@
             padding: 10px 12px;
             background: var(--card);
             color: var(--dark);
-            font: inherit;
+            font-family: 'Tajawal', 'Cairo', 'Plus Jakarta Sans', sans-serif !important;
             font-size: 13px;
             outline: none;
             transition: border-color 0.15s ease, box-shadow 0.15s ease;

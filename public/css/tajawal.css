@@ -57,9 +57,13 @@ html,
   font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
 }
 
-.font-mono, td, th, input, select, textarea, pre, code, .font-numeric, .badge-mono,
+.font-mono, td, th, pre, code, .font-numeric, .badge-mono,
 #crmSidebar .crm-count, #crmSidebar .count, .crm-side .crm-count, .crm-side .count {
-  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace !important;
+  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', monospace !important;
+}
+
+input, select, textarea {
+  font-family: 'Tajawal', 'Cairo', 'Plus Jakarta Sans', sans-serif !important;
 }
 
 button {

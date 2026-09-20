@@ -27,8 +27,13 @@ html:not([dir="rtl"]) body {
   direction: ltr !important;
 }
 
-.font-mono, td, th, input, select, textarea, pre, code, .font-numeric, .badge-mono {
-  font-family: 'JetBrains Mono', 'Plus Jakarta Sans', 'Cairo', monospace !important;
+.font-mono, pre, code, .font-numeric, .badge-mono {
+  font-family: 'JetBrains Mono', monospace !important;
+}
+
+input, select, textarea {
+  font-family: 'Tajawal', 'Cairo', 'Plus Jakarta Sans', sans-serif !important;
+  direction: inherit;
 }
 
 * {

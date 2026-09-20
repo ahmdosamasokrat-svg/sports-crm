@@ -87,7 +87,7 @@
 @once
 <link
  rel="stylesheet"
- href="{{ asset('css/tajawal.css') }}?v=1.0.0"
+ href="{{ asset('css/tajawal.css') }}?v={{ time() }}"
 >
 @endonce
 @endunless
