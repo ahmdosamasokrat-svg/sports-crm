@@ -290,6 +290,17 @@ class LeadTransitionService
                 );
             }
 
+            // 9. Automated Pipeline Transfer / Clone Triggers
+            $clonedLead = null;
+            if ($statusChanged && empty($context['suppress_pipeline_triggers'])) {
+                $clonedLead = $this->handlePipelineTriggers(
+                    $lockedLead,
+                    $toStage,
+                    $toStatus,
+                    $actor,
+                    $context
+                );
+            }
             return [
                 'lead' => $lockedLead->fresh(['status.stage', 'assignedUser', 'stageValues']),
                 'history' => $historyRecord,
@@ -298,6 +309,135 @@ class LeadTransitionService
                 'changed' => $statusChanged,
             ];
         });
+    }
+    /**
+     * Check and execute automated pipeline transfer or clone triggers.
+     */
+    protected function handlePipelineTriggers(
+        Lead $lead,
+        ?PipelineStage $currentStage,
+        LeadStatus $currentStatus,
+        User $actor,
+        array $context
+    ): ?Lead {
+        if ($currentStage === null) {
+            return null;
+        }
+        $triggerRules = \App\Models\PipelineStageCategory::query()
+            ->where('is_active', true)
+            ->where('auto_transfer_enabled', true)
+            ->where('trigger_stage_id', $currentStage->id)
+            ->where(function ($q) use ($currentStatus): void {
+                $q->whereNull('trigger_status_id')
+                    ->orWhere('trigger_status_id', 0)
+                    ->orWhere('trigger_status_id', $currentStatus->id);
+            })
+            ->with(['targetStage.statuses', 'targetStatus', 'activeStages.statuses', 'stages.statuses'])
+            ->get();
+        foreach ($triggerRules as $rule) {
+            // Resolve target stage and status inside the destination pipeline
+            $targetStage = $rule->targetStage;
+            if ($targetStage === null) {
+                // Default to the first active stage in this category
+                $targetStage = $rule->activeStages()->first() ?? $rule->stages()->first();
+            }
+            if ($targetStage === null) {
+                continue;
+            }
+
+            $targetStatus = $rule->targetStatus;
+            if ($targetStatus === null) {
+                $targetStatus = $targetStage->statuses()->orderBy('position')->first();
+            }
+            if ($targetStatus === null) {
+                continue;
+            }
+
+            if ($rule->auto_transfer_action === 'move') {
+                // Move the same lead directly into the new pipeline
+                $this->transition($lead, $targetStatus, $actor, [
+                    'history_note' => "نقل تلقائي إلى مسار [{$rule->localizedName()}] عند الوصول إلى مرحلة [{$currentStage->localizedName()}]",
+                    'suppress_pipeline_triggers' => true,
+                ]);
+                return null;
+            }
+
+            // CLONE / FORK MODE:
+            // Create cloned lead linked via parent_lead_id
+            $cloneData = $lead->only([
+                'name',
+                'company_name',
+                'phone',
+                'email',
+                'source',
+                'assigned_employee',
+                'assigned_user_id',
+                'branch_id',
+                'created_by',
+                'created_by_user_id',
+                'temperature',
+                'notes',
+            ]);
+            $cloneData['lead_status_id'] = $targetStatus->id;
+            $cloneData['parent_lead_id'] = $lead->id;
+            $cloneData['notes'] = ($cloneData['notes'] ? $cloneData['notes'] . "\n\n" : '')
+                . "تم استنساخ هذا العميل تلقائيًا في مسار [{$rule->localizedName()}] عند وصول العميل الأصلي إلى مرحلة [{$currentStage->localizedName()}].";
+
+            $newClone = Lead::query()->create($cloneData);
+
+            // Copy active campaigns
+            if ($lead->campaigns->isNotEmpty()) {
+                $newClone->campaigns()->sync($lead->campaigns->pluck('id')->all());
+            }
+
+            // Duplicate existing stage field answers so cloned lead carries historical context
+            $existingValues = \App\Models\LeadStageFieldValue::query()
+                ->where('lead_id', $lead->id)
+                ->get();
+
+            foreach ($existingValues as $val) {
+                \App\Models\LeadStageFieldValue::query()->create([
+                    'lead_id' => $newClone->id,
+                    'pipeline_stage_id' => $val->pipeline_stage_id,
+                    'pipeline_stage_field_id' => $val->pipeline_stage_field_id,
+                    'field_key' => $val->field_key,
+                    'value' => $val->value,
+                    'created_by_user_id' => $actor->id,
+                ]);
+            }
+
+            // Create initial status history for cloned record
+            \App\Models\LeadStatusHistory::query()->create([
+                'lead_id' => $newClone->id,
+                'from_status_id' => null,
+                'to_status_id' => $targetStatus->id,
+                'changed_by' => trim((string) $actor->name) ?: 'System Automation',
+                'changed_by_user_id' => $actor->id ?? null,
+                'note' => "إنشاء عميل مستنسخ في مسار [{$rule->localizedName()}] متفرع من العميل #{$lead->id} عند وصوله لمرحلة [{$currentStage->localizedName()}]",
+                'changed_at' => now(),
+            ]);
+
+            // Activity log for both parent and clone
+            ActivityLogger::log(
+                action: 'lead.stage_transition',
+                module: 'leads',
+                description: "تم ترحيل واستنساخ العميل {$lead->name} إلى مسار [{$rule->localizedName()}] برقم جديد #{$newClone->id}",
+                subject: $newClone,
+                properties: [
+                    'parent_lead_id' => $lead->id,
+                    'cloned_lead_id' => $newClone->id,
+                    'pipeline_category_id' => $rule->id,
+                    'pipeline_category_name' => $rule->localizedName(),
+                    'trigger_stage' => $currentStage->localizedName(),
+                    'target_stage' => $targetStage->localizedName(),
+                ],
+                actor: $actor,
+            );
+
+            return $newClone;
+        }
+
+        return null;
     }
 
     /**

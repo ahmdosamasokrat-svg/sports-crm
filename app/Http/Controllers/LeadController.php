@@ -1071,7 +1071,9 @@ $stage = $status->stage;
 
         $leadRecord = Lead::query()
             ->with([
-                'status.stage',
+                'status.stage.category',
+                'parentLead.status.stage.category',
+                'clonedLeads.status.stage.category',
                 'branch:id,name_ar,name_en,code',
                 'assignedUser:id,name',
                 'creator:id,name',

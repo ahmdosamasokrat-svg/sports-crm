@@ -53,6 +53,7 @@
                     <th>{{ __('crm.color_col') }}</th>
                     <th>{{ __('crm.assigned_stages') }}</th>
                     <th>{{ __('crm.stages_count_col') }}</th>
+                    <th>{{ __('الأتمتة والترحيل التلقائي') }}</th>
                     <th>{{ __('crm.status_th') }}</th>
                     <th style="width:160px">{{ __('crm.actions_th') }}</th>
                 </tr>
@@ -105,12 +106,34 @@
                             </span>
                         </td>
                         <td>
+                            @if ($category->auto_transfer_enabled && $category->triggerStage)
+                                <div style="font-size:11px; line-height:1.4;">
+                                    <span class="badge" style="background:rgba(79,70,229,0.1); color:#4f46e5; border:1px solid rgba(79,70,229,0.25); font-weight:700; display:inline-flex; align-items:center; gap:4px; margin-bottom:3px;">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                        {{ $category->auto_transfer_action === 'move' ? 'نقل مباشر' : 'نسخ واستنساخ' }}
+                                    </span>
+                                    <div style="color:var(--dark); font-weight:600;">
+                                        <span>من:</span> {{ $category->triggerStage->localizedName() }}
+                                        @if ($category->triggerStatus)
+                                            <small style="color:var(--muted)">({{ $category->triggerStatus->name_ar }})</small>
+                                        @endif
+                                    </div>
+                                    @if ($category->targetStage)
+                                        <div style="color:var(--muted)">
+                                            <span>إلى:</span> {{ $category->targetStage->localizedName() }}
+                                        </div>
+                                    @endif
+                                </div>
+                            @else
+                                <span style="color:var(--muted); font-size:12px;">معطل</span>
+                            @endif
+                        </td>
+                        <td>
                             @if ($category->is_active)
                                 <span class="badge active">{{ __('crm.active') }}</span>
                             @else
                                 <span class="badge inactive">{{ __('crm.inactive') }}</span>
                             @endif
-                        </td>
                         <td>
                             <div style="display:flex; gap:6px; align-items:center">
                                 <button type="button" class="btn light icon-btn" title="{{ __('crm.edit') }}"
@@ -228,6 +251,60 @@
                 </div>
             </div>
 
+            <!-- AUTOMATIC TRANSFER CONFIGURATION -->
+            <div style="margin-bottom:20px; border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; cursor:pointer; margin-bottom:10px;">
+                    <input type="checkbox" name="auto_transfer_enabled" value="1" onchange="document.getElementById('addAutoTransferFields').style.display = this.checked ? 'block' : 'none';">
+                    <i class="bi bi-lightning-charge-fill" style="color:#4f46e5;"></i>
+                    <span>{{ __('ترحيل / نسخ العميل تلقائيًا إلى هذا المسار عند وصوله لمرحلة محددة') }}</span>
+                </label>
+
+                <div id="addAutoTransferFields" style="display:none; margin-top:12px; border-top:1px dashed var(--line); padding-top:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('نوع الإجراء') }}
+                            </label>
+                            <select name="auto_transfer_action" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="clone">{{ __('استنساخ عميل جديد في هذا المسار (Cloned Lead)') }}</option>
+                                <option value="move">{{ __('نقل نفس العميل بالكامل إلى هذا المسار (Move)') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('مرحلة الإطلاق والتحويل (المسار المصدر)') }}
+                            </label>
+                            <select name="trigger_stage_id" id="addTriggerStageSelect" onchange="syncStatusesForTrigger('addTriggerStageSelect', 'addTriggerStatusSelect')" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('اختر المرحلة المحفزة') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }} @if ($stg->category) ({{ $stg->category->name_ar }}) @endif</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('حالة محددة للإطلاق (اختياري - أي حالة افتراضيًا)') }}
+                            </label>
+                            <select name="trigger_status_id" id="addTriggerStatusSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أي حالة في هذه المرحلة') }} --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('المرحلة الابتدائية في هذا المسار المستهدف') }}
+                            </label>
+                            <select name="target_stage_id" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أول مرحلة في هذا المسار تلقائيًا') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
                 <button type="button" class="btn light" onclick="closeModal('addCategoryModal')">{{ __('crm.cancel') }}</button>
                 <button type="submit" class="btn primary">{{ __('crm.save_category') }}</button>
@@ -336,6 +413,60 @@
                 </div>
             </div>
 
+            <!-- EDIT AUTOMATIC TRANSFER CONFIGURATION -->
+            <div style="margin-bottom:20px; border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; cursor:pointer; margin-bottom:10px;">
+                    <input type="checkbox" name="auto_transfer_enabled" id="editAutoTransferEnabled" value="1" onchange="document.getElementById('editAutoTransferFields').style.display = this.checked ? 'block' : 'none';">
+                    <i class="bi bi-lightning-charge-fill" style="color:#4f46e5;"></i>
+                    <span>{{ __('ترحيل / نسخ العميل تلقائيًا إلى هذا المسار عند وصوله لمرحلة محددة') }}</span>
+                </label>
+
+                <div id="editAutoTransferFields" style="display:none; margin-top:12px; border-top:1px dashed var(--line); padding-top:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('نوع الإجراء') }}
+                            </label>
+                            <select name="auto_transfer_action" id="editAutoTransferAction" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="clone">{{ __('استنساخ عميل جديد في هذا المسار (Cloned Lead)') }}</option>
+                                <option value="move">{{ __('نقل نفس العميل بالكامل إلى هذا المسار (Move)') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('مرحلة الإطلاق والتحويل (المسار المصدر)') }}
+                            </label>
+                            <select name="trigger_stage_id" id="editTriggerStageSelect" onchange="syncStatusesForTrigger('editTriggerStageSelect', 'editTriggerStatusSelect')" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('اختر المرحلة المحفزة') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }} @if ($stg->category) ({{ $stg->category->name_ar }}) @endif</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('حالة محددة للإطلاق (اختياري - أي حالة افتراضيًا)') }}
+                            </label>
+                            <select name="trigger_status_id" id="editTriggerStatusSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أي حالة في هذه المرحلة') }} --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('المرحلة الابتدائية في هذا المسار المستهدف') }}
+                            </label>
+                            <select name="target_stage_id" id="editTargetStageSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أول مرحلة في هذا المسار تلقائيًا') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
             <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
                 <button type="button" class="btn light" onclick="closeModal('editCategoryModal')">{{ __('crm.cancel') }}</button>
                 <button type="submit" class="btn primary">{{ __('crm.update_category') }}</button>
@@ -377,6 +508,31 @@ function openAddCategoryModal() {
     document.body.classList.add('modal-open');
 }
 
+const allStagesData = @json($allStages);
+
+function syncStatusesForTrigger(stageSelectId, statusSelectId, selectedStatusId = null) {
+    const stageSelect = document.getElementById(stageSelectId);
+    const statusSelect = document.getElementById(statusSelectId);
+    if (!stageSelect || !statusSelect) return;
+
+    const stageId = Number(stageSelect.value);
+    statusSelect.innerHTML = '<option value="">-- {{ __("أي حالة في هذه المرحلة") }} --</option>';
+
+    if (!stageId) return;
+    const stage = allStagesData.find(s => Number(s.id) === stageId);
+    if (stage && stage.statuses) {
+        stage.statuses.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id;
+            opt.textContent = st.name_ar;
+            if (selectedStatusId && Number(st.id) === Number(selectedStatusId)) {
+                opt.selected = true;
+            }
+            statusSelect.appendChild(opt);
+        });
+    }
+}
+
 function openEditCategoryModal(category, assignedStageIds) {
     const form = document.getElementById('editCategoryForm');
     form.action = '{{ url("settings/stage-categories") }}/' + category.id;
@@ -389,6 +545,15 @@ function openEditCategoryModal(category, assignedStageIds) {
     document.getElementById('editCategoryIcon').value = category.icon || 'bi-collection';
     document.getElementById('editCategoryIsActive').checked = !!category.is_active;
 
+    // Auto-transfer values
+    const autoEnabled = !!category.auto_transfer_enabled;
+    document.getElementById('editAutoTransferEnabled').checked = autoEnabled;
+    document.getElementById('editAutoTransferFields').style.display = autoEnabled ? 'block' : 'none';
+    document.getElementById('editAutoTransferAction').value = category.auto_transfer_action || 'clone';
+    document.getElementById('editTriggerStageSelect').value = category.trigger_stage_id || '';
+    syncStatusesForTrigger('editTriggerStageSelect', 'editTriggerStatusSelect', category.trigger_status_id);
+    document.getElementById('editTargetStageSelect').value = category.target_stage_id || '';
+
     const assignedSet = new Set((assignedStageIds || []).map(Number));
     document.querySelectorAll('.edit-category-stage-checkbox').forEach(cb => {
         cb.checked = assignedSet.has(Number(cb.dataset.stageId));
@@ -397,7 +562,6 @@ function openEditCategoryModal(category, assignedStageIds) {
     document.getElementById('editCategoryModal').style.display = 'flex';
     document.body.classList.add('modal-open');
 }
-
 function openDeleteCategoryModal(category) {
     const form = document.getElementById('deleteCategoryForm');
     form.action = '{{ url("settings/stage-categories") }}/' + category.id;

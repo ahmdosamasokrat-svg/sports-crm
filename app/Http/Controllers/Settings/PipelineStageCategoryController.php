@@ -22,18 +22,21 @@ class PipelineStageCategoryController extends Controller
         $categories = PipelineStageCategory::query()
             ->with([
                 'stages' => static fn ($q) => $q->orderBy('position')->orderBy('id'),
+                'triggerStage',
+                'triggerStatus',
+                'targetStage',
+                'targetStatus',
             ])
             ->withCount('stages')
             ->orderBy('position')
             ->orderBy('id')
             ->get();
-
         $allStages = PipelineStage::query()
             ->whereNull('deleted_at')
+            ->with(['statuses' => static fn ($q) => $q->orderBy('position')->orderBy('id'), 'category'])
             ->orderBy('position')
             ->orderBy('id')
             ->get();
-
         $totalCategoriesCount = $categories->count();
         $activeCategoriesCount = $categories->where('is_active', true)->count();
         $assignedStagesCount = PipelineStage::query()
@@ -63,6 +66,12 @@ class PipelineStageCategoryController extends Controller
             'description_ar' => ['nullable', 'string', 'max:255'],
             'stage_ids' => ['nullable', 'array'],
             'stage_ids.*' => ['integer', 'exists:pipeline_stages,id'],
+            'auto_transfer_enabled' => ['nullable', 'boolean'],
+            'auto_transfer_action' => ['nullable', 'string', 'in:clone,move'],
+            'trigger_stage_id' => ['nullable', 'integer', 'exists:pipeline_stages,id'],
+            'trigger_status_id' => ['nullable', 'integer', 'exists:lead_statuses,id'],
+            'target_stage_id' => ['nullable', 'integer', 'exists:pipeline_stages,id'],
+            'target_status_id' => ['nullable', 'integer', 'exists:lead_statuses,id'],
         ], [
             'name_ar.required' => 'اسم الفئة مطلوب.',
             'color.regex' => 'كود اللون يجب أن يكون بصيغة hex صحيحة مثل #3478f6.',
@@ -72,7 +81,8 @@ class PipelineStageCategoryController extends Controller
         $color = $validated['color'] ?? '#3478f6';
         $icon = ! empty($validated['icon']) ? trim($validated['icon']) : 'bi-collection';
 
-        DB::transaction(function () use ($validated, $nextPosition, $color, $icon): void {
+        DB::transaction(function () use ($validated, $nextPosition, $color, $icon, $request): void {
+            $autoTransferEnabled = $request->boolean('auto_transfer_enabled');
             $category = PipelineStageCategory::query()->create([
                 'name_ar' => trim($validated['name_ar']),
                 'name_en' => ! empty($validated['name_en']) ? trim($validated['name_en']) : null,
@@ -81,6 +91,12 @@ class PipelineStageCategoryController extends Controller
                 'color' => $color,
                 'icon' => $icon,
                 'is_active' => true,
+                'auto_transfer_enabled' => $autoTransferEnabled,
+                'auto_transfer_action' => $validated['auto_transfer_action'] ?? 'clone',
+                'trigger_stage_id' => $autoTransferEnabled ? ($validated['trigger_stage_id'] ?? null) : null,
+                'trigger_status_id' => $autoTransferEnabled ? ($validated['trigger_status_id'] ?? null) : null,
+                'target_stage_id' => $autoTransferEnabled ? ($validated['target_stage_id'] ?? null) : null,
+                'target_status_id' => $autoTransferEnabled ? ($validated['target_status_id'] ?? null) : null,
             ]);
 
             $stageIds = $validated['stage_ids'] ?? [];
@@ -112,6 +128,12 @@ class PipelineStageCategoryController extends Controller
             'is_active' => ['nullable', 'boolean'],
             'stage_ids' => ['nullable', 'array'],
             'stage_ids.*' => ['integer', 'exists:pipeline_stages,id'],
+            'auto_transfer_enabled' => ['nullable', 'boolean'],
+            'auto_transfer_action' => ['nullable', 'string', 'in:clone,move'],
+            'trigger_stage_id' => ['nullable', 'integer', 'exists:pipeline_stages,id'],
+            'trigger_status_id' => ['nullable', 'integer', 'exists:lead_statuses,id'],
+            'target_stage_id' => ['nullable', 'integer', 'exists:pipeline_stages,id'],
+            'target_status_id' => ['nullable', 'integer', 'exists:lead_statuses,id'],
         ], [
             'name_ar.required' => 'اسم الفئة مطلوب.',
             'color.regex' => 'كود اللون يجب أن يكون بصيغة hex صحيحة.',
@@ -121,7 +143,8 @@ class PipelineStageCategoryController extends Controller
         $color = $validated['color'] ?? $category->color;
         $icon = ! empty($validated['icon']) ? trim($validated['icon']) : ($category->icon ?: 'bi-collection');
 
-        DB::transaction(function () use ($category, $validated, $isActive, $color, $icon): void {
+        DB::transaction(function () use ($category, $validated, $isActive, $color, $icon, $request): void {
+            $autoTransferEnabled = $request->boolean('auto_transfer_enabled');
             $newPosition = (int) $validated['position'];
             $oldPosition = (int) $category->position;
 
@@ -164,8 +187,13 @@ class PipelineStageCategoryController extends Controller
                 'color' => $color,
                 'icon' => $icon,
                 'is_active' => $isActive,
+                'auto_transfer_enabled' => $autoTransferEnabled,
+                'auto_transfer_action' => $validated['auto_transfer_action'] ?? 'clone',
+                'trigger_stage_id' => $autoTransferEnabled ? ($validated['trigger_stage_id'] ?? null) : null,
+                'trigger_status_id' => $autoTransferEnabled ? ($validated['trigger_status_id'] ?? null) : null,
+                'target_stage_id' => $autoTransferEnabled ? ($validated['target_stage_id'] ?? null) : null,
+                'target_status_id' => $autoTransferEnabled ? ($validated['target_status_id'] ?? null) : null,
             ]);
-
             $stageIds = array_map('intval', $validated['stage_ids'] ?? []);
 
             // Unlink stages that were previously in this category but unselected

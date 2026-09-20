@@ -16,6 +16,7 @@ class Lead extends Model
 {
     use LogsActivity, SoftDeletes;
     protected $fillable = [
+        'parent_lead_id',
         'lead_status_id',
         'branch_id',
         'name',
@@ -203,6 +204,16 @@ class Lead extends Model
         return $this->belongsTo(PipelineStage::class, 'deleted_from_stage_id');
     }
 
+
+    public function parentLead(): BelongsTo
+    {
+        return $this->belongsTo(self::class, 'parent_lead_id');
+    }
+
+    public function clonedLeads(): HasMany
+    {
+        return $this->hasMany(self::class, 'parent_lead_id');
+    }
 
     public function currentStage(): ?PipelineStage
     {

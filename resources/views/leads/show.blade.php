@@ -527,6 +527,32 @@
                        </p>
                    </div>
                </div>
+
+                   {{-- Cloned / Parent Lead Linking Banner --}}
+                   @if ($lead->parentLead || $lead->clonedLeads->isNotEmpty())
+                       <div style="margin-top: 10px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center;">
+                           @if ($lead->parentLead)
+                               <span class="badge" style="background: rgba(79, 70, 229, 0.1); color: #4f46e5; border: 1px solid rgba(79, 70, 229, 0.3); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                   <i class="bi bi-diagram-3-fill"></i>
+                                   {{ __('متفرع من العميل الأصلي:') }}
+                                   <a href="{{ route('v2.leads.show', $lead->parentLead) }}" style="color: #4f46e5; text-decoration: underline; font-weight: 800;">
+                                       #{{ $lead->parentLead->id }} {{ $lead->parentLead->name }} ({{ $lead->parentLead->status?->stage?->category?->localizedName() ?? $lead->parentLead->status?->stage?->localizedName() }})
+                                   </a>
+                               </span>
+                           @endif
+                           @if ($lead->clonedLeads->isNotEmpty())
+                               @foreach ($lead->clonedLeads as $cLead)
+                                   <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #059669; border: 1px solid rgba(16, 185, 129, 0.3); font-size: 12px; font-weight: 700; display: inline-flex; align-items: center; gap: 5px;">
+                                       <i class="bi bi-arrow-right-circle-fill"></i>
+                                       {{ __('تم نسخه لمسار آخر:') }}
+                                       <a href="{{ route('v2.leads.show', $cLead) }}" style="color: #059669; text-decoration: underline; font-weight: 800;">
+                                           #{{ $cLead->id }} ({{ $cLead->status?->stage?->category?->localizedName() ?? $cLead->status?->stage?->localizedName() }})
+                                       </a>
+                                   </span>
+                               @endforeach
+                           @endif
+                       </div>
+                   @endif
                 <div>
                     @php
                         $stageCode = strtolower((string) ($lead->status?->code ?? $lead->status?->stage?->code ?? ''));
