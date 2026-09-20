@@ -22,15 +22,16 @@
 .stage-q-badge{display:inline-flex;align-items:center;gap:8px;padding:8px 12px;border-radius:10px;background:#fff;border:1px solid var(--line);min-height:44px}
 .stage-q-grid{display:grid;grid-template-columns:1.4fr 1fr;gap:20px}
 .question-cards{display:flex;flex-direction:column;gap:12px}
-.q-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;justify-content:space-between;align-items:center;gap:14px;box-shadow:0 2px 6px rgba(0,0,0,0.02);transition:all .15s ease}
-.q-card:hover{border-color:#cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
-.q-card.inactive{opacity:0.6;background:#f8fafc}
-.q-info{display:flex;align-items:flex-start;gap:14px;min-width:0;flex:1}
-.q-type-icon{width:40px;height:40px;border-radius:10px;background:#f1f5f9;color:#475569;display:grid;place-items:center;font-size:18px;flex-shrink:0}
-.q-details h4{margin:0 0 4px;font-size:15px;color:var(--dark);font-weight:800}
-.q-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
-.q-actions{display:flex;align-items:center;gap:6px;flex-shrink:0}
-.q-actions .btn{min-height:36px;min-width:36px;padding:0 8px;touch-action:manipulation}
+ .q-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px;display:flex;flex-direction:column;gap:12px;box-shadow:0 2px 6px rgba(0,0,0,0.02);transition:all .15s ease}
+ .q-card:hover{border-color:#cbd5e1;box-shadow:0 4px 12px rgba(0,0,0,0.04)}
+ .q-card.inactive{opacity:0.6;background:#f8fafc}
+ .q-top-row{display:flex;justify-content:space-between;align-items:flex-start;gap:14px;width:100%}
+ .q-info{display:flex;align-items:flex-start;gap:14px;min-width:0;flex:1}
+ .q-type-icon{width:40px;height:40px;border-radius:10px;background:#f1f5f9;color:#475569;display:grid;place-items:center;font-size:18px;flex-shrink:0}
+ .q-details h4{margin:0 0 4px;font-size:15px;color:var(--dark);font-weight:800}
+ .q-meta{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:12px;color:var(--muted)}
+ .q-actions{display:flex;align-items:center;gap:6px;flex-shrink:0;white-space:nowrap}
+ .q-actions .btn{min-height:34px;min-width:34px;padding:0 8px;touch-action:manipulation}
 .preview-panel{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;position:sticky;top:20px}
 .preview-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;padding-bottom:12px;border-bottom:1px solid var(--line)}
 .preview-box{background:#f8fafc;border:1px solid #e2e8f0;border-radius:12px;padding:16px}
@@ -135,44 +136,78 @@
                             </div>
                         @endif
                         <article class="q-card {{ $field->is_active ? '' : 'inactive' }}" data-field-id="{{ $field->id }}" id="qCard_{{ $field->id }}" style="{{ $hasCondition ? 'margin-inline-start: 24px; border-inline-start: 4px solid #6366f1;' : '' }}">
-                            <div class="q-info">
-                                <div class="q-type-icon">
-                                    <i class="bi {{ $typeIcon }}"></i>
-                                </div>
-                                <div class="q-details">
-                                    <h4>{{ $field->localizedLabel() }}</h4>
-                                    <div class="q-meta">
-                                        @if ($isCanonical)
-                                            <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
-                                                <i class="bi bi-person-badge"></i> {{ __('crm.canonical_lead_field') }}: {{ $canonicalDef['label_ar'] ?? $field->binding_target }}
-                                            </span>
-                                        @else
-                                            <span class="badge" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">
-                                                <i class="bi bi-sliders"></i> {{ __('crm.custom_field') }}
-                                            </span>
-                                        @endif
-
-                                        <span><i class="bi bi-tag"></i> {{ $typeLabel }}</span>
-                                        <span>•</span>
-
-                                        @if ($field->is_required)
-                                            <span style="color:#b91c1c; font-weight:800;"><i class="bi bi-asterisk" style="font-size:9px"></i> {{ __('crm.required') }}</span>
-                                        @else
-                                            <span>{{ __('crm.optional') }}</span>
-                                        @endif
-
-                                        @if ($field->default_value !== null && $field->default_value !== '')
-                                            <span>•</span>
-                                            <span style="color:var(--muted);"><i class="bi bi-pin"></i> {{ $field->default_value }}</span>
-                                        @endif
-
-                                        @if ($hasCondition)
-                                            <span>•</span>
-                                            <span class="badge" style="background:#fdf4ff; color:#a21caf; border:1px solid #f5d0fe;">
-                                                <i class="bi bi-diagram-2"></i> {{ __('crm.conditional_rule_summary', ['field' => $condField?->localizedLabel() ?? $field->conditions['field']]) }}
-                                            </span>
-                                        @endif
+                            <div class="q-top-row">
+                                <div class="q-info">
+                                    <div class="q-type-icon">
+                                        <i class="bi {{ $typeIcon }}"></i>
                                     </div>
+                                    <div class="q-details">
+                                        <h4>{{ $field->localizedLabel() }}</h4>
+                                        <div class="q-meta">
+                                            @if ($isCanonical)
+                                                <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd;">
+                                                    <i class="bi bi-person-badge"></i> {{ __('crm.canonical_lead_field') }}: {{ $canonicalDef['label_ar'] ?? $field->binding_target }}
+                                                </span>
+                                            @else
+                                                <span class="badge" style="background:#f8fafc; color:#475569; border:1px solid #e2e8f0;">
+                                                    <i class="bi bi-sliders"></i> {{ __('crm.custom_field') }}
+                                                </span>
+                                            @endif
+
+                                            <span><i class="bi bi-tag"></i> {{ $typeLabel }}</span>
+                                            <span>•</span>
+
+                                            @if ($field->is_required)
+                                                <span style="color:#b91c1c; font-weight:800;"><i class="bi bi-asterisk" style="font-size:9px"></i> {{ __('crm.required') }}</span>
+                                            @else
+                                                <span>{{ __('crm.optional') }}</span>
+                                            @endif
+
+                                            @if ($field->default_value !== null && $field->default_value !== '')
+                                                <span>•</span>
+                                                <span style="color:var(--muted);"><i class="bi bi-pin"></i> {{ $field->default_value }}</span>
+                                            @endif
+
+                                            @if ($hasCondition)
+                                                <span>•</span>
+                                                <span class="badge" style="background:#fdf4ff; color:#a21caf; border:1px solid #f5d0fe;">
+                                                    <i class="bi bi-diagram-2"></i> {{ __('crm.conditional_rule_summary', ['field' => $condField?->localizedLabel() ?? $field->conditions['field']]) }}
+                                                </span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="q-actions">
+                                    <!-- REORDER CONTROLS -->
+                                    <button type="button" class="btn small soft" onclick="moveFieldUp({{ $field->id }})" title="{{ __('crm.move_up') }}" {{ $index === 0 ? 'disabled style=opacity:0.35;' : '' }}>
+                                        <i class="bi bi-arrow-up"></i>
+                                    </button>
+                                    <button type="button" class="btn small soft" onclick="moveFieldDown({{ $field->id }})" title="{{ __('crm.move_down') }}" {{ $index === $fields->count() - 1 ? 'disabled style=opacity:0.35;' : '' }}>
+                                        <i class="bi bi-arrow-down"></i>
+                                    </button>
+
+                                    <!-- EDIT -->
+                                    <button type="button" class="btn small soft" onclick="openEditQuestionModal({{ json_encode($field) }})" title="{{ __('crm.edit') }}">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+
+                                    <!-- TOGGLE -->
+                                    <form method="POST" action="{{ route('v2.settings.stages.fields.toggle', [$stage, $field]) }}" style="margin:0;">
+                                        @csrf
+                                        @method('PATCH')
+                                        <button type="submit" class="btn small soft" title="{{ $field->is_active ? __('crm.deactivate_action') : __('crm.activate_action') }}">
+                                            <i class="bi {{ $field->is_active ? 'bi-eye-slash' : 'bi-eye' }}"></i>
+                                        </button>
+                                    </form>
+
+                                    <!-- DELETE / ARCHIVE -->
+                                    <form method="POST" action="{{ route('v2.settings.stages.fields.destroy', [$stage, $field]) }}" style="margin:0;" onsubmit="return confirm(@json($field->values_count > 0 ? __('crm.stage_field_archive_confirm') : __('crm.confirm_delete_stage_field')))">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn small danger" title="{{ __('crm.delete') }}">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
                                 </div>
                             </div>
                                     @php
@@ -205,38 +240,6 @@
                                         </div>
                                     @endif
 
-                            <div class="q-actions">
-                                <!-- REORDER CONTROLS -->
-                                <button type="button" class="btn small soft" onclick="moveFieldUp({{ $field->id }})" title="{{ __('crm.move_up') }}" {{ $index === 0 ? 'disabled style=opacity:0.35;' : '' }}>
-                                    <i class="bi bi-arrow-up"></i>
-                                </button>
-                                <button type="button" class="btn small soft" onclick="moveFieldDown({{ $field->id }})" title="{{ __('crm.move_down') }}" {{ $index === $fields->count() - 1 ? 'disabled style=opacity:0.35;' : '' }}>
-                                    <i class="bi bi-arrow-down"></i>
-                                </button>
-
-                                <!-- EDIT -->
-                                <button type="button" class="btn small soft" onclick="openEditQuestionModal({{ json_encode($field) }})" title="{{ __('crm.edit') }}">
-                                    <i class="bi bi-pencil"></i>
-                                </button>
-
-                                <!-- TOGGLE -->
-                                <form method="POST" action="{{ route('v2.settings.stages.fields.toggle', [$stage, $field]) }}" style="margin:0;">
-                                    @csrf
-                                    @method('PATCH')
-                                    <button type="submit" class="btn small soft" title="{{ $field->is_active ? __('crm.deactivate_action') : __('crm.activate_action') }}">
-                                        <i class="bi {{ $field->is_active ? 'bi-eye-slash' : 'bi-eye' }}"></i>
-                                    </button>
-                                </form>
-
-                                <!-- DELETE / ARCHIVE -->
-                                <form method="POST" action="{{ route('v2.settings.stages.fields.destroy', [$stage, $field]) }}" style="margin:0;" onsubmit="return confirm(@json($field->values_count > 0 ? __('crm.stage_field_archive_confirm') : __('crm.confirm_delete_stage_field')))">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn small danger" title="{{ __('crm.delete') }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
-                            </div>
                         </article>
                     @endforeach
                 </div>
