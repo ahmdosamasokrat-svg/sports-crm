@@ -735,6 +735,15 @@
                                             @endif
                                         </span>
                                     </div>
+                                    @if ($lead->guardian->notes)
+                                        <div id="guardianNotesWrap" style="display:flex; align-items:flex-start; gap:6px; margin-top:6px; font-size:12px; color:var(--dark); background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px;">
+                                            <i class="bi bi-card-text" style="color:#4f46e5; margin-top:2px;"></i>
+                                            <div>
+                                                <strong style="color:var(--muted); font-size:11px; display:block;">{{ __('ملاحظات الأسرة:') }}</strong>
+                                                <span id="guardianNotesText">{{ $lead->guardian->notes }}</span>
+                                            </div>
+                                        </div>
+                                    @endif
                                 @endif
                             </div>
 
@@ -1925,6 +1934,15 @@ function renderLinkedGuardian(guardian, siblings = []) {
                 ${guardian.phone ? `<span style="direction:ltr; font-family:var(--font-mono); font-size:12px;">• ${guardian.phone}</span>` : ''}
             </span>
         </div>
+        ${guardian.notes ? `
+            <div id="guardianNotesWrap" style="display:flex; align-items:flex-start; gap:6px; margin-top:6px; font-size:12px; color:var(--dark); background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px;">
+                <i class="bi bi-card-text" style="color:#4f46e5; margin-top:2px;"></i>
+                <div>
+                    <strong style="color:var(--muted); font-size:11px; display:block;">ملاحظات الأسرة:</strong>
+                    <span id="guardianNotesText">${guardian.notes}</span>
+                </div>
+            </div>
+        ` : ''}
     `;
     display.style.display = 'block';
     controls.style.display = 'none';

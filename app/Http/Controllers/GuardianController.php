@@ -100,6 +100,7 @@ class GuardianController extends Controller
                 'name' => $guardian->name,
                 'phone' => $guardian->phone,
                 'relationship' => $guardian->relationship,
+                'notes' => $guardian->notes,
             ],
             'siblings' => $siblings,
         ]);
@@ -134,10 +135,12 @@ class GuardianController extends Controller
                 'name' => $guardian->name,
                 'phone' => $guardian->phone,
                 'relationship' => $guardian->relationship,
+                'notes' => $guardian->notes,
             ],
             'siblings' => $siblings,
         ]);
     }
+
 
     /**
      * Unlink guardian from a lead.
