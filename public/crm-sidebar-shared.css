@@ -373,12 +373,14 @@ html.dark-mode .crm-toggle.active .crm-ico{
  display:inline-flex !important;
  align-items:center !important;
  justify-content:center !important;
+ align-self:center !important;
  margin-inline-start:auto !important;
  width:18px !important;
  height:18px !important;
  flex:0 0 18px !important;
  color:#94a3b8 !important;
  line-height:1 !important;
+ vertical-align:middle !important;
  transition:transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.2s ease !important;
  transform-origin:50% 50% !important;
  will-change:transform
@@ -908,9 +910,21 @@ font-size:11px
   .crm-side-brand span,
   .crm-side-caption,
   .crm-label,
+  .crm-count {
+    display: inline-block !important;
+  }
+  .crm-arrow {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    align-self: center !important;
+    vertical-align: middle !important;
+  }
+  .crm-side-brand span,
+  .crm-side-caption,
+  .crm-label,
   .crm-count,
   .crm-arrow {
-    display: inline-block !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     max-width: 200px !important;
