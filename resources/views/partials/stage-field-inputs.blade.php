@@ -357,6 +357,60 @@
             } while (changed && iterations < 10);
         }
 
+        // Auto-calculate final_price and remaining_amount when pricing fields exist in this form
+        function autoCalculatePricing() {
+            const baseInput = wrap.querySelector('[data-sf-key="base_price"] input')
+                || wrap.querySelector('input[name*="[base_price]"]');
+            const discountInput = wrap.querySelector('[data-sf-key="discount"] input')
+                || wrap.querySelector('input[name*="[discount]"]');
+            const finalInput = wrap.querySelector('[data-sf-key="final_price"] input')
+                || wrap.querySelector('input[name*="[final_price]"]');
+            const collectedInput = wrap.querySelector('[data-sf-key="collected_amount"] input')
+                || wrap.querySelector('input[name*="[collected_amount]"]');
+            const remainingInput = wrap.querySelector('[data-sf-key="remaining_amount"] input')
+                || wrap.querySelector('input[name*="[remaining_amount]"]');
+
+            if (!baseInput && !discountInput) {
+                return;
+            }
+
+            const baseRaw = baseInput ? String(baseInput.value).trim() : '';
+            const baseVal = parseFloat(baseRaw) || 0;
+
+            const discountRaw = discountInput ? String(discountInput.value).trim() : '';
+            let discountVal = 0;
+
+            if (discountRaw !== '') {
+                if (discountRaw.endsWith('%')) {
+                    const pct = parseFloat(discountRaw.replace('%', '').trim()) || 0;
+                    discountVal = (baseVal * pct) / 100;
+                } else {
+                    discountVal = parseFloat(discountRaw) || 0;
+                }
+            }
+
+            if (finalInput) {
+                if (baseRaw === '') {
+                    // Don't override if user hasn't typed base price yet
+                } else {
+                    const finalPrice = Math.max(0, baseVal - discountVal);
+                    // Format cleanly: if integer show integer, else 2 decimals
+                    finalInput.value = Number.isInteger(finalPrice) ? finalPrice : finalPrice.toFixed(2);
+                }
+            }
+
+            if (remainingInput && finalInput) {
+                const currentFinal = parseFloat(finalInput.value) || 0;
+                const collectedVal = collectedInput ? (parseFloat(collectedInput.value) || 0) : 0;
+                const remaining = Math.max(0, currentFinal - collectedVal);
+                remainingInput.value = Number.isInteger(remaining) ? remaining : remaining.toFixed(2);
+            }
+        }
+
+        wrap.addEventListener('input', autoCalculatePricing);
+        wrap.addEventListener('change', autoCalculatePricing);
+        autoCalculatePricing();
+
         wrap.addEventListener('input', updateConditions);
         wrap.addEventListener('change', updateConditions);
         wrap.addEventListener('crm:reevaluate-conditions', updateConditions);
