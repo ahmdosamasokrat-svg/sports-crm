@@ -159,19 +159,25 @@
         .timeline-body{color:#334155;font-size:13px;line-height:1.6}
 
         /* VoIP Call Insights Styles */
-        .call-filters{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) auto;gap:10px;align-items:end;margin-bottom:16px}
+        .call-filters{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end;margin-bottom:16px}
+        .call-filters > div{flex:1 1 140px;min-width:130px}
+        .call-filters button{flex:0 0 auto;height:40px;padding:0 16px;white-space:nowrap}
         .call-filters label{display:block;color:var(--muted);font-size:11px;font-weight:800;margin-bottom:5px}
-        .call-filters input,.call-filters select{width:100%;border:1px solid var(--line);border-radius:9px;padding:9px 10px;background:var(--card);color:var(--dark);font-family:inherit}
-        .call-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:16px}
+        .call-filters input,.call-filters select{width:100%;height:40px;border:1px solid var(--line);border-radius:9px;padding:8px 10px;background:var(--card);color:var(--dark);font-family:inherit;box-sizing:border-box}
+        .call-metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px;margin-bottom:16px}
         .call-metric{padding:12px;background:var(--bg);border-radius:12px;border:1px solid var(--line)}
         .call-metric span{display:block;color:var(--muted);font-size:11px;font-weight:800}
-        .call-metric strong{display:block;margin-top:5px;font-size:20px;font-variant-numeric:tabular-nums}
+        .call-metric strong{display:block;margin-top:5px;font-size:18px;font-variant-numeric:tabular-nums}
         .call-bars{display:grid;gap:9px;padding:14px;background:var(--bg);border:1px solid var(--line);border-radius:12px;margin-bottom:16px}
         .call-bar{display:grid;grid-template-columns:78px 1fr 34px;gap:8px;align-items:center;font-size:12px;font-weight:800}
         .call-bar-track{height:7px;background:var(--line);border-radius:999px;overflow:hidden}
         .call-bar-fill{display:block;height:100%;border-radius:inherit}
         .call-list{display:grid;gap:9px}
-        .call-row{display:grid;grid-template-columns:minmax(120px,.9fr) minmax(120px,1fr) 90px 100px;gap:12px;align-items:center;padding:14px;border:1px solid var(--line);border-radius:12px;background:var(--card);transition:border-color .15s}
+        .call-row{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:var(--card);transition:border-color .15s}
+        .call-row > div:nth-child(1){flex:1 1 140px}
+        .call-row > div:nth-child(2){flex:1 1 140px}
+        .call-row > div:nth-child(3){flex:0 0 80px;text-align:center}
+        .call-row > div:nth-child(4){flex:0 0 auto;text-align:end}
         .call-row small{display:block;color:var(--muted);margin-top:3px}
         .call-state{text-align:center;padding:26px;color:var(--muted);font-weight:700}
         .call-state i{display:block;font-size:26px;margin-bottom:7px}
