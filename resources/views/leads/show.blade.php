@@ -50,11 +50,14 @@
             background: rgba(15, 23, 42, 0.65) !important;
             backdrop-filter: blur(4px) !important;
             z-index: 999999 !important;
-            display: flex !important;
+            display: none;
             align-items: center !important;
             justify-content: center !important;
             padding: 18px !important;
             box-sizing: border-box !important;
+        }
+        .crm-body-modal-shell.is-open {
+            display: flex !important;
         }
         .crm-body-modal-dialog {
             background: var(--card, #ffffff) !important;
@@ -1813,7 +1816,7 @@
 </script>
 
 <!-- CREATE GUARDIAN MODAL -->
-<div id="createGuardianModal" class="crm-body-modal-shell" style="display:none;" onclick="if(event.target.id === 'createGuardianModal') closeCreateGuardianModal()">
+<div id="createGuardianModal" class="crm-body-modal-shell" onclick="if(event.target.id === 'createGuardianModal') closeCreateGuardianModal()">
     <div class="crm-body-modal-dialog" style="max-width: 500px;" onclick="event.stopPropagation()">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
             <h3 style="margin:0; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; color:var(--dark);">
@@ -1864,13 +1867,17 @@ const leadId = {{ $lead->id }};
 const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
 
 function openCreateGuardianModal() {
-    document.getElementById('createGuardianModal').style.display = 'flex';
+    const modal = document.getElementById('createGuardianModal');
+    modal.classList.add('is-open');
+    modal.style.display = 'flex';
     document.body.classList.add('modal-open');
     setTimeout(() => document.getElementById('newGuardianName')?.focus(), 50);
 }
 
 function closeCreateGuardianModal() {
-    document.getElementById('createGuardianModal').style.display = 'none';
+    const modal = document.getElementById('createGuardianModal');
+    modal.classList.remove('is-open');
+    modal.style.display = 'none';
     document.body.classList.remove('modal-open');
 }
 
