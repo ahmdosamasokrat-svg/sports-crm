@@ -1935,9 +1935,9 @@
                           style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--line); padding-top:12px;">
-                <button type="button" class="btn small light" onclick="closeCreateGuardianModal()">{{ __('crm.cancel') }}</button>
-                <button type="submit" id="saveGuardianBtn" class="btn small primary">{{ __('حفظ وربط باللاعب') }}</button>
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; border-top:1px solid var(--line); padding-top:14px; margin-top:auto;">
+                <button type="button" class="btn small light" onclick="closeCreateGuardianModal()" style="min-height:34px; height:34px; padding:0 14px; font-size:12px; width:auto; flex:0 0 auto;">{{ __('crm.cancel') }}</button>
+                <button type="submit" id="saveGuardianBtn" class="btn small primary" style="min-height:34px; height:34px; padding:0 16px; font-size:12px; width:auto; flex:0 0 auto;">{{ __('حفظ وربط باللاعب') }}</button>
             </div>
         </form>
     </div>
@@ -1958,8 +1958,7 @@
             سيتم إنشاء عميل محتمل جديد بمصدر <strong>(إحالة / Referral)</strong> وربطه تلقائيًا بالمشترك <strong>{{ $lead->name }}</strong>.
         </div>
 
-        <form id="createReferralForm" onsubmit="submitCreateReferral(event)">
-            <div style="margin-bottom:14px;">
+        <form id="createReferralForm" onsubmit="submitCreateReferral(event)" style="display:flex; flex-direction:column; flex:1;">
                 <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('اسم اللاعب أو الصديق المُحال') }} <span style="color:var(--red)">*</span></label>
                 <input type="text" id="newReferralName" required placeholder="مثال: يوسف خالد"
                        style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
@@ -1995,9 +1994,9 @@
                 <textarea id="newReferralNotes" rows="2" placeholder="أي تفاصيل عن اللاعب أو ولي أمره أو معرفته بالمشترك..."
                           style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
             </div>
-            <div style="display:flex; justify-content:flex-end; gap:8px; border-top:1px solid var(--line); padding-top:12px;">
-                <button type="button" class="btn small soft" onclick="closeReferralModal()">{{ __('إلغاء') }}</button>
-                <button type="submit" id="saveReferralBtn" class="btn small primary" style="background:#059669; border-color:#059669;">{{ __('تسجيل الإحالة الآن') }}</button>
+            <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; border-top:1px solid var(--line); padding-top:14px; margin-top:auto;">
+                <button type="button" class="btn small soft" onclick="closeReferralModal()" style="min-height:34px; height:34px; padding:0 14px; font-size:12px; width:auto; flex:0 0 auto;">{{ __('إلغاء') }}</button>
+                <button type="submit" id="saveReferralBtn" class="btn small primary" style="min-height:34px; height:34px; padding:0 16px; font-size:12px; width:auto; flex:0 0 auto; background:#059669; border-color:#059669;">{{ __('تسجيل الإحالة') }}</button>
             </div>
         </form>
     </div>
