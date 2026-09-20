@@ -1959,6 +1959,7 @@
         </div>
 
         <form id="createReferralForm" onsubmit="submitCreateReferral(event)" style="display:flex; flex-direction:column; flex:1;">
+            <div style="margin-bottom:14px;">
                 <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('اسم اللاعب أو الصديق المُحال') }} <span style="color:var(--red)">*</span></label>
                 <input type="text" id="newReferralName" required placeholder="مثال: يوسف خالد"
                        style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
@@ -1988,6 +1989,7 @@
                             <option value="أخرى">أخرى</option>
                         @endif
                     </select>
+                </div>
             </div>
             <div style="margin-bottom:16px;">
                 <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الإحالة (اختياري)') }}</label>
