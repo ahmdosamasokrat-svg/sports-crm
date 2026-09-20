@@ -143,29 +143,26 @@
                                             <span class="badge inactive">{{ __('crm.stage_inactive_badge') }}</span>
                                         @endif
                                     </td>
-                                    <td>
-                                        <div class="actions" style="display:inline-flex; gap:6px; align-items:center; flex-direction:row;">
-                                            <a href="{{ route('v2.settings.stages.fields.index', $stage) }}" class="btn small soft" style="color:#4f46e5; border-color:#c7d2fe; background:#eef2ff; padding:0 8px;" title="{{ __('crm.manage_stage_fields') }}" aria-label="{{ __('crm.manage_stage_fields') }}">
-                                                <i class="bi bi-ui-checks"></i>
-                                                @if (($stage->fields_count ?? 0) > 0)
-                                                    <span class="badge" style="background:#6366f1; color:#fff; font-size:10px; padding:1px 5px; border-radius:10px; margin-inline-start:2px;">{{ (int) $stage->fields_count }}</span>
-                                                @endif
+                                    <td style="white-space:nowrap; width:130px;">
+                                        <div class="actions" style="display:inline-flex; gap:6px; align-items:center; flex-wrap:nowrap; white-space:nowrap;">
+                                            <a href="{{ route('v2.settings.stages.fields.index', $stage) }}" class="btn small soft" style="color:#4f46e5; border-color:#c7d2fe; background:#eef2ff; width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" title="{{ __('crm.manage_stage_fields') }}" aria-label="{{ __('crm.manage_stage_fields') }}">
+                                                <i class="bi bi-ui-checks" style="font-size:14px;"></i>
                                             </a>
-                                            <button type="button" class="btn small soft" style="padding:0 8px;" onclick='openEditModal(@json($stage))' title="{{ __('crm.edit') }}" aria-label="{{ __('crm.edit') }}">
-                                                <i class="bi bi-pencil-square"></i>
+                                            <button type="button" class="btn small soft" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" onclick='openEditModal(@json($stage))' title="{{ __('crm.edit') }}" aria-label="{{ __('crm.edit') }}">
+                                                <i class="bi bi-pencil-square" style="font-size:14px;"></i>
                                             </button>
 
                                             @if ($stage->leads_count === 0)
-                                                <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0;">
+                                                <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0; display:inline-flex; flex-shrink:0;">
                                                     @csrf
                                                     @method('DELETE')
-                                                    <button type="submit" class="btn small danger" style="padding:0 8px;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
-                                                        <i class="bi bi-trash"></i>
+                                                    <button type="submit" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
+                                                        <i class="bi bi-trash" style="font-size:14px;"></i>
                                                     </button>
                                                 </form>
                                             @else
-                                                <button type="button" class="btn small danger" style="padding:0 8px;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
-                                                    <i class="bi bi-trash"></i>
+                                                <button type="button" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
+                                                    <i class="bi bi-trash" style="font-size:14px;"></i>
                                                 </button>
                                             @endif
                                         </div>
