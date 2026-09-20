@@ -560,7 +560,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->name('.stage_categories.index');
             Route::post('/stage-categories', [PipelineStageCategoryController::class, 'store'])
                 ->name('.stage_categories.store');
-            Route::put('/stage-categories/{category}', [PipelineStageCategoryController::class, 'update'])
+            Route::match(['put', 'patch', 'post'], '/stage-categories/{category}', [PipelineStageCategoryController::class, 'update'])
                 ->name('.stage_categories.update');
             Route::delete('/stage-categories/{category}', [PipelineStageCategoryController::class, 'destroy'])
                 ->name('.stage_categories.destroy');
