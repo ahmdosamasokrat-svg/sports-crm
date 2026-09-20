@@ -235,6 +235,16 @@ class LeadTransitionService
                 $employeeName = ! empty($context['employee_name'])
                     ? (string) $context['employee_name']
                     : (trim((string) $actor->name) ?: 'System');
+                $isCall = in_array($communicationType, ['call', 'phone'], true);
+                $callStatus = ! empty($context['call_status']) ? (string) $context['call_status'] : null;
+                $outcomeCategory = ! empty($context['outcome_category']) ? (string) $context['outcome_category'] : null;
+                $callDuration = isset($context['call_duration_seconds']) ? (int) $context['call_duration_seconds'] : null;
+                $callRecordingUrl = ! empty($context['call_recording_url']) ? (string) $context['call_recording_url'] : null;
+
+                $callAttemptNumber = 1;
+                if ($isCall) {
+                    $callAttemptNumber = (int) ($lockedLead->call_attempts_count ?? 0) + 1;
+                }
 
                 $followupData = [
                     'lead_id' => $lockedLead->id,
@@ -243,6 +253,11 @@ class LeadTransitionService
                     'user_id' => $actor->id ?? null,
                     'employee_name' => $employeeName,
                     'communication_type' => $communicationType,
+                    'call_attempt_number' => $callAttemptNumber,
+                    'call_status' => $callStatus,
+                    'outcome_category' => $outcomeCategory,
+                    'call_duration_seconds' => $callDuration,
+                    'call_recording_url' => $callRecordingUrl,
                     'outcome' => $outcome,
                     'next_follow_up_at' => $nextFollowUpAt,
                     'followed_up_at' => ! empty($context['followed_up_at'])
@@ -259,6 +274,24 @@ class LeadTransitionService
                 }
 
                 $followupRecord = LeadFollowup::query()->create($followupData);
+
+                // Update lead contact counters & timestamps
+                $leadCountersUpdate = [
+                    'last_contacted_at' => $followupData['followed_up_at'],
+                ];
+                if ($lockedLead->first_contacted_at === null) {
+                    $leadCountersUpdate['first_contacted_at'] = $followupData['followed_up_at'];
+                }
+                if ($isCall) {
+                    $leadCountersUpdate['call_attempts_count'] = $callAttemptNumber;
+                    if ($callStatus !== null) {
+                        $leadCountersUpdate['last_call_status'] = $callStatus;
+                    }
+                }
+                if ($outcomeCategory !== null) {
+                    $leadCountersUpdate['last_outcome_category'] = $outcomeCategory;
+                }
+                $lockedLead->update($leadCountersUpdate);
             }
 
             // 7. Create LeadStatusHistory atomically if status changed or force_history requested

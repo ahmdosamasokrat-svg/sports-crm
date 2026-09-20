@@ -1121,6 +1121,9 @@ $stage = $status->stage;
                     'from_status' => $followup->fromStatus?->name_ar,
                     'to_status' => $followup->toStatus?->name_ar,
                     'communication_type' => $followup->communication_type,
+                    'call_attempt_number' => $followup->call_attempt_number,
+                    'call_status' => $followup->call_status,
+                    'outcome_category' => $followup->outcome_category,
                     'details' => $followup->outcome,
                     'next_follow_up' => $followup->next_follow_up_at,
                     'field_changes' => $followup->field_changes,
@@ -1318,9 +1321,28 @@ $stage = $status->stage;
             'whatsapp' => 'واتساب',
             'meeting' => 'مقابلة',
             'email' => 'بريد إلكتروني',
-            'other' => 'متابعة عامة',
         ];
 
+        $callStatuses = [
+            'not_called' => 'لم يتم الاتصال',
+            'connected' => 'تم التواصل (رد العميل)',
+            'no_answer' => 'لم يرد',
+            'busy' => 'مشغول',
+            'phone_closed' => 'الهاتف مغلق',
+            'out_of_coverage' => 'خارج التغطية',
+            'unavailable' => 'الرقم غير متاح',
+            'wrong_number' => 'الرقم غير صحيح',
+            'callback_requested' => 'طلب الاتصال لاحقًا',
+            'unreachable_exhausted' => 'تعذر التواصل بعد عدة محاولات',
+        ];
+
+        $outcomeCategories = [
+            'subscribed' => 'تم الاشتراك',
+            'trial_booked' => 'تم حجز تجربة',
+            'whatsapp_details_sent' => 'طلب إرسال التفاصيل على واتساب',
+            'followup_later' => 'طلب متابعة لاحقًا',
+            'not_interested' => 'غير مهتم',
+        ];
         $statusColorValue = trim(
             (string) $leadRecord->status?->color
         );
@@ -1536,6 +1558,8 @@ $stage = $status->stage;
                 'whatsappPhone' => $whatsappPhone,
                 'backQuery' => $backQuery,
                 'timelineEvents' => $timelineEvents,
+                'callStatuses' => $callStatuses,
+                'outcomeCategories' => $outcomeCategories,
                 'stageHistoryGroups' => $stageHistoryGroups,
                 'stageSections' => $stageSections,
                 'currentStageId' => $currentStageId,
@@ -1549,9 +1573,6 @@ $stage = $status->stage;
         Request $request,
         string $lead
     ): View|RedirectResponse {
-
-        $this->assertCrmV2Database();
-
         $leadRecord = Lead::query()
             ->with(['assignedUser:id,name,username', 'branch:id,name_ar,name_en,code'])
             ->findOrFail(

@@ -870,8 +870,8 @@ body.kanban-followup-popup .client-actions {
                                 @endforeach
                             </div>
 
-                            <!-- CUSTOMER DATA FIELDS (IF CONFIGURED) -->
-                            @if (($customerFields ?? collect())->isNotEmpty())
+                            <!-- CUSTOMER DATA FIELDS (IF CONFIGURED - HIDDEN ON STAGE TRANSITION) -->
+                            @if (!request()->boolean('kanban_popup') && ($customerFields ?? collect())->isNotEmpty())
                                 <div class="field full" style="margin-top: 14px;">
                                     <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--dark);">
                                         <i class="bi bi-card-checklist" style="color: #0ea5e9;"></i> {{ __('crm.customer_data') ?: 'بيانات وتصنيف العميل' }}
@@ -949,20 +949,64 @@ body.kanban-followup-popup .client-actions {
                                 </div>
                             </div>
 
-                            <!-- OUTCOME NOTES -->
-                            <div class="field full">
-                                <label for="followupOutcome">
-                                    {{ __('crm.followup_notes') }} <span class="required">*</span>
-                                </label>
-                                <textarea
-                                    class="control"
-                                    id="followupOutcome"
-                                    name="outcome"
-                                    rows="4"
-                                    required
-                                    placeholder="{{ __('crm.followup_notes_placeholder') }}"
-                                >{{ old('outcome') }}</textarea>
+                            <!-- CALL & CONTACT ATTEMPT DETAILS (Appears when Call or general contact is selected) -->
+                            <div class="field full" id="callDetailsSection" style="{{ $selectedCommunicationType === 'call' ? '' : 'display:none;' }}">
+                                <div style="background:var(--bg); border:1px solid var(--line); border-radius:12px; padding:14px 16px; margin-bottom:4px;">
+                                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+                                        <span style="font-size:13px; font-weight:800; color:var(--dark); display:flex; align-items:center; gap:6px;">
+                                            <i class="bi bi-telephone-outbound" style="color:var(--red);"></i>
+                                            تفاصيل محاولة الاتصال
+                                        </span>
+                                        <span class="badge" style="background:rgba(220, 38, 38, 0.1); color:var(--red); font-weight:800; padding:4px 8px; border-radius:6px; font-size:11px;">
+                                            المحاولة رقم: <strong id="attemptNumberBadge">{{ $nextAttemptNumber ?? 1 }}</strong>
+                                        </span>
+                                    </div>
+                                    <div class="form-grid">
+                                        <div class="field">
+                                            <label for="callStatusSelect">
+                                                حالة الاتصال
+                                            </label>
+                                            <select class="control" id="callStatusSelect" name="call_status">
+                                                <option value="">-- اختر حالة الاتصال --</option>
+                                                @foreach ($callStatuses ?? [] as $csKey => $csLabel)
+                                                    <option value="{{ $csKey }}" {{ old('call_status') === $csKey ? 'selected' : '' }}>
+                                                        {{ $csLabel }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                        <div class="field">
+                                            <label for="outcomeCategorySelect">
+                                                نتيجة التواصل المباشرة
+                                            </label>
+                                            <select class="control" id="outcomeCategorySelect" name="outcome_category">
+                                                <option value="">-- اختر نتيجة التواصل --</option>
+                                                @foreach ($outcomeCategories ?? [] as $ocKey => $ocLabel)
+                                                    <option value="{{ $ocKey }}" {{ old('outcome_category') === $ocKey ? 'selected' : '' }}>
+                                                        {{ $ocLabel }}
+                                                    </option>
+                                                @endforeach
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
+                            <!-- OUTCOME NOTES (HIDDEN ON STAGE TRANSITION, OPTIONAL / STANDALONE REQUIRED) -->
+                            @if (!request()->boolean('kanban_popup'))
+                                <div class="field full">
+                                    <label for="followupOutcome">
+                                        {{ __('crm.followup_notes') }} <span class="required">*</span>
+                                    </label>
+                                    <textarea
+                                        class="control"
+                                        id="followupOutcome"
+                                        name="outcome"
+                                        rows="4"
+                                        required
+                                        placeholder="{{ __('crm.followup_notes_placeholder') }}"
+                                    >{{ old('outcome') }}</textarea>
+                                </div>
+                            @endif
 
                             <!-- NEXT FOLLOWUP DATE -->
                             <div class="field full">
@@ -1025,8 +1069,19 @@ body.kanban-followup-popup .client-actions {
                                                 <i class="bi bi-person"></i> {{ $item->user?->name ?? $item->employee_name }}
                                                 @php
                                                     $commLabel = $communicationTypes[$item->communication_type] ?? $item->communication_type;
+                                                    $callStatusLabel = $callStatuses[$item->call_status] ?? $item->call_status;
+                                                    $outcomeCatLabel = $outcomeCategories[$item->outcome_category] ?? $item->outcome_category;
                                                 @endphp
                                                 <span class="timeline-badge">{{ $commLabel }}</span>
+                                                @if ($item->communication_type === 'call' && $item->call_attempt_number)
+                                                    <span class="timeline-badge" style="background:#fef3c7; color:#b45309;">المحاولة #{{ $item->call_attempt_number }}</span>
+                                                @endif
+                                                @if ($callStatusLabel)
+                                                    <span class="timeline-badge" style="background:#e0e7ff; color:#4338ca;">{{ $callStatusLabel }}</span>
+                                                @endif
+                                                @if ($outcomeCatLabel)
+                                                    <span class="timeline-badge" style="background:#dcfce7; color:#15803d;">{{ $outcomeCatLabel }}</span>
+                                                @endif
                                             </span>
                                             <span class="timeline-date">
                                                 {{ $item->followed_up_at ? $item->followed_up_at->format('d/m/Y - h:i A') : '—' }}
@@ -1080,6 +1135,10 @@ function selectChannel(key) {
     document.querySelectorAll('.channel-card').forEach(card => {
         card.classList.toggle('active', card.dataset.channel === key);
     });
+    const callSec = document.getElementById('callDetailsSection');
+    if (callSec) {
+        callSec.style.display = (key === 'call') ? 'block' : 'none';
+    }
 }
 
 function setNextDate(daysAhead, hour) {

@@ -259,6 +259,9 @@ class LeadFollowupController extends Controller
                 'communicationTypes' => $communicationTypes,
                 'defaultCommunicationType' => $defaultCommunicationType,
                 'followups' => $followups,
+                'callStatuses' => $this->callStatuses(),
+                'outcomeCategories' => $this->outcomeCategories(),
+                'nextAttemptNumber' => (int) ($leadRecord->call_attempts_count ?? 0) + 1,
                 'currentEmployee' => $currentEmployee,
                 'callPhone' => $callPhone,
                 'hasQuotationFile' => $hasQuotationFile,
@@ -500,6 +503,31 @@ class LeadFollowupController extends Controller
                             $communicationTypes
                         )
                     ),
+                ],
+                'call_status' => [
+                    'nullable',
+                    'string',
+                    Rule::in(array_keys($this->callStatuses())),
+                ],
+
+                'outcome_category' => [
+                    'nullable',
+                    'string',
+                    Rule::in(array_keys($this->outcomeCategories())),
+                ],
+
+                'call_duration_seconds' => [
+                    'nullable',
+                    'integer',
+                    'min:0',
+                    'max:86400',
+                ],
+
+                'call_recording_url' => [
+                    'nullable',
+                    'string',
+                    'url',
+                    'max:500',
                 ],
 
                 'outcome' => [
@@ -972,6 +1000,10 @@ class LeadFollowupController extends Controller
                     'effective_stage_id' => $effectiveValidationStage?->id,
                     'record_followup' => true,
                     'communication_type' => $communicationType,
+                    'call_status' => $validated['call_status'] ?? null,
+                    'outcome_category' => $validated['outcome_category'] ?? null,
+                    'call_duration_seconds' => isset($validated['call_duration_seconds']) ? (int) $validated['call_duration_seconds'] : null,
+                    'call_recording_url' => $validated['call_recording_url'] ?? null,
                     'outcome' => $outcome,
                     'next_follow_up_at' => $nextFollowUpAt,
                     'followed_up_at' => now(),
@@ -1056,6 +1088,33 @@ class LeadFollowupController extends Controller
             'meeting' => 'مقابلة',
             'email' => 'بريد إلكتروني',
             'other' => 'متابعة عامة',
+        ];
+    }
+
+    public function callStatuses(): array
+    {
+        return [
+            'not_called' => 'لم يتم الاتصال',
+            'connected' => 'تم التواصل (رد العميل)',
+            'no_answer' => 'لم يرد',
+            'busy' => 'مشغول',
+            'phone_closed' => 'الهاتف مغلق',
+            'out_of_coverage' => 'خارج التغطية',
+            'unavailable' => 'الرقم غير متاح',
+            'wrong_number' => 'الرقم غير صحيح',
+            'callback_requested' => 'طلب الاتصال لاحقًا',
+            'unreachable_exhausted' => 'تعذر التواصل بعد عدة محاولات',
+        ];
+    }
+
+    public function outcomeCategories(): array
+    {
+        return [
+            'subscribed' => 'تم الاشتراك',
+            'trial_booked' => 'تم حجز تجربة',
+            'whatsapp_details_sent' => 'طلب إرسال التفاصيل على واتساب',
+            'followup_later' => 'طلب متابعة لاحقًا',
+            'not_interested' => 'غير مهتم',
         ];
     }
 

@@ -14,6 +14,11 @@ class LeadFollowup extends Model
         'employee_name',
         'user_id',
         'communication_type',
+        'call_attempt_number',
+        'call_status',
+        'outcome_category',
+        'call_duration_seconds',
+        'call_recording_url',
         'outcome',
         'field_changes',
         'next_follow_up_at',
@@ -23,6 +28,8 @@ class LeadFollowup extends Model
     protected function casts(): array
     {
         return [
+            'call_attempt_number' => 'integer',
+            'call_duration_seconds' => 'integer',
             'field_changes' => 'array',
             'next_follow_up_at' => 'datetime',
             'followed_up_at' => 'datetime',

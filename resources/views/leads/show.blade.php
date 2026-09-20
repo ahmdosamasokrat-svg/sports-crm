@@ -652,6 +652,29 @@
                         @endif
                     </b>
                 </div>
+                <div class="metric-box">
+                    <span>محاولات الاتصال</span>
+                    <b>
+                        @if ($lead->call_attempts_count > 0)
+                            <span style="color:#d97706"><i class="bi bi-telephone"></i> {{ $lead->call_attempts_count }} محاولة</span>
+                            @if ($lead->last_call_status)
+                                <small style="display:block; font-size:10px; color:var(--muted); font-weight:600;">{{ $lead->last_call_status }}</small>
+                            @endif
+                        @else
+                            <span style="color:var(--muted); font-weight:600;">لم يتم الاتصال</span>
+                        @endif
+                    </b>
+                </div>
+                <div class="metric-box">
+                    <span>آخر تواصل</span>
+                    <b>
+                        @if ($lead->last_contacted_at)
+                            {{ $lead->last_contacted_at->format('Y-m-d h:i A') }}
+                        @else
+                            <span style="color:var(--muted); font-weight:600;">—</span>
+                        @endif
+                    </b>
+                </div>
             </div>
         </section>
 
@@ -1292,6 +1315,27 @@
                                                     <span class="badge" style="background:#e0f2fe; color:#0369a1; margin-inline-start:6px">
                                                         <i class="bi bi-telephone"></i> {{ $commLabel }}
                                                     </span>
+                                                    @if (!empty($event['call_attempt_number']) && $commType === 'call')
+                                                        <span class="badge" style="background:#fef3c7; color:#b45309; margin-inline-start:4px">
+                                                            المحاولة #{{ $event['call_attempt_number'] }}
+                                                        </span>
+                                                    @endif
+                                                    @if (!empty($event['call_status']))
+                                                        @php
+                                                            $csLbl = $callStatuses[$event['call_status']] ?? $event['call_status'];
+                                                        @endphp
+                                                        <span class="badge" style="background:#e0e7ff; color:#4338ca; margin-inline-start:4px">
+                                                            {{ $csLbl }}
+                                                        </span>
+                                                    @endif
+                                                    @if (!empty($event['outcome_category']))
+                                                        @php
+                                                            $ocLbl = $outcomeCategories[$event['outcome_category']] ?? $event['outcome_category'];
+                                                        @endphp
+                                                        <span class="badge" style="background:#dcfce7; color:#15803d; margin-inline-start:4px">
+                                                            {{ $ocLbl }}
+                                                        </span>
+                                                    @endif
                                                 @else
                                                     <span class="badge" style="background:#fef3c7; color:#92400e; margin-inline-start:6px">
                                                         <i class="bi bi-arrow-left-right"></i> {{ __('crm.status_change') }}
