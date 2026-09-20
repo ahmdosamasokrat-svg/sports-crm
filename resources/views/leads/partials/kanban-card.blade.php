@@ -65,8 +65,6 @@
    @endif
   </div>
  </div>
-  </div>
- </div>
 
  <!-- DETAILS: Assigned User & Next Followup -->
  <div class="kc-meta-grid">
