@@ -144,6 +144,32 @@
     wrapper.appendChild(menu);
 
     // State management
+    function positionMenu() {
+      menu.style.insetInlineStart = '0';
+      menu.style.insetInlineEnd = 'auto';
+      menu.style.left = '';
+      menu.style.right = '';
+
+      const mRect = menu.getBoundingClientRect();
+      const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
+
+      // Check if menu overflows viewport or container boundaries
+      if (isRtl) {
+        if (mRect.left < 8) {
+          // In RTL, if it overflows the left edge of viewport/container, flip to align to inline-end
+          menu.style.insetInlineStart = 'auto';
+          menu.style.insetInlineEnd = '0';
+        }
+      } else {
+        if (mRect.right > window.innerWidth - 8) {
+          // In LTR, if it overflows the right edge of viewport/container, flip to align to inline-end
+          menu.style.insetInlineStart = 'auto';
+          menu.style.insetInlineEnd = '0';
+        }
+      }
+    }
+
+    // State management
     function openMenu() {
       // Close any other open dropdowns
       document.querySelectorAll('.crm-dropdown.is-open').forEach((d) => {
@@ -152,6 +178,7 @@
 
       wrapper.classList.add('is-open');
       trigger.setAttribute('aria-expanded', 'true');
+      positionMenu();
 
       if (searchInput) {
         searchInput.value = '';
@@ -161,16 +188,20 @@
         trigger.focus();
       }
 
-      // Scroll selected item into view
+      // Scroll selected item into view inside menu without shifting the page
       const selectedItem = list.querySelector('.is-selected');
       if (selectedItem) {
-        selectedItem.scrollIntoView({ block: 'nearest' });
+        selectedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
       }
     }
 
     function closeMenu() {
       wrapper.classList.remove('is-open');
       trigger.setAttribute('aria-expanded', 'false');
+      menu.style.insetInlineStart = '';
+      menu.style.insetInlineEnd = '';
+      menu.style.left = '';
+      menu.style.right = '';
     }
 
     function toggleMenu() {
