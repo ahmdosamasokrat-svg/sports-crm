@@ -234,7 +234,7 @@ $crmStageIcons = [
                                 <i class="bi bi-chevron-down" style="font-size:12px; color:#94a3b8;"></i>
                             </span>
                         </button>
-                        <div class="icon-picker-dropdown" id="addStageIconDropdown" style="display:none; position:absolute; top:calc(100% + 4px); inset-inline-end:0; width:320px; max-width:min(320px, calc(100vw - 32px)); background:#fff; border:1px solid #dbe1e9; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.15); padding:10px; z-index:1000;">
+                        <div class="icon-picker-dropdown" id="addStageIconDropdown" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:auto; width:280px; max-width:min(280px, calc(100vw - 32px)); background:#fff; border:1px solid #dbe1e9; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.15); padding:10px; z-index:1000;">
                             <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; max-height:210px; overflow-y:auto; padding:2px;">
                                 @foreach($crmStageIcons as $ico)
                                     <button type="button" class="icon-option-btn" onclick="selectIcon('addStage', '{{ $ico['icon'] }}', '{{ $ico['name'] }}')" title="{{ $ico['name'] }}" style="width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#334155; font-size:16px; cursor:pointer; transition:all 0.15s ease;">
@@ -321,7 +321,7 @@ $crmStageIcons = [
                                 <i class="bi bi-chevron-down" style="font-size:12px; color:#94a3b8;"></i>
                             </span>
                         </button>
-                        <div class="icon-picker-dropdown" id="editStageIconDropdown" style="display:none; position:absolute; top:calc(100% + 4px); inset-inline-end:0; width:320px; max-width:min(320px, calc(100vw - 32px)); background:#fff; border:1px solid #dbe1e9; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.15); padding:10px; z-index:1000;">
+                        <div class="icon-picker-dropdown" id="editStageIconDropdown" style="display:none; position:absolute; top:calc(100% + 4px); right:0; left:auto; width:280px; max-width:min(280px, calc(100vw - 32px)); background:#fff; border:1px solid #dbe1e9; border-radius:12px; box-shadow:0 12px 32px rgba(0,0,0,0.15); padding:10px; z-index:1000;">
                             <div style="display:grid; grid-template-columns:repeat(6, 1fr); gap:6px; max-height:210px; overflow-y:auto; padding:2px;">
                                 @foreach($crmStageIcons as $ico)
                                     <button type="button" class="icon-option-btn" onclick="selectIcon('editStage', '{{ $ico['icon'] }}', '{{ $ico['name'] }}')" title="{{ $ico['name'] }}" style="width:40px; height:40px; display:inline-flex; align-items:center; justify-content:center; border:1px solid #e2e8f0; border-radius:8px; background:#f8fafc; color:#334155; font-size:16px; cursor:pointer; transition:all 0.15s ease;">
@@ -425,19 +425,19 @@ function toggleIconDropdown(prefix) {
     const dd = document.getElementById(prefix + 'IconDropdown');
     if (!dd) return;
     const isShown = dd.style.display === 'block';
-    // Close any other open dropdowns
     document.querySelectorAll('.icon-picker-dropdown').forEach(d => d.style.display = 'none');
     if (!isShown) {
         dd.style.display = 'block';
-        // Auto-adjust horizontal collision
         requestAnimationFrame(() => {
-            const rect = dd.getBoundingClientRect();
-            if (rect.left < 10) {
-                dd.style.insetInlineStart = '0';
-                dd.style.insetInlineEnd = 'auto';
-            } else if (rect.right > window.innerWidth - 10) {
-                dd.style.insetInlineStart = 'auto';
-                dd.style.insetInlineEnd = '0';
+            const modal = dd.closest('.crm-body-modal-dialog') || document.body;
+            const mR = modal.getBoundingClientRect();
+            const dR = dd.getBoundingClientRect();
+            if (dR.right > mR.right - 10) {
+                dd.style.left = 'auto';
+                dd.style.right = '0px';
+            } else if (dR.left < mR.left + 10) {
+                dd.style.left = '0px';
+                dd.style.right = 'auto';
             }
         });
     } else {
