@@ -45,8 +45,25 @@ class PipelineStageController extends Controller
         $primaryStagesCount = $stages->where('is_primary', true)->count();
         $customStagesCount = $stages->where('is_primary', false)->count();
 
+        // Group stages by Category
+        $groupedStages = $categories->map(function ($cat) use ($stages) {
+            return [
+                'category' => $cat,
+                'stages' => $stages->where('pipeline_stage_category_id', $cat->id)->values(),
+            ];
+        });
+
+        $uncategorizedStages = $stages->whereNull('pipeline_stage_category_id')->values();
+        if ($uncategorizedStages->isNotEmpty()) {
+            $groupedStages->push([
+                'category' => null,
+                'stages' => $uncategorizedStages,
+            ]);
+        }
+
         return view('settings.stages.index', [
             'stages' => $stages,
+            'groupedStages' => $groupedStages,
             'categories' => $categories,
             'totalStagesCount' => $totalStagesCount,
             'primaryStagesCount' => $primaryStagesCount,

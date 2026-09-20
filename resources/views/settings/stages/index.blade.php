@@ -27,137 +27,163 @@
     </article>
 </section>
 
-<!-- STAGES PANEL -->
-<section class="panel">
-    <div class="panel-head">
-        <div>
-            <h2><i class="bi bi-diagram-3"></i> {{ __('crm.customer_pipeline_stages') }}</h2>
-            <p>{{ __('crm.pipeline_stages_rule_desc') }}</p>
-        </div>
-        <div>
-            <button type="button" class="btn primary" onclick="openAddStageModal()">
-                <i class="bi bi-plus-lg"></i> {{ __('crm.add_additional_stage') }}
-            </button>
-        </div>
-    </div>
-    <div class="table-wrap">
-        <table>
-            <thead>
-                <tr>
-                    <th style="width:60px">{{ __('crm.order_col') }}</th>
-                    <th>{{ __('crm.stage_name_col') }}</th>
-                    <th>{{ __('crm.stage_category') }}</th>
-                    <th>{{ __('crm.type_col') }}</th>
-                    <th>{{ __('crm.has_followups_col') }}</th>
-                    <th>{{ __('crm.color_col') }}</th>
-                    <th>{{ __('crm.leads_count_col') }}</th>
-                    <th>{{ __('crm.status_th') }}</th>
-                    <th style="width:160px">{{ __('crm.actions_th') }}</th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach ($stages as $stage)
-                    <tr>
-                        <td>
-                            <span class="badge" style="font-size:14px; font-weight:bold">{{ $stage->position }}</span>
-                        </td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:8px;">
-                                @if ($stage->icon)
-                                    <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; background:#f1f5f9; color:#475569; font-size:15px;">
-                                        <i class="bi {{ $stage->icon }}"></i>
-                                    </span>
-                                @endif
-                                <div>
-                                    <strong style="font-size:15px">{{ $stage->localizedName() }}</strong>
-                                    @if ($stage->description_ar)
-                                        <small style="display:block; color:var(--muted); margin-top:3px">{{ $stage->description_ar }}</small>
-                                    @endif
-                                </div>
-                            </div>
-                        </td>
-                        <td>
-                            @if ($stage->category)
-                                <a href="{{ route('v2.settings.stage_categories.index') }}" class="badge" style="background:{{ $stage->category->color }}1a; color:{{ $stage->category->color }}; border:1px solid {{ $stage->category->color }}40; font-size:12px; font-weight:700; text-decoration:none; display:inline-flex; align-items:center; gap:5px;">
-                                    <i class="bi {{ $stage->category->icon ?: 'bi-collection' }}"></i> {{ $stage->category->name_ar }}
-                                </a>
-                            @else
-                                <span style="color:var(--muted); font-size:12px;">—</span>
+<!-- STAGES GROUPED BY PIPELINE CATEGORY -->
+<div style="display:flex; flex-direction:column; gap:24px;">
+    @foreach ($groupedStages as $group)
+        @php
+            $cat = $group['category'];
+            $catStages = $group['stages'];
+            $catColor = $cat ? ($cat->color ?: '#64748b') : '#94a3b8';
+        @endphp
+        <section class="panel" style="border-top: 4px solid {{ $catColor }};">
+            <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; background:rgba(248, 250, 252, 0.5); padding:16px 20px; border-bottom:1px solid var(--line);">
+                <div style="display:flex; align-items:center; gap:12px;">
+                    <span style="display:inline-flex; align-items:center; justify-content:center; width:38px; height:38px; border-radius:10px; background:{{ $catColor }}1a; color:{{ $catColor }}; font-size:18px; border:1px solid {{ $catColor }}33;">
+                        <i class="bi {{ $cat ? ($cat->icon ?: 'bi-diagram-3') : 'bi-folder' }}"></i>
+                    </span>
+                    <div>
+                        <h2 style="margin:0; font-size:17px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                            {{ $cat ? $cat->name_ar : 'مراحل غير مصنفة تحت مسار' }}
+                            @if ($cat && $cat->name_en)
+                                <small style="color:var(--muted); font-size:13px; font-weight:600;">({{ $cat->name_en }})</small>
                             @endif
-                        </td>
-                        <td>
-                            @if ($stage->isPrimary())
-                                <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd">
-                                    <i class="bi bi-shield-check"></i> {{ __('crm.primary_stage_badge') }}
-                                </span>
-                            @else
-                                <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff">
-                                    <i class="bi bi-plus-circle"></i> {{ __('crm.additional_stage_badge') }}
-                                </span>
-                            @endif
-                        </td>
-                        <td>
-                            @if ($stage->has_followups)
-                                <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;" title="{{ __('crm.has_followups_yes_badge') }}">
-                                    <i class="bi bi-calendar-check"></i> {{ __('crm.has_followups_yes_badge') }}
-                                </span>
-                            @else
-                                <span class="badge" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;" title="{{ __('crm.has_followups_no_badge') }}">
-                                    <i class="bi bi-slash-circle"></i> {{ __('crm.has_followups_no_badge') }}
-                                </span>
-                            @endif
-                        </td>
-                        <td>
-                            <div style="display:flex; align-items:center; gap:8px">
-                                <span style="display:inline-block; width:22px; height:22px; border-radius:6px; background:{{ $stage->color ?? '#64748b' }}; border:1px solid rgba(0,0,0,0.1)"></span>
-                                <code style="font-size:13px">{{ $stage->color ?? '—' }}</code>
-                            </div>
-                        </td>
-                        <td>
-                            <span class="badge {{ $stage->leads_count > 0 ? 'active' : '' }}" style="font-size:13px">
-                                {{ number_format($stage->leads_count) }} {{ __('crm.lead_unit') }}
+                            <span class="badge" style="background:#fff; color:var(--dark); border:1px solid var(--line); font-size:11px; padding:2px 8px;">
+                                {{ $catStages->count() }} مراحل
                             </span>
-                        </td>
-                        <td>
-                            @if ($stage->is_active)
-                                <span class="badge active">{{ __('crm.stage_active_badge') }}</span>
-                            @else
-                                <span class="badge inactive">{{ __('crm.stage_inactive_badge') }}</span>
-                            @endif
-                        </td>
-                        <td>
-                            <div class="actions" style="display:inline-flex; gap:6px; align-items:center; flex-direction:row;">
-                                <a href="{{ route('v2.settings.stages.fields.index', $stage) }}" class="btn small soft" style="color:#4f46e5; border-color:#c7d2fe; background:#eef2ff; padding:0 8px;" title="{{ __('crm.manage_stage_fields') }}" aria-label="{{ __('crm.manage_stage_fields') }}">
-                                    <i class="bi bi-ui-checks"></i>
-                                    @if (($stage->fields_count ?? 0) > 0)
-                                        <span class="badge" style="background:#6366f1; color:#fff; font-size:10px; padding:1px 5px; border-radius:10px; margin-inline-start:2px;">{{ (int) $stage->fields_count }}</span>
-                                    @endif
-                                </a>
-                                <button type="button" class="btn small soft" style="padding:0 8px;" onclick='openEditModal(@json($stage))' title="{{ __('crm.edit') }}" aria-label="{{ __('crm.edit') }}">
-                                    <i class="bi bi-pencil-square"></i>
-                                </button>
+                        </h2>
+                        @if ($cat && $cat->description_ar)
+                            <p style="margin:4px 0 0; font-size:12px; color:var(--muted);">{{ $cat->description_ar }}</p>
+                        @endif
+                    </div>
+                </div>
+                <div>
+                    @if ($cat)
+                        <a href="{{ route('v2.settings.stage_categories.index') }}" class="btn small soft" style="font-size:12px; padding:0 10px;" title="إدارة إعدادات المسار">
+                            <i class="bi bi-gear"></i> إعدادات المسار
+                        </a>
+                    @endif
+                </div>
+            </div>
 
-                                @if ($stage->leads_count === 0)
-                                    <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0;">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn small danger" style="padding:0 8px;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
-                                @else
-                                    <button type="button" class="btn small danger" style="padding:0 8px;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                @endif
-                            </div>
-                        </td>
-                    </tr>
-                @endforeach
-            </tbody>
-        </table>
-    </div>
-</section>
+            <div class="table-wrap">
+                @if ($catStages->isNotEmpty())
+                    <table>
+                        <thead>
+                            <tr>
+                                <th style="width:60px; text-align:center;">#</th>
+                                <th>{{ __('crm.stage_name_col') }}</th>
+                                <th>{{ __('crm.type_col') }}</th>
+                                <th>{{ __('crm.has_followups_col') }}</th>
+                                <th>{{ __('crm.color_col') }}</th>
+                                <th>{{ __('crm.leads_count_col') }}</th>
+                                <th>{{ __('crm.status_th') }}</th>
+                                <th style="width:160px">{{ __('crm.actions_th') }}</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach ($catStages as $index => $stage)
+                                <tr>
+                                    <td style="text-align:center;">
+                                        <span class="badge" style="font-size:13px; font-weight:bold; background:var(--bg); border:1px solid var(--line);">
+                                            {{ $index + 1 }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:8px;">
+                                            @if ($stage->icon)
+                                                <span style="display:inline-flex; align-items:center; justify-content:center; width:28px; height:28px; border-radius:6px; background:#f1f5f9; color:#475569; font-size:15px;">
+                                                    <i class="bi {{ $stage->icon }}"></i>
+                                                </span>
+                                            @endif
+                                            <div>
+                                                <strong style="font-size:14.5px">{{ $stage->localizedName() }}</strong>
+                                                @if ($stage->description_ar)
+                                                    <small style="display:block; color:var(--muted); margin-top:2px">{{ $stage->description_ar }}</small>
+                                                @endif
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        @if ($stage->isPrimary())
+                                            <span class="badge" style="background:#e0f2fe; color:#0369a1; border:1px solid #bae6fd">
+                                                <i class="bi bi-shield-check"></i> {{ __('crm.primary_stage_badge') }}
+                                            </span>
+                                        @else
+                                            <span class="badge" style="background:#f3e8ff; color:#7e22ce; border:1px solid #e9d5ff">
+                                                <i class="bi bi-plus-circle"></i> {{ __('crm.additional_stage_badge') }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if ($stage->has_followups)
+                                            <span class="badge" style="background:#ecfdf5; color:#059669; border:1px solid #a7f3d0;" title="{{ __('crm.has_followups_yes_badge') }}">
+                                                <i class="bi bi-calendar-check"></i> {{ __('crm.has_followups_yes_badge') }}
+                                            </span>
+                                        @else
+                                            <span class="badge" style="background:#f1f5f9; color:#64748b; border:1px solid #e2e8f0;" title="{{ __('crm.has_followups_no_badge') }}">
+                                                <i class="bi bi-slash-circle"></i> {{ __('crm.has_followups_no_badge') }}
+                                            </span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div style="display:flex; align-items:center; gap:8px">
+                                            <span style="display:inline-block; width:20px; height:20px; border-radius:6px; background:{{ $stage->color ?? '#64748b' }}; border:1px solid rgba(0,0,0,0.1)"></span>
+                                            <code style="font-size:12px">{{ $stage->color ?? '—' }}</code>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <span class="badge {{ $stage->leads_count > 0 ? 'active' : '' }}" style="font-size:12px">
+                                            {{ number_format($stage->leads_count) }} {{ __('crm.lead_unit') }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if ($stage->is_active)
+                                            <span class="badge active">{{ __('crm.stage_active_badge') }}</span>
+                                        @else
+                                            <span class="badge inactive">{{ __('crm.stage_inactive_badge') }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <div class="actions" style="display:inline-flex; gap:6px; align-items:center; flex-direction:row;">
+                                            <a href="{{ route('v2.settings.stages.fields.index', $stage) }}" class="btn small soft" style="color:#4f46e5; border-color:#c7d2fe; background:#eef2ff; padding:0 8px;" title="{{ __('crm.manage_stage_fields') }}" aria-label="{{ __('crm.manage_stage_fields') }}">
+                                                <i class="bi bi-ui-checks"></i>
+                                                @if (($stage->fields_count ?? 0) > 0)
+                                                    <span class="badge" style="background:#6366f1; color:#fff; font-size:10px; padding:1px 5px; border-radius:10px; margin-inline-start:2px;">{{ (int) $stage->fields_count }}</span>
+                                                @endif
+                                            </a>
+                                            <button type="button" class="btn small soft" style="padding:0 8px;" onclick='openEditModal(@json($stage))' title="{{ __('crm.edit') }}" aria-label="{{ __('crm.edit') }}">
+                                                <i class="bi bi-pencil-square"></i>
+                                            </button>
+
+                                            @if ($stage->leads_count === 0)
+                                                <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn small danger" style="padding:0 8px;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
+                                                        <i class="bi bi-trash"></i>
+                                                    </button>
+                                                </form>
+                                            @else
+                                                <button type="button" class="btn small danger" style="padding:0 8px;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            @endif
+                                        </div>
+                                    </td>
+                                </tr>
+                            @endforeach
+                        </tbody>
+                    </table>
+                @else
+                    <div style="text-align:center; padding:30px 16px; color:var(--muted); font-size:13px;">
+                        <i class="bi bi-diagram-3" style="font-size:24px; display:block; margin-bottom:6px; opacity:0.5;"></i>
+                        لا توجد مراحل مسجلة تحت هذا المسار حتى الآن.
+                    </div>
+                @endif
+            </div>
+        </section>
+    @endforeach
+</div>
 
 @php
 $crmStageIcons = [
