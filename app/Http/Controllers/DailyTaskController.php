@@ -380,17 +380,17 @@ class DailyTaskController extends Controller
                 $rawStageInputs = \App\Support\StageFieldSchema::extractStageInputs($request);
                 $activeFields = \App\Support\StageFieldSchema::getFieldsForStage($destStage, true);
                 $hasRequiredUnanswered = false;
-
+                $unansweredKeys = [];
                 foreach ($activeFields as $f) {
-                    if ($f->is_required && \App\Support\StageFieldSchema::evaluateFieldApplicability($f, $rawStageInputs, $activeFields)) {
-                        $submittedVal = $rawStageInputs[$f->key] ?? null;
+                    $isApp = \App\Support\StageFieldSchema::evaluateFieldApplicability($f, $rawStageInputs, $activeFields);
+                    $submittedVal = $rawStageInputs[$f->key] ?? null;
+                    if ($f->is_required && $isApp) {
                         if ($submittedVal === null || $submittedVal === '' || $submittedVal === []) {
                             $hasRequiredUnanswered = true;
-                            break;
+                            $unansweredKeys[$f->key] = __('crm.field_required') ?: 'هذا الحقل مطلوب';
                         }
                     }
                 }
-
                 if ($hasRequiredUnanswered) {
                     $redirectUrl = route('v2.leads.followups.index', [
                         'lead' => $lead->id,
@@ -406,7 +406,9 @@ class DailyTaskController extends Controller
                         ], 422);
                     }
 
-                    return redirect($redirectUrl)->with('warning', __('crm.stage_questions_required_notice') ?: 'المرحلة المختارة تحتوي على أسئلة ومحددات إجبارية. يرجى استكمالها من شاشة المتابعة.');
+                    return redirect($redirectUrl)
+                        ->with('warning', __('crm.stage_questions_required_notice') ?: 'المرحلة المختارة تحتوي على أسئلة ومحددات إجبارية. يرجى استكمالها من شاشة المتابعة.')
+                        ->withErrors($unansweredKeys);
                 }
             }
         }

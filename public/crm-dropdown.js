@@ -83,26 +83,58 @@
     const list = document.createElement('ul');
     list.className = 'crm-dropdown-list';
 
-    // Build items
-    Array.from(select.options).forEach((opt) => {
-      const item = document.createElement('li');
-      item.className = 'crm-dropdown-item';
-      item.setAttribute('role', 'option');
-      item.dataset.value = opt.value;
-      if (opt.selected) {
-        item.classList.add('is-selected');
-        item.setAttribute('aria-selected', 'true');
-      }
+    function syncDropdownItems() {
+      list.innerHTML = '';
+      Array.from(select.options).forEach((opt) => {
+        if (opt.disabled || opt.style.display === 'none' || opt.hidden) return;
+        if (opt.parentElement && opt.parentElement.tagName === 'OPTGROUP') {
+          if (opt.parentElement.disabled || opt.parentElement.style.display === 'none') {
+            return;
+          }
+        }
 
-      item.innerHTML = `<span class="crm-dropdown-item-text">${escapeHtml(opt.textContent.trim())}</span>${SVG_CHECK}`;
+        const item = document.createElement('li');
+        item.className = 'crm-dropdown-item';
+        item.setAttribute('role', 'option');
+        item.dataset.value = opt.value;
+        if (opt.dataset.categoryId) {
+          item.dataset.categoryId = opt.dataset.categoryId;
+        }
+        if (opt.value === select.value) {
+          item.classList.add('is-selected');
+          item.setAttribute('aria-selected', 'true');
+        }
 
-      item.addEventListener('click', () => {
-        selectItem(opt.value, item.textContent.trim());
+        item.innerHTML = `<span class="crm-dropdown-item-text">${escapeHtml(opt.textContent.trim())}</span>${SVG_CHECK}`;
+
+        item.addEventListener('click', () => {
+          selectItem(opt.value, opt.textContent.trim());
+        });
+
+        list.appendChild(item);
       });
 
-      list.appendChild(item);
-    });
+      const selectedOpt = select.options[select.selectedIndex];
+      const textEl = trigger.querySelector('.crm-dropdown-text');
+      if (textEl && selectedOpt) {
+        textEl.textContent = selectedOpt.textContent.trim();
+      }
+    }
 
+    syncDropdownItems();
+    select.addEventListener('crm-dropdown:update', syncDropdownItems);
+    select.addEventListener('change', () => {
+      const selectedOpt = select.options[select.selectedIndex];
+      const textEl = trigger.querySelector('.crm-dropdown-text');
+      if (textEl && selectedOpt) {
+        textEl.textContent = selectedOpt.textContent.trim();
+      }
+      list.querySelectorAll('.crm-dropdown-item').forEach((it) => {
+        const isMatch = it.dataset.value === select.value;
+        it.classList.toggle('is-selected', isMatch);
+        it.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+      });
+    });
     menu.appendChild(list);
 
     // Insert wrapper into DOM

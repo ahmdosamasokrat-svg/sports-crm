@@ -553,7 +553,7 @@ class PipelineStageFieldsTest extends TestCase
         $this->customStatus->delete();
         $this->customStage->delete();
 
-        $this->assertModelMissing($this->customStage);
+        $this->assertSoftDeleted($this->customStage);
 
         $this->actingAs($this->admin)
             ->get(route('v2.leads.import'))

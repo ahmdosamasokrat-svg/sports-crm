@@ -724,8 +724,36 @@ body.kanban-followup-popup .client-actions {
                         @endphp
 
                         <div class="form-grid">
-                            <!-- STATUS & STAGE -->
-                            <div class="field full">
+                            <!-- PIPELINE FILTER & STATUS/STAGE -->
+                            @if (isset($categories) && $categories->isNotEmpty())
+                                <div class="field">
+                                    <label for="pipeline_filter">
+                                        <i class="bi bi-diagram-3" style="color:var(--red, #ef4444); margin-inline-end:4px;"></i>
+                                        {{ __('crm.sales_pipeline') }}
+                                    </label>
+                                    <select
+                                        class="control"
+                                        id="pipeline_filter"
+                                        @if (request()->boolean('kanban_popup')) disabled @endif
+                                    >
+                                        <option value="all">{{ __('crm.all_stage_categories') }}</option>
+                                        @foreach ($categories as $cat)
+                                            <option value="{{ $cat->id }}" @selected((string) $selectedCategoryId === (string) $cat->id)>
+                                                {{ $cat->localizedName() }}
+                                            </option>
+                                        @endforeach
+                                        @if ($hasUncategorizedStages)
+                                            <option value="uncategorized" @selected((string) $selectedCategoryId === 'uncategorized')>
+                                                {{ __('crm.unassigned_stages_count') ?? 'مراحل غير مصنفة' }}
+                                            </option>
+                                        @endif
+                                    </select>
+                                    <small>{{ __('اختر المسار لتصفية المراحل المعروضة.') }}</small>
+                                </div>
+                                <div class="field">
+                            @else
+                                <div class="field full">
+                            @endif
                                 <label for="lead_status_id">
                                     {{ __('crm.status_stage') }} <span class="required">*</span>
                                 </label>
@@ -737,10 +765,15 @@ body.kanban-followup-popup .client-actions {
                                     @if (request()->boolean('kanban_popup')) disabled @endif
                                 >
                                     @foreach ($statusGroups as $stageName => $stageStatuses)
-                                        <optgroup label="{{ $stageName }}">
+                                        @php
+                                            $firstSt = $stageStatuses->first();
+                                            $stageCatId = $firstSt?->stage?->pipeline_stage_category_id ? (string) $firstSt->stage->pipeline_stage_category_id : 'uncategorized';
+                                        @endphp
+                                        <optgroup label="{{ $stageName }}" data-category-id="{{ $stageCatId }}">
                                             @foreach ($stageStatuses as $status)
                                                 <option
                                                     value="{{ $status->id }}"
+                                                    data-category-id="{{ $status->stage?->pipeline_stage_category_id ? (string) $status->stage->pipeline_stage_category_id : 'uncategorized' }}"
                                                     data-stage-id="{{ $status->pipeline_stage_id }}"
                                                     data-stage-name="{{ $status->stage?->name_ar ?? '----' }}"
                                                     data-stage-description="{{ $status->stage?->description_ar ?? '----' }}"
@@ -771,7 +804,6 @@ body.kanban-followup-popup .client-actions {
                                     @endif
                                 </small>
                             </div>
-
                             <!-- DYNAMIC STAGE QUESTIONS CONTAINER -->
                             @php
                                 $statusesCol = collect($statuses ?? []);
@@ -804,6 +836,24 @@ body.kanban-followup-popup .client-actions {
                                     @endif
                                 @endforeach
                             </div>
+
+                            <!-- CUSTOMER DATA FIELDS (IF CONFIGURED) -->
+                            @if (($customerFields ?? collect())->isNotEmpty())
+                                <div class="field full" style="margin-top: 14px;">
+                                    <h3 style="font-size: 14px; font-weight: 700; margin-bottom: 8px; color: var(--dark);">
+                                        <i class="bi bi-card-checklist" style="color: #0ea5e9;"></i> {{ __('crm.customer_data') ?: 'بيانات وتصنيف العميل' }}
+                                    </h3>
+                                    @foreach ($customerFields as $customerField)
+                                        <input type="hidden" name="customer_field_presence[]" value="{{ $customerField->key }}">
+                                    @endforeach
+                                    @include('partials.stage-field-inputs', [
+                                        'fields' => $customerFields,
+                                        'recordValues' => $customerFieldValues ?? [],
+                                        'prefix' => 'customer_fields',
+                                        'scope' => 'followup_customer',
+                                    ])
+                                </div>
+                            @endif
 
                             <!-- CAMPAIGN SELECTION (IF APPLICABLE) -->
                             @if ($manageableCampaigns->isNotEmpty())
@@ -1011,6 +1061,50 @@ function setNextDate(daysAhead, hour) {
 
 (() => {
     const statusSelect = document.getElementById('lead_status_id');
+    const pipelineFilter = document.getElementById('pipeline_filter');
+
+    function filterStatusesByPipeline() {
+        if (!pipelineFilter || !statusSelect) return;
+        const selectedCat = pipelineFilter.value;
+
+        let currentOptionStillVisible = false;
+        const currentVal = statusSelect.value;
+
+        const optgroups = statusSelect.querySelectorAll('optgroup');
+        optgroups.forEach(og => {
+            const ogCatId = og.getAttribute('data-category-id') || 'uncategorized';
+            const matchesCat = (selectedCat === 'all') || (ogCatId === selectedCat);
+            og.style.display = matchesCat ? '' : 'none';
+            og.disabled = !matchesCat;
+
+            og.querySelectorAll('option').forEach(opt => {
+                const optCatId = opt.getAttribute('data-category-id') || 'uncategorized';
+                const optMatches = (selectedCat === 'all') || (optCatId === selectedCat);
+                opt.style.display = optMatches ? '' : 'none';
+                opt.disabled = !optMatches;
+                if (optMatches && String(opt.value) === String(currentVal)) {
+                    currentOptionStillVisible = true;
+                }
+            });
+        });
+
+        if (!currentOptionStillVisible) {
+            const firstVisible = Array.from(statusSelect.options).find(opt => !opt.disabled && opt.style.display !== 'none');
+            if (firstVisible) {
+                statusSelect.value = firstVisible.value;
+            }
+        }
+
+        statusSelect.dispatchEvent(new CustomEvent('crm-dropdown:update'));
+        statusSelect.dispatchEvent(new Event('change', { bubbles: true }));
+    }
+
+    if (pipelineFilter) {
+        pipelineFilter.addEventListener('change', filterStatusesByPipeline);
+        if (pipelineFilter.value && pipelineFilter.value !== 'all') {
+            filterStatusesByPipeline();
+        }
+    }
     const questionBlocks = document.querySelectorAll('.stage-questions-block');
 
     function syncStageQuestions() {

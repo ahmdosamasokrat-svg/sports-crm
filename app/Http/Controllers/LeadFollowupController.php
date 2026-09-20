@@ -7,6 +7,7 @@ use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\LeadStatusHistory;
 use App\Models\PipelineStage;
+use App\Models\PipelineStageCategory;
 use App\Models\User;
 use App\Security\CrmPermission;
 use App\Security\LeadAssignment;
@@ -44,11 +45,19 @@ class LeadFollowupController extends Controller
 
         $statuses = LeadStatus::query()
             ->visibleTo($request->user())
-            ->with('stage')
+            ->with(['stage.category'])
             ->orderBy('position')
             ->orderBy('id')
             ->get();
 
+        $categories = PipelineStageCategory::query()
+            ->where('is_active', true)
+            ->with([
+                'activeStages' => static fn ($q) => $q->orderBy('position')->orderBy('id'),
+            ])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
         /*
          * Kanban drag/drop chooses only the
          * proposed destination status.
@@ -82,6 +91,22 @@ class LeadFollowupController extends Controller
                     ? (string)
                         $status->stage?->name_ar
                     : 'بدون مرحلة'
+        );
+        $currentStage = $statuses->firstWhere('id', $defaultStatusId)?->stage;
+        $currentStageCatId = $currentStage?->pipeline_stage_category_id;
+
+        $requestedCategoryId = $request->query('category_id');
+        $selectedCategoryId = null;
+        if ($requestedCategoryId !== null && $requestedCategoryId !== '') {
+            $selectedCategoryId = (string) $requestedCategoryId;
+        } elseif ($currentStageCatId) {
+            $selectedCategoryId = (string) $currentStageCatId;
+        } elseif ($categories->isNotEmpty()) {
+            $selectedCategoryId = 'all';
+        }
+
+        $hasUncategorizedStages = $statuses->contains(
+            static fn (LeadStatus $st): bool => empty($st->stage?->pipeline_stage_category_id)
         );
 
         $communicationTypes =
@@ -206,6 +231,9 @@ class LeadFollowupController extends Controller
                 'lead' => $leadRecord,
                 'statuses' => $statuses,
                 'statusGroups' => $statusGroups,
+                'categories' => $categories,
+                'selectedCategoryId' => $selectedCategoryId,
+                'hasUncategorizedStages' => $hasUncategorizedStages,
                 'communicationTypes' => $communicationTypes,
                 'defaultCommunicationType' => $defaultCommunicationType,
                 'followups' => $followups,
