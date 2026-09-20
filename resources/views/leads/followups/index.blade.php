@@ -771,10 +771,24 @@ body.kanban-followup-popup .client-actions {
                                         @endphp
                                         <optgroup label="{{ $stageName }}" data-category-id="{{ $stageCatId }}">
                                             @foreach ($stageStatuses as $status)
+                                                @php
+                                                    $stgId = (int) $status->pipeline_stage_id;
+                                                    $transferRule = $stageTransferMap[$stgId] ?? null;
+                                                    $effectiveStageId = $stgId;
+                                                    $isFunnelHandoff = false;
+                                                    if ($transferRule && ($transferRule['trigger_status_id'] === null || (int)$transferRule['trigger_status_id'] === (int)$status->id)) {
+                                                        $effectiveStageId = (int) $transferRule['target_stage_id'];
+                                                        $isFunnelHandoff = true;
+                                                    }
+                                                @endphp
                                                 <option
                                                     value="{{ $status->id }}"
                                                     data-category-id="{{ $status->stage?->pipeline_stage_category_id ? (string) $status->stage->pipeline_stage_category_id : 'uncategorized' }}"
                                                     data-stage-id="{{ $status->pipeline_stage_id }}"
+                                                    data-effective-stage-id="{{ $effectiveStageId }}"
+                                                    data-is-funnel="{{ $isFunnelHandoff ? '1' : '0' }}"
+                                                    data-target-pipeline="{{ $transferRule['target_pipeline_name'] ?? '' }}"
+                                                    data-target-stage-name="{{ $transferRule['target_stage_name'] ?? '' }}"
                                                     data-stage-name="{{ $status->stage?->name_ar ?? '----' }}"
                                                     data-stage-description="{{ $status->stage?->description_ar ?? '----' }}"
                                                     data-stage-code="{{ $status->stage?->code ?? '----' }}"
@@ -808,9 +822,23 @@ body.kanban-followup-popup .client-actions {
                             @php
                                 $statusesCol = collect($statuses ?? []);
                                 $selectedStatus = $statusesCol->firstWhere('id', $selectedStatusId);
-                                $selectedStageId = $selectedStatus?->pipeline_stage_id ?? $lead->status?->pipeline_stage_id;
+                                $selStgId = (int) ($selectedStatus?->pipeline_stage_id ?? $lead->status?->pipeline_stage_id);
+                                $selectedTransfer = $stageTransferMap[$selStgId] ?? null;
+                                $selectedStageId = ($selectedTransfer && ($selectedTransfer['trigger_status_id'] === null || (int)$selectedTransfer['trigger_status_id'] === (int)$selectedStatusId))
+                                    ? (int) $selectedTransfer['target_stage_id']
+                                    : $selStgId;
                             @endphp
                             <div id="dynamicStageQuestionsSection" class="field full" style="margin-top:4px;">
+                                <div id="funnelHandoffNotice" style="display:none; background:rgba(79, 70, 229, 0.08); border:1px solid rgba(79, 70, 229, 0.25); border-radius:12px; padding:12px 16px; margin-bottom:14px;">
+                                    <div style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; color:#4f46e5;">
+                                        <i class="bi bi-lightning-charge-fill"></i>
+                                        <span id="funnelNoticeTitle">{{ __('مرحلة ترحيل تلقائي إلى مسار آخر') }}</span>
+                                    </div>
+                                    <p id="funnelNoticeDesc" style="margin:4px 0 0; font-size:12px; color:var(--dark);">
+                                        {{ __('هذه المرحلة تعتبر نقطة عبور؛ سيتم نقل / استنساخ العميل واستكمال أسئلة المرحلة المستهدفة أدناه مباشرة.') }}
+                                    </p>
+                                </div>
+
                                 @foreach (($activeStages ?? []) as $astage)
                                     @if ($astage->activeFields->isNotEmpty())
                                         @php
@@ -820,6 +848,11 @@ body.kanban-followup-popup .client-actions {
                                             <div style="display:flex; align-items:center; gap:8px; margin-bottom:12px; font-weight:800; font-size:14px; color:var(--dark);">
                                                 <i class="bi bi-ui-checks" style="color:var(--red);"></i>
                                                 <span>{{ __('crm.stage_questions') }} ({{ $astage->localizedName() }})</span>
+                                                @if ($astage->category)
+                                                    <span class="badge" style="font-size:11px; background:{{ $astage->category->color }}1a; color:{{ $astage->category->color }}; border:1px solid {{ $astage->category->color }}33;">
+                                                        {{ $astage->category->localizedName() }}
+                                                    </span>
+                                                @endif
                                             </div>
                                             @php
                                                 $prefilled = \App\Support\StageFieldSchema::prefillValues($lead, $astage);
@@ -1110,12 +1143,30 @@ function setNextDate(daysAhead, hour) {
     function syncStageQuestions() {
         const selectedOpt = statusSelect?.options?.[statusSelect.selectedIndex];
         const stageId = selectedOpt ? selectedOpt.getAttribute('data-stage-id') : null;
+        const effectiveStageId = selectedOpt ? (selectedOpt.getAttribute('data-effective-stage-id') || stageId) : stageId;
+        const isFunnel = selectedOpt ? selectedOpt.getAttribute('data-is-funnel') === '1' : false;
+        const targetPipelineName = selectedOpt ? selectedOpt.getAttribute('data-target-pipeline') : '';
+        const targetStageName = selectedOpt ? selectedOpt.getAttribute('data-target-stage-name') : '';
+
+        const funnelNotice = document.getElementById('funnelHandoffNotice');
+        const funnelTitle = document.getElementById('funnelNoticeTitle');
+        const funnelDesc = document.getElementById('funnelNoticeDesc');
+
+        if (funnelNotice) {
+            if (isFunnel && targetPipelineName && targetStageName) {
+                funnelNotice.style.display = 'block';
+                if (funnelTitle) funnelTitle.textContent = `⚡ مرحلة عبور وترحيل تلقائي إلى مسار [${targetPipelineName}]`;
+                if (funnelDesc) funnelDesc.textContent = `الأسئلة أدناه تتبع مرحلة [${targetStageName}] في مسار [${targetPipelineName}]. سيتم ترحيل العميل ونقل البيانات إليها فور حفظ المتابعة.`;
+            } else {
+                funnelNotice.style.display = 'none';
+            }
+        }
 
         let hasMatchingStageBlock = false;
 
         questionBlocks.forEach(block => {
             const blockStageId = block.getAttribute('data-stage-id');
-            const isMatch = blockStageId && stageId && String(blockStageId) === String(stageId);
+            const isMatch = blockStageId && effectiveStageId && String(blockStageId) === String(effectiveStageId);
             if (isMatch) {
                 hasMatchingStageBlock = true;
             }

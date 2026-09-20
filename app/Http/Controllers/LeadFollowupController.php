@@ -58,6 +58,26 @@ class LeadFollowupController extends Controller
             ->orderBy('position')
             ->orderBy('id')
             ->get();
+        $transferTriggers = PipelineStageCategory::query()
+            ->where('is_active', true)
+            ->where('auto_transfer_enabled', true)
+            ->whereNotNull('trigger_stage_id')
+            ->with(['targetStage.activeFields', 'targetStatus', 'activeStages.activeFields'])
+            ->get();
+
+        $stageTransferMap = [];
+        foreach ($transferTriggers as $trig) {
+            $targetStg = $trig->targetStage ?? $trig->activeStages->first();
+            if ($targetStg) {
+                $stageTransferMap[$trig->trigger_stage_id] = [
+                    'target_stage_id' => $targetStg->id,
+                    'target_stage_name' => $targetStg->localizedName(),
+                    'target_pipeline_name' => $trig->localizedName(),
+                    'trigger_status_id' => $trig->trigger_status_id,
+                    'action' => $trig->auto_transfer_action,
+                ];
+            }
+        }
         /*
          * Kanban drag/drop chooses only the
          * proposed destination status.
@@ -234,6 +254,8 @@ class LeadFollowupController extends Controller
                 'categories' => $categories,
                 'selectedCategoryId' => $selectedCategoryId,
                 'hasUncategorizedStages' => $hasUncategorizedStages,
+                'stageTransferMap' => $stageTransferMap,
+                'transferTriggers' => $transferTriggers,
                 'communicationTypes' => $communicationTypes,
                 'defaultCommunicationType' => $defaultCommunicationType,
                 'followups' => $followups,
@@ -575,6 +597,30 @@ class LeadFollowupController extends Controller
             ]
         );
         $targetStage = $status->stage;
+
+        // If the selected status triggers an automatic pipeline transfer/clone,
+        // evaluate and validate fields against the destination pipeline stage
+        $effectiveValidationStage = $targetStage;
+        $funnelTrigger = null;
+        if ($targetStage !== null) {
+            $funnelTrigger = PipelineStageCategory::query()
+                ->where('is_active', true)
+                ->where('auto_transfer_enabled', true)
+                ->where('trigger_stage_id', $targetStage->id)
+                ->where(function ($q) use ($status): void {
+                    $q->whereNull('trigger_status_id')
+                        ->orWhere('trigger_status_id', $status->id);
+                })
+                ->with(['targetStage', 'activeStages'])
+                ->first();
+
+            if ($funnelTrigger) {
+                $destStg = $funnelTrigger->targetStage ?? $funnelTrigger->activeStages->first();
+                if ($destStg) {
+                    $effectiveValidationStage = $destStg;
+                }
+            }
+        }
         if ($uploadedQuotationFile !== null) {
             $fileValidator = \Illuminate\Support\Facades\Validator::make(
                 ['quotation_file' => $uploadedQuotationFile],
@@ -590,16 +636,16 @@ class LeadFollowupController extends Controller
         }
 
         $normalizedStageValues = [];
-        if ($targetStage !== null) {
+        if ($effectiveValidationStage !== null) {
             $rawStageInputs = \App\Support\StageFieldSchema::extractStageInputs($request);
-            $stageKeys = \App\Support\StageFieldSchema::getFieldsForStage($targetStage, true)->pluck('key')->all();
+            $stageKeys = \App\Support\StageFieldSchema::getFieldsForStage($effectiveValidationStage, true)->pluck('key')->all();
             if (in_array('callback_at', $stageKeys, true) && empty($rawStageInputs['callback_at']) && $request->filled('next_follow_up_at')) {
                 $rawStageInputs['callback_at'] = (string) $request->input('next_follow_up_at');
             }
             if (in_array('reason', $stageKeys, true) && empty($rawStageInputs['reason']) && $request->filled('disinterest_reason')) {
                 $rawStageInputs['reason'] = (string) $request->input('disinterest_reason');
             }
-            $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($targetStage, $rawStageInputs, $request->user());
+            $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($effectiveValidationStage, $rawStageInputs, $request->user());
         }
         $normalizedCustomerFields = FollowupCustomerFieldSchema::validateAndExtract($request->all());
 
@@ -923,6 +969,7 @@ class LeadFollowupController extends Controller
                 $request->user(),
                 [
                     'stage_fields' => $normalizedStageValues,
+                    'effective_stage_id' => $effectiveValidationStage?->id,
                     'record_followup' => true,
                     'communication_type' => $communicationType,
                     'outcome' => $outcome,

@@ -200,4 +200,117 @@ class PipelineAutoTransferAndCloneTest extends TestCase
         $responseClone->assertSee('متفرع من العميل الأصلي:');
         $responseClone->assertSee('#' . $lead->id);
     }
+
+    public function test_funnel_stage_renders_and_persists_destination_pipeline_stage_questions(): void
+    {
+        // 1. Sales Pipeline with 'Subscribed' stage (funnel with 0 questions)
+        $salesCat = PipelineStageCategory::query()->create([
+            'name_ar' => 'مسار المبيعات',
+            'position' => 1,
+            'is_active' => true,
+        ]);
+
+        $subscribedStage = PipelineStage::query()->create([
+            'code' => 'stage_funnel_sub_' . uniqid(),
+            'name_ar' => 'مشترك (نقطة عبور)',
+            'pipeline_stage_category_id' => $salesCat->id,
+            'position' => 5,
+            'is_primary' => false,
+            'is_active' => true,
+        ]);
+        $subscribedStatus = $subscribedStage->statuses()->first();
+
+        // 2. Subscriptions Pipeline with 'Active Subscriber' stage which has questions
+        $subsCat = PipelineStageCategory::query()->create([
+            'name_ar' => 'مسار الاشتراكات الفعلي',
+            'position' => 2,
+            'is_active' => true,
+            'auto_transfer_enabled' => true,
+            'auto_transfer_action' => 'clone',
+            'trigger_stage_id' => $subscribedStage->id,
+        ]);
+
+        $activeSubsStage = PipelineStage::query()->create([
+            'code' => 'stage_active_member_' . uniqid(),
+            'name_ar' => 'عضوية مفعلة',
+            'pipeline_stage_category_id' => $subsCat->id,
+            'position' => 1,
+            'is_primary' => false,
+            'is_active' => true,
+        ]);
+        $activeSubsStatus = $activeSubsStage->statuses()->first();
+
+        $subsCat->update([
+            'target_stage_id' => $activeSubsStage->id,
+            'target_status_id' => $activeSubsStatus->id,
+        ]);
+
+        // Add questions to the Active Subscriber stage in the Subscriptions pipeline
+        $subField = \App\Models\PipelineStageField::query()->create([
+            'pipeline_stage_id' => $activeSubsStage->id,
+            'key' => 'subscription_plan',
+            'label_ar' => 'خطة الاشتراك',
+            'type' => 'text',
+            'is_required' => true,
+            'is_active' => true,
+        ]);
+
+        // 3. Create lead in sales pipeline
+        $initialStg = PipelineStage::query()->create([
+            'code' => 'stage_init_lead_' . uniqid(),
+            'name_ar' => 'أولي',
+            'pipeline_stage_category_id' => $salesCat->id,
+            'position' => 1,
+            'is_primary' => false,
+            'is_active' => true,
+        ]);
+        $initialSt = $initialStg->statuses()->first();
+
+        // 3. Create lead in sales pipeline
+        $lead = Lead::query()->create([
+            'name' => 'Sara Client',
+            'phone' => '0551122334',
+            'source' => 'web',
+            'lead_status_id' => $initialSt->id,
+        ]);
+        // 4. View follow-up screen targeting the funnel stage
+        $response = $this->actingAs($this->admin)->get(route('v2.leads.followups.index', [
+            'lead' => $lead->id,
+            'target_status_id' => $subscribedStatus->id,
+        ]));
+
+        $response->assertOk();
+        // Effective stage id points to the activeSubsStage
+        $response->assertSee('data-effective-stage-id="' . $activeSubsStage->id . '"', false);
+        $response->assertSee('data-is-funnel="1"', false);
+        $response->assertSee('خطة الاشتراك');
+
+        // 5. Submit follow-up with the destination stage question answered
+        $postResponse = $this->actingAs($this->admin)->post(route('v2.leads.followups.store', $lead), [
+            'lead_status_id' => $subscribedStatus->id,
+            'communication_type' => 'call',
+            'outcome' => 'تم الترحيل وتفعيل الاشتراك',
+            'next_follow_up_at' => now()->addDays(7)->format('Y-m-d H:i'),
+            'stage_fields' => [
+                'subscription_plan' => 'Annual VIP Plan',
+            ],
+        ]);
+
+        $postResponse->assertSessionHasNoErrors();
+
+        // Assert original lead was updated to Subscribed status
+        $this->assertEquals($subscribedStatus->id, $lead->fresh()->lead_status_id);
+
+        // Assert cloned lead in subscriptions pipeline has the question answer
+        $clonedLead = Lead::query()->where('parent_lead_id', $lead->id)->first();
+        $this->assertNotNull($clonedLead);
+        $this->assertEquals($activeSubsStatus->id, $clonedLead->lead_status_id);
+
+        $this->assertDatabaseHas('lead_stage_field_values', [
+            'lead_id' => $clonedLead->id,
+            'pipeline_stage_id' => $activeSubsStage->id,
+            'field_key' => 'subscription_plan',
+            'value' => 'Annual VIP Plan',
+        ]);
+    }
 }

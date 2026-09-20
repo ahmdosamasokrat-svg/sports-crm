@@ -70,13 +70,41 @@ class LeadTransitionService
 
             // 2. Validate stage field schema and extract normalized stage values
             $normalizedStageValues = [];
-            if ($toStage !== null) {
+            // If this transition is a funnel handoff stage targeting another pipeline stage,
+            // use the destination validation stage instead of toStage for validating stage fields
+            $validationStage = $toStage;
+            if (! empty($context['effective_stage_id'])) {
+                $customEffectiveStage = PipelineStage::query()->find($context['effective_stage_id']);
+                if ($customEffectiveStage !== null) {
+                    $validationStage = $customEffectiveStage;
+                }
+            } elseif ($toStage !== null) {
+                $autoTrigger = \App\Models\PipelineStageCategory::query()
+                    ->where('is_active', true)
+                    ->where('auto_transfer_enabled', true)
+                    ->where('trigger_stage_id', $toStage->id)
+                    ->where(function ($q) use ($toStatus): void {
+                        $q->whereNull('trigger_status_id')
+                            ->orWhere('trigger_status_id', $toStatus->id);
+                    })
+                    ->with(['targetStage', 'activeStages'])
+                    ->first();
+
+                if ($autoTrigger) {
+                    $targetStg = $autoTrigger->targetStage ?? $autoTrigger->activeStages->first();
+                    if ($targetStg) {
+                        $validationStage = $targetStg;
+                    }
+                }
+            }
+
+            if ($validationStage !== null) {
                 $rawStageInputs = isset($context['stage_fields']) && is_array($context['stage_fields'])
                     ? $context['stage_fields']
                     : [];
 
                 // Backward compatibility mapping for canonical rules if field exists on stage
-                $stageFields = StageFieldSchema::getFieldsForStage($toStage, true);
+                $stageFields = StageFieldSchema::getFieldsForStage($validationStage, true);
                 $stageFieldKeys = $stageFields->pluck('key')->all();
 
                 if (in_array('callback_at', $stageFieldKeys, true) && ! isset($rawStageInputs['callback_at']) && ! empty($context['next_follow_up_at'])) {
@@ -106,7 +134,7 @@ class LeadTransitionService
                 }
 
                 try {
-                    $normalizedStageValues = StageFieldSchema::validateAndExtract($toStage, $rawStageInputs, $actor);
+                    $normalizedStageValues = StageFieldSchema::validateAndExtract($validationStage, $rawStageInputs, $actor);
                 } catch (ValidationException $e) {
                     $errors = $e->errors();
                     if (isset($errors['callback_at']) && ! isset($errors['next_follow_up_at'])) {
@@ -256,7 +284,8 @@ class LeadTransitionService
 
             // 8. Persist LeadStageFieldValue records atomically within the same transaction
             $savedStageValues = collect();
-            if ($toStage !== null && ! empty($normalizedStageValues)) {
+            $isFunnelForward = ! empty($context['effective_stage_id']) && (int) $context['effective_stage_id'] !== (int) $toStage?->id;
+            if ($toStage !== null && ! empty($normalizedStageValues) && ! $isFunnelForward) {
                 $savedStageValues = StageFieldSchema::persistValues(
                     $lockedLead,
                     $toStage,
@@ -406,6 +435,30 @@ class LeadTransitionService
                 ]);
             }
 
+            // If context contains stage_fields meant for the destination stage, persist them directly on the clone
+            $submittedStageFields = isset($context['stage_fields']) && is_array($context['stage_fields'])
+                ? $context['stage_fields']
+                : [];
+
+            if (! empty($submittedStageFields)) {
+                // Check if targetStage has fields matching these submitted keys
+                $targetFields = \App\Support\StageFieldSchema::getFieldsForStage($targetStage, false)->pluck('key')->all();
+                $targetMatchedFields = array_filter(
+                    $submittedStageFields,
+                    static fn ($k): bool => in_array($k, $targetFields, true),
+                    ARRAY_FILTER_USE_KEY
+                );
+
+                if (! empty($targetMatchedFields)) {
+                    \App\Support\StageFieldSchema::persistValues(
+                        $newClone,
+                        $targetStage,
+                        $targetMatchedFields,
+                        null,
+                        $actor
+                    );
+                }
+            }
             // Create initial status history for cloned record
             \App\Models\LeadStatusHistory::query()->create([
                 'lead_id' => $newClone->id,
