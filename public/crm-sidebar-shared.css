@@ -927,8 +927,11 @@ font-size:11px
   html.crm-sidebar-collapsed .crm-side-brand span,
   html.crm-sidebar-collapsed .crm-side-caption,
   html.crm-sidebar-collapsed .crm-label,
+  html.crm-sidebar-collapsed .label,
   html.crm-sidebar-collapsed .crm-count,
+  html.crm-sidebar-collapsed .count,
   html.crm-sidebar-collapsed .crm-arrow,
+  html.crm-sidebar-collapsed .arrow,
   html.crm-sidebar-collapsed .crm-sidebar-collapse-btn span {
     display: none !important;
     opacity: 0 !important;
