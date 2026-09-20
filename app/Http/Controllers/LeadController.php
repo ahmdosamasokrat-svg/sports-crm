@@ -1563,6 +1563,10 @@ $stage = $status->stage;
                 'stageHistoryGroups' => $stageHistoryGroups,
                 'stageSections' => $stageSections,
                 'currentStageId' => $currentStageId,
+                'academyActivities' => \App\Models\PipelineStageField::query()
+                    ->whereIn('key', ['requested_activity', 'activity'])
+                    ->whereNotNull('options')
+                    ->first()?->normalizedOptions() ?? [],
                 'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
                 'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
             ]

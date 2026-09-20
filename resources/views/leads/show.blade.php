@@ -1972,9 +1972,23 @@
                 </div>
                 <div>
                     <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('النشاط المهتم به') }}</label>
-                    <input type="text" id="newReferralActivity" placeholder="مثال: كرة قدم / جمباز" value="{{ $lead->activity }}"
-                           style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
-                </div>
+                    <select id="newReferralActivity" style="width:100%; height:38px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                        <option value="">-- اختر النشاط الرياضي --</option>
+                        @if (!empty($academyActivities))
+                            @foreach ($academyActivities as $actOpt)
+                                <option value="{{ $actOpt['value'] }}" {{ $lead->activity === $actOpt['value'] ? 'selected' : '' }}>
+                                    {{ $actOpt['label_ar'] }}
+                                </option>
+                            @endforeach
+                        @else
+                            <option value="كرة قدم" {{ $lead->activity === 'كرة قدم' ? 'selected' : '' }}>كرة قدم</option>
+                            <option value="سباحة" {{ $lead->activity === 'سباحة' ? 'selected' : '' }}>سباحة</option>
+                            <option value="جمباز" {{ $lead->activity === 'جمباز' ? 'selected' : '' }}>جمباز</option>
+                            <option value="كاراتيه" {{ $lead->activity === 'كاراتيه' ? 'selected' : '' }}>كاراتيه</option>
+                            <option value="كرة سلة" {{ $lead->activity === 'كرة سلة' ? 'selected' : '' }}>كرة سلة</option>
+                            <option value="أخرى">أخرى</option>
+                        @endif
+                    </select>
             </div>
             <div style="margin-bottom:16px;">
                 <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الإحالة (اختياري)') }}</label>
