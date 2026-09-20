@@ -42,6 +42,41 @@
         .badge.inactive{background:#fff0f1;color:#b42332}
         .badge.system{background:#fff5d9;color:#8a6100}
 
+        /* Body Modal Shell & Centered Dialog */
+        body.modal-open { overflow: hidden !important; }
+        .crm-body-modal-shell {
+            position: fixed !important;
+            inset: 0 !important;
+            background: rgba(15, 23, 42, 0.65) !important;
+            backdrop-filter: blur(4px) !important;
+            z-index: 999999 !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            padding: 18px !important;
+            box-sizing: border-box !important;
+        }
+        .crm-body-modal-dialog {
+            background: var(--card, #ffffff) !important;
+            color: var(--dark, #182033) !important;
+            border: 1px solid var(--line, #e2e8f0) !important;
+            border-radius: 16px !important;
+            max-width: 500px !important;
+            width: 100% !important;
+            padding: 24px !important;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.35) !important;
+            max-height: calc(100dvh - 36px) !important;
+            overflow-y: auto !important;
+            position: relative !important;
+            margin: auto !important;
+            z-index: 1000000 !important;
+        }
+        html.dark-mode .crm-body-modal-dialog {
+            background: #182033 !important;
+            border-color: rgba(255, 255, 255, 0.12) !important;
+            color: #f1f5f9 !important;
+        }
+
         /* Lead Profile Header Card */
         .lead-header-card{background:transparent !important;border:0 !important;border-radius:16px;padding:12px 0 20px;margin-bottom:12px;box-shadow:none !important}
         .lead-header-top{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}
