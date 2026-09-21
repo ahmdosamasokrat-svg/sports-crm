@@ -1290,6 +1290,7 @@ return [
     'cannot_delete_server_with_tickets' => 'لا يمكن حذف هذا السيرفر لأنه يحتوي على سجل تذاكر دعم فني.',
     'delete_server_failed' => 'تعذر حذف كرت السيرفر.',
     'stages_and_statuses' => 'المراحل والحالات',
+    'pipelines_and_stages' => 'المسارات والمراحل',
     'stages_settings_title' => 'إعدادات المراحل',
     'stages_settings_heading' => 'مراحل ومسار العملاء',
     'stages_settings_subheading' => 'إدارة وترتيب وتخصيص مراحل العملاء وأسئلة الانتقال',
