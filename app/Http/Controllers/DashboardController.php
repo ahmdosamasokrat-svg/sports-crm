@@ -108,10 +108,32 @@ class DashboardController extends Controller
             ->get();
         $stages = PipelineStage::query()
             ->visibleTo($user)
-            ->with('statuses')
+            ->with(['statuses', 'category'])
             ->where('is_active', true)
             ->orderBy('position')
             ->get();
+
+        $categories = PipelineStageCategory::query()
+            ->where('is_active', true)
+            ->withCount(['activeStages'])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
+
+        $hasUncategorizedStages = $stages->contains(static fn (PipelineStage $s) => empty($s->pipeline_stage_category_id));
+
+        $requestedCategoryId = $request->query('category_id');
+        $selectedCategoryId = 'all';
+        if ($requestedCategoryId !== null && $requestedCategoryId !== '' && $requestedCategoryId !== 'all') {
+            if ($requestedCategoryId === 'uncategorized') {
+                $selectedCategoryId = 'uncategorized';
+            } elseif (ctype_digit((string) $requestedCategoryId)) {
+                $catId = (int) $requestedCategoryId;
+                if ($categories->contains('id', $catId)) {
+                    $selectedCategoryId = (string) $catId;
+                }
+            }
+        }
 
         $leadBase = Lead::query()
             ->accessibleTo($user);
@@ -241,6 +263,7 @@ class DashboardController extends Controller
                 'color' => $stage->color ?: '#3478f6',
                 'icon' => $icon,
                 'count' => $stageCount,
+                'category_id' => $stage->pipeline_stage_category_id ? (string) $stage->pipeline_stage_category_id : 'uncategorized',
                 'filter_url' => route('v2.leads', array_filter(['stage' => $stage->id, 'employee' => $filters['employee']])),
             ];
         }
@@ -381,8 +404,17 @@ class DashboardController extends Controller
         $stageKpi2 = $this->calculateStageKpi($kpi2Stage, $leadBase, $totalLeads, $filters, $statusCounts);
 
         $activityStageId = $request->query('activity_stage_id');
-        $defaultActivityStage = $stages->first(static fn (PipelineStage $s) => $s->code === 'meeting')
-            ?? ($stages->skip(1)->first() ?? $stages->first());
+        $availableActivityStages = $selectedCategoryId !== 'all'
+            ? $stages->filter(static fn (PipelineStage $s) => $selectedCategoryId === 'uncategorized'
+                ? empty($s->pipeline_stage_category_id)
+                : (string) $s->pipeline_stage_category_id === (string) $selectedCategoryId
+            )
+            : $stages;
+        if ($availableActivityStages->isEmpty()) {
+            $availableActivityStages = $stages;
+        }
+        $defaultActivityStage = $availableActivityStages->first(static fn (PipelineStage $s) => $s->code === 'meeting')
+            ?? ($availableActivityStages->skip(1)->first() ?? $availableActivityStages->first());
         $activityStage = $activityStageId !== null
             ? ($stages->firstWhere('id', (int) $activityStageId) ?? $defaultActivityStage)
             : $defaultActivityStage;
@@ -843,8 +875,142 @@ class DashboardController extends Controller
                 ->values()
                 ->all();
         }
+        // =========================================================================
+        // ACADEMY CONVERSION FUNNEL & OBJECTION ANALYTICS (Specs 24, 25, 55)
+        // =========================================================================
+        $academyFunnelStages = [
+            ['key' => 'leads', 'name' => 'العملاء المحتملون', 'icon' => 'bi-people', 'color' => '#3b82f6'],
+            ['key' => 'contacted', 'name' => 'تم التواصل', 'icon' => 'bi-telephone', 'color' => '#6366f1'],
+            ['key' => 'trial_booked', 'name' => 'حجز تجربة', 'icon' => 'bi-calendar-event', 'color' => '#8b5cf6'],
+            ['key' => 'trial_attended', 'name' => 'حضور التجربة', 'icon' => 'bi-person-check', 'color' => '#f59e0b'],
+            ['key' => 'subscribed', 'name' => 'الاشتراك الجديد', 'icon' => 'bi-trophy', 'color' => '#10b981'],
+            ['key' => 'renewed', 'name' => 'تم التجديد', 'icon' => 'bi-arrow-repeat', 'color' => '#059669'],
+        ];
 
+        // 1. Leads Count
+        $leadsCount = (int) (clone $leadBase)->count();
 
+        // 2. Contacted Count (leads with first_contacted_at OR call_attempts_count > 0 OR in stage 15+)
+        $contactedCount = (int) (clone $leadBase)
+            ->where(static function (Builder $q): void {
+                $q->whereNotNull('first_contacted_at')
+                    ->orWhere('call_attempts_count', '>', 0)
+                    ->orWhereHas('followups')
+                    ->orWhereHas('status', static fn (Builder $sq) => $sq->where('pipeline_stage_id', '>=', 15));
+            })
+            ->count();
+
+        // 3. Trial Booked Count (leads in stage 17 or having trial_date)
+        $stage17Ids = PipelineStage::query()->where('id', 17)->orWhere('name_ar', 'تجربة محجوزة')->pluck('id')->all() ?: [17];
+        $trialBookedCount = (int) (clone $leadBase)
+            ->where(static function (Builder $q) use ($stage17Ids): void {
+                $q->whereHas('status', static fn (Builder $sq) => $sq->whereIn('pipeline_stage_id', $stage17Ids))
+                    ->orWhereExists(static function ($sub): void {
+                        $sub->selectRaw('1')
+                            ->from('lead_stage_field_values')
+                            ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                            ->where('field_key', 'trial_date');
+                    });
+            })
+            ->count();
+
+        // 4. Trial Attended Count (leads with attended = 'نعم' or stage 18)
+        $stage18Ids = PipelineStage::query()->where('id', 18)->orWhere('name_ar', 'متابعة ما بعد التجربة')->pluck('id')->all() ?: [18];
+        $trialAttendedCount = (int) (clone $leadBase)
+            ->where(static function (Builder $q) use ($stage18Ids): void {
+                $q->whereHas('status', static fn (Builder $sq) => $sq->whereIn('pipeline_stage_id', $stage18Ids))
+                    ->orWhereExists(static function ($sub): void {
+                        $sub->selectRaw('1')
+                            ->from('lead_stage_field_values')
+                            ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                            ->where('field_key', 'attended')
+                            ->where('value', 'نعم');
+                    });
+            })
+            ->count();
+
+        // 5. Subscribed Count (leads in Subscriptions pipeline, stage 19, or stage 21/22)
+        $subCatId = PipelineStageCategory::query()->where('id', 4)->orWhere('name_ar', 'الاشتراكات')->value('id') ?? 4;
+        $subscribedCount = (int) (clone $leadBase)
+            ->where(static function (Builder $q) use ($subCatId): void {
+                $q->whereHas('status.stage', static fn (Builder $sq) => $sq->where('pipeline_stage_category_id', $subCatId))
+                    ->orWhereHas('status', static fn (Builder $sq) => $sq->whereIn('pipeline_stage_id', [19, 21, 22]));
+            })
+            ->count();
+
+        // 6. Renewed Count (leads in Renewals pipeline with renewed status, stage 28)
+        $renewedStageIds = PipelineStage::query()->where('name_ar', 'تم التجديد بنجاح')->pluck('id')->all();
+        $renewedCount = !empty($renewedStageIds)
+            ? (int) (clone $leadBase)->whereHas('status', static fn (Builder $sq) => $sq->whereIn('pipeline_stage_id', $renewedStageIds))->count()
+            : 0;
+
+        $rawFunnelCounts = [
+            'leads' => $leadsCount,
+            'contacted' => $contactedCount,
+            'trial_booked' => $trialBookedCount,
+            'trial_attended' => $trialAttendedCount,
+            'subscribed' => $subscribedCount,
+            'renewed' => $renewedCount,
+        ];
+
+        $academyFunnel = [];
+        $prevCount = null;
+        foreach ($academyFunnelStages as $fStage) {
+            $cnt = $rawFunnelCounts[$fStage['key']] ?? 0;
+            $convFromPrev = ($prevCount !== null && $prevCount > 0)
+                ? (float) round(($cnt / $prevCount) * 100, 1)
+                : null;
+            $convFromTop = ($leadsCount > 0)
+                ? (float) round(($cnt / $leadsCount) * 100, 1)
+                : null;
+
+            $academyFunnel[] = array_merge($fStage, [
+                'count' => $cnt,
+                'conversion_from_prev' => $convFromPrev,
+                'conversion_from_top' => $convFromTop,
+            ]);
+            $prevCount = $cnt;
+        }
+
+        // =========================================================================
+        // OBJECTION & LOSS REASON ANALYTICS (Specs 24, 25, 49)
+        // =========================================================================
+        $objectionValuesRaw = DB::table('lead_stage_field_values')
+            ->join('leads', 'leads.id', '=', 'lead_stage_field_values.lead_id')
+            ->whereIn('lead_stage_field_values.field_key', [
+                'reason',
+                'reason_for_not_subscribing',
+                'non_renewal_reason',
+                'disinterest_reason',
+            ])
+            ->whereNotNull('lead_stage_field_values.value')
+            ->where('lead_stage_field_values.value', '!=', '')
+            ->whereNull('leads.deleted_at')
+            ->select('lead_stage_field_values.value', DB::raw('count(*) as count'))
+            ->groupBy('lead_stage_field_values.value')
+            ->orderByDesc('count')
+            ->limit(8)
+            ->get();
+
+        $objectionsSummary = $objectionValuesRaw->map(static function ($item) {
+            return [
+                'reason' => (string) $item->value,
+                'count' => (int) $item->count,
+            ];
+        })->all();
+
+        $totalObjectionsCount = array_sum(array_column($objectionsSummary, 'count'));
+
+        // If empty, add default taxonomy placeholders from Specs 24 & 49 for UI guidance
+        if (empty($objectionsSummary)) {
+            $objectionsSummary = [
+                ['reason' => 'السعر مرتفع', 'count' => 0],
+                ['reason' => 'المواعيد غير مناسبة', 'count' => 0],
+                ['reason' => 'الموقع بعيد', 'count' => 0],
+                ['reason' => 'ظروف دراسية وامتحانات', 'count' => 0],
+                ['reason' => 'مشكلة مع المدرب', 'count' => 0],
+            ];
+        }
 
         return view(
             'dashboard',
@@ -883,6 +1049,12 @@ class DashboardController extends Controller
                 'stageKpi1' => $stageKpi1,
                 'stageKpi2' => $stageKpi2,
                 'stageActivity' => $stageActivity,
+                'categories' => $categories,
+                'selectedCategoryId' => $selectedCategoryId,
+                'hasUncategorizedStages' => $hasUncategorizedStages,
+                'academyFunnel' => $academyFunnel,
+                'objectionsSummary' => $objectionsSummary,
+                'totalObjectionsCount' => $totalObjectionsCount,
             ]
         );
     }

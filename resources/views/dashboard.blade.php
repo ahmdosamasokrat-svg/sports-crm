@@ -533,13 +533,71 @@ html.dark-mode .crm-dashboard-v2 {
   box-shadow: var(--d-shadow);
   min-width: 0;
   max-width: 100%;
-  overflow: hidden;
+  position: relative;
+  overflow: visible !important;
+  z-index: 50;
+}
+.crm-dashboard-v2 .dash-pipeline-strip-wrap:has(.crm-dropdown.is-open),
+.crm-dashboard-v2 .dash-pipeline-strip-wrap:focus-within {
+  z-index: 100010 !important;
 }
 .crm-dashboard-v2 .dash-pipeline-strip-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   margin-bottom: 10px;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: visible !important;
+  z-index: 51;
+}
+.crm-dashboard-v2 .dash-pipeline-strip-title-group {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: visible !important;
+  z-index: 52;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap {
+  min-width: 150px;
+  max-width: 260px;
+  display: inline-block;
+  position: relative;
+  overflow: visible !important;
+  z-index: 53;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap .crm-dropdown {
+  position: relative;
+  z-index: 54;
+  overflow: visible !important;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap .crm-dropdown.is-open {
+  z-index: 100020 !important;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap .crm-dropdown-trigger {
+  height: 32px !important;
+  min-height: 32px !important;
+  padding: 0 10px !important;
+  font-size: 12.5px !important;
+  font-weight: 700 !important;
+  border-radius: var(--d-radius-sm) !important;
+  background: var(--d-surface-alt) !important;
+  border: 1px solid var(--d-border) !important;
+  color: var(--d-text) !important;
+  cursor: pointer !important;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap .crm-dropdown-trigger:hover {
+  background: var(--d-surface-hover) !important;
+  border-color: var(--d-primary) !important;
+}
+.crm-dashboard-v2 .dash-pipeline-category-filter-wrap .crm-dropdown-menu {
+  z-index: 100030 !important;
+  background: #ffffff !important;
+  border: 1px solid var(--d-border) !important;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.16), 0 4px 10px rgba(0, 0, 0, 0.08) !important;
 }
 .crm-dashboard-v2 .dash-pipeline-strip-title {
   font-size: 13.5px;
@@ -2453,6 +2511,7 @@ html.dark-mode .toast {
 
   <!-- COMPACT FILTER TOOLBAR -->
   <form class="dash-filter-bar" id="filters" method="GET" action="{{ route('dashboard') }}">
+    <input type="hidden" name="category_id" id="dashFilterCategoryHidden" value="{{ ($selectedCategoryId ?? 'all') !== 'all' ? $selectedCategoryId : '' }}">
     <div class="dash-filter-item">
       <label for="dashFilterEmployee">{{ __('crm.employee') }}:</label>
       <div style="width:100%;min-width:180px;">
@@ -2555,21 +2614,58 @@ html.dark-mode .toast {
        ====================================================================== -->
   <section class="dash-pipeline-strip-wrap" aria-label="{{ __('مراحل مسار المبيعات النشطة') }}" dir="{{ app()->getLocale() == 'ar' ? 'rtl' : 'ltr' }}">
     <div class="dash-pipeline-strip-header">
-      <span class="dash-pipeline-strip-title">
-        <i class="bi bi-diagram-3-fill" style="color: var(--d-primary);"></i>
-        {{ __('مراحل مسار المبيعات النشطة') }}
-      </span>
+      <div class="dash-pipeline-strip-title-group">
+        <span class="dash-pipeline-strip-title">
+          <i class="bi bi-diagram-3-fill" style="color: var(--d-primary);"></i>
+          {{ __('مراحل مسار المبيعات النشطة') }}
+        </span>
+
+        @if (isset($categories) && ($categories->isNotEmpty() || ($hasUncategorizedStages ?? false)))
+          <div class="dash-pipeline-category-filter-wrap">
+            <select
+              id="dashPipelineCategoryFilter"
+              class="crm-custom-select"
+              data-crm-dropdown
+              data-icon='<svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 3a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3zm0 7a1 1 0 0 1 1-1h10a1 1 0 0 1 1 1v2a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1v-2z"/></svg>'
+              aria-label="{{ __('crm.stage_category') ?? 'فئة المراحل' }}"
+            >
+              <option value="all" @selected(($selectedCategoryId ?? 'all') === 'all')>{{ __('crm.all_stage_categories') ?? 'جميع الفئات' }}</option>
+              @foreach ($categories as $cat)
+                <option value="{{ $cat->id }}" @selected((string)($selectedCategoryId ?? '') === (string)$cat->id)>
+                  {{ $cat->localizedName() }}
+                </option>
+              @endforeach
+              @if ($hasUncategorizedStages ?? false)
+                <option value="uncategorized" @selected(($selectedCategoryId ?? '') === 'uncategorized')>
+                  {{ __('crm.unassigned_stages_count') ?? 'مراحل غير مصنفة' }}
+                </option>
+              @endif
+            </select>
+          </div>
+        @endif
+      </div>
+
       @can('leads.view')
-        <a href="{{ route('v2.leads.kanban') }}" class="dash-kanban-link">
+        <a href="{{ route('v2.leads.kanban', array_filter(['category_id' => ($selectedCategoryId && $selectedCategoryId !== 'all') ? $selectedCategoryId : null])) }}" class="dash-kanban-link" id="dashKanbanLink">
           <i class="bi bi-kanban"></i> {{ __('crm.kanban') }}
         </a>
       @endcan
     </div>
 
+    @php
+      $visiblePillCount = 0;
+    @endphp
     <div class="dash-pipeline-strip">
       @foreach (($activePipelineStages ?? []) as $pStage)
+        @php
+          $pStageCatId = $pStage['category_id'] ?? 'uncategorized';
+          $isPillVisible = ($selectedCategoryId === 'all') || ($pStageCatId === (string)$selectedCategoryId);
+          if ($isPillVisible) {
+              $visiblePillCount++;
+          }
+        @endphp
         @can('leads.view')
-          <a href="{{ $pStage['filter_url'] }}" class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }};">
+          <a href="{{ $pStage['filter_url'] }}" class="pipeline-flow-pill" data-category-id="{{ $pStageCatId }}" style="--pill-color: {{ $pStage['color'] }}; {{ $isPillVisible ? '' : 'display: none;' }}">
             <div class="pipeline-flow-icon">{!! $renderStageVectorIcon($pStage['icon'] ?? '', $pStage['code'] ?? '') !!}</div>
             <div class="pipeline-flow-info">
               <strong>{{ $pStage['name'] }}</strong>
@@ -2577,7 +2673,7 @@ html.dark-mode .toast {
             </div>
           </a>
         @else
-          <div class="pipeline-flow-pill" style="--pill-color: {{ $pStage['color'] }};">
+          <div class="pipeline-flow-pill" data-category-id="{{ $pStageCatId }}" style="--pill-color: {{ $pStage['color'] }}; {{ $isPillVisible ? '' : 'display: none;' }}">
             <div class="pipeline-flow-icon">{!! $renderStageVectorIcon($pStage['icon'] ?? '', $pStage['code'] ?? '') !!}</div>
             <div class="pipeline-flow-info">
               <strong>{{ $pStage['name'] }}</strong>
@@ -2586,6 +2682,10 @@ html.dark-mode .toast {
           </div>
         @endcan
       @endforeach
+      <div class="dash-pipeline-strip-empty" id="dashPipelineStripEmpty" style="{{ $visiblePillCount === 0 ? '' : 'display: none;' }}; width: 100%; padding: 14px 20px; text-align: center; color: var(--d-text-muted); font-size: 13.5px; font-weight: 600; background: var(--d-surface-alt); border-radius: var(--d-radius-sm); border: 1px dashed var(--d-border);">
+        <i class="bi bi-diagram-3" style="font-size: 18px; margin-inline-end: 6px; vertical-align: middle;"></i>
+        <span>{{ app()->getLocale() === 'ar' ? 'لا توجد مراحل مسار نشطة تابعة لهذه الفئة' : 'No active pipeline stages found for this category' }}</span>
+      </div>
     </div>
   </section>
 
@@ -2762,6 +2862,112 @@ html.dark-mode .toast {
     </div>
   </section>
 
+  <!-- ========================================================================= -->
+  <!-- ACADEMY CONVERSION FUNNEL & OBJECTIONS ANALYTICS (Specs 24, 25, 55)      -->
+  <!-- ========================================================================= -->
+  <section class="dash-academy-analytics-grid" style="display:grid; grid-template-columns: 1.6fr 1fr; gap: 16px; margin-bottom: 20px;">
+    <!-- CARD 1: 6-STAGE ACADEMY CONVERSION FUNNEL -->
+    <div class="panel-modern" style="background:#fff; border:1px solid var(--d-border, #e2e8f0); border-radius:16px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.02);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--d-border, #e2e8f0); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="width:36px; height:36px; border-radius:10px; background:#eff6ff; color:#3b82f6; display:grid; place-items:center; font-size:18px;">
+            <i class="bi bi-funnel-fill"></i>
+          </span>
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--d-text, #1e293b);">قمع مبيعات الأكاديمية (Academy Conversion Funnel)</h3>
+            <p style="margin:2px 0 0; font-size:12px; color:var(--d-text-muted, #64748b);">معدل التحويل عبر مراحل الرحلة الست (العملاء ← التواصل ← التجربة ← الحضور ← الاشتراك ← التجديد)</p>
+          </div>
+        </div>
+        <span class="badge" style="background:#f0fdf4; color:#16a34a; border:1px solid #bbf7d0; font-size:11px; padding:4px 8px; font-weight:700;">
+          {{ count($academyFunnel) }} مراحل
+        </span>
+      </div>
+
+      <!-- VISUAL FUNNEL BARS -->
+      <div style="display:flex; flex-direction:column; gap:12px;">
+        @foreach($academyFunnel as $index => $step)
+          @php
+            $widthPct = max(8, min(100, $step['conversion_from_top'] ?? ($index === 0 ? 100 : 10)));
+          @endphp
+          <div style="display:grid; grid-template-columns: 140px 1fr 130px; align-items:center; gap:14px; font-size:13px;">
+            <!-- Stage Label -->
+            <div style="display:flex; align-items:center; gap:8px; font-weight:700; color:var(--d-text, #1e293b);">
+              <span style="display:inline-flex; align-items:center; justify-content:center; width:26px; height:26px; border-radius:8px; background:{{ $step['color'] }}1a; color:{{ $step['color'] }}; font-size:13px;">
+                <i class="bi {{ $step['icon'] }}"></i>
+              </span>
+              <span>{{ $step['name'] }}</span>
+            </div>
+
+            <!-- Funnel Progress Bar -->
+            <div style="background:#f1f5f9; border-radius:8px; height:24px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 8px;">
+              <div style="position:absolute; left:0; top:0; bottom:0; width:{{ $widthPct }}%; background:linear-gradient(90deg, {{ $step['color'] }}dd, {{ $step['color'] }}); border-radius:8px; transition:width 0.5s ease;"></div>
+              <span style="position:relative; z-index:1; font-weight:800; font-size:12px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.35);">
+                {{ number_format($step['count']) }} لاعب
+              </span>
+            </div>
+
+            <!-- Conversion Rates -->
+            <div style="display:flex; align-items:center; justify-content:flex-end; gap:8px; font-size:11px; font-weight:700;">
+              @if($step['conversion_from_prev'] !== null)
+                <span style="background:#f8fafc; border:1px solid #e2e8f0; padding:2px 6px; border-radius:6px; color:#475569;" title="نسبة التحويل من المرحلة السابقة">
+                  <i class="bi bi-arrow-down-short"></i> {{ $step['conversion_from_prev'] }}%
+                </span>
+              @endif
+              <span style="background:{{ $step['color'] }}1a; color:{{ $step['color'] }}; padding:2px 6px; border-radius:6px;" title="نسبة التحويل الإجمالية من البداية">
+                {{ $step['conversion_from_top'] ?? 100 }}%
+              </span>
+            </div>
+          </div>
+        @endforeach
+      </div>
+    </div>
+
+    <!-- CARD 2: OBJECTIONS & LOSS REASONS BREAKDOWN -->
+    <div class="panel-modern" style="background:#fff; border:1px solid var(--d-border, #e2e8f0); border-radius:16px; padding:20px; box-shadow:0 4px 20px rgba(0,0,0,0.02);">
+      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--d-border, #e2e8f0); padding-bottom:12px;">
+        <div style="display:flex; align-items:center; gap:10px;">
+          <span style="width:36px; height:36px; border-radius:10px; background:#fef2f2; color:#ef4444; display:grid; place-items:center; font-size:18px;">
+            <i class="bi bi-exclamation-octagon-fill"></i>
+          </span>
+          <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:var(--d-text, #1e293b);">تحليل الاعتراضات وأسباب الفقد</h3>
+            <p style="margin:2px 0 0; font-size:12px; color:var(--d-text-muted, #64748b);">الأسباب الأكثر تكراراً لعدم الاشتراك أو عدم التجديد (Specs 24, 25, 49)</p>
+          </div>
+        </div>
+        <span class="badge" style="background:#fef2f2; color:#b91c1c; border:1px solid #fecaca; font-size:11px; padding:4px 8px; font-weight:700;">
+          {{ number_format($totalObjectionsCount) }} اعتراض
+        </span>
+      </div>
+
+      <!-- OBJECTIONS LIST WITH BARS -->
+      <div style="display:flex; flex-direction:column; gap:10px;">
+        @forelse($objectionsSummary as $obj)
+          @php
+            $objPct = ($totalObjectionsCount > 0) ? round(($obj['count'] / $totalObjectionsCount) * 100, 1) : 0;
+          @endphp
+          <div style="display:flex; flex-direction:column; gap:4px;">
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:12.5px;">
+              <span style="font-weight:700; color:var(--d-text, #1e293b);">
+                <i class="bi bi-x-circle" style="color:#ef4444; font-size:11px;"></i> {{ $obj['reason'] }}
+              </span>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <strong style="font-size:12px; color:#475569;">{{ number_format($obj['count']) }}</strong>
+                <span style="font-size:11px; color:#94a3b8;">({{ $objPct }}%)</span>
+              </div>
+            </div>
+            <div style="background:#f1f5f9; border-radius:6px; height:8px; overflow:hidden;">
+              <div style="width:{{ max(2, $objPct) }}%; background:#ef4444; height:100%; border-radius:6px; transition:width 0.4s ease;"></div>
+            </div>
+          </div>
+        @empty
+          <div style="text-align:center; padding:24px 0; color:var(--d-text-muted, #94a3b8);">
+            <i class="bi bi-shield-check" style="font-size:28px; color:#10b981;"></i>
+            <p style="margin:6px 0 0; font-size:13px;">لا توجد أي اعتراضات أو حالات فقد مسجلة حالياً</p>
+          </div>
+        @endforelse
+      </div>
+    </div>
+  </section>
   <!-- ======================================================================
        ROW 2: PRIMARY PERFORMANCE CHART + STACKED OPERATIONAL METRICS
        ====================================================================== -->
@@ -2893,7 +3099,17 @@ html.dark-mode .toast {
             <div style="min-width:130px; display:inline-block;">
               <select class="stage-activity-select crm-custom-select" id="stageActivitySelect" aria-label="{{ __('crm.select_stage') }}">
                 @foreach(($activePipelineStages ?? []) as $pStage)
-                  <option value="{{ $pStage['id'] }}" @selected(($stageActivity['stage_id'] ?? null) == $pStage['id'])>
+                  @php
+                    $pStageCatId = $pStage['category_id'] ?? 'uncategorized';
+                    $isStageOptVisible = (($selectedCategoryId ?? 'all') === 'all') || ($pStageCatId === (string)$selectedCategoryId);
+                  @endphp
+                  <option
+                    value="{{ $pStage['id'] }}"
+                    data-category-id="{{ $pStageCatId }}"
+                    @selected(($stageActivity['stage_id'] ?? null) == $pStage['id'])
+                    style="{{ $isStageOptVisible ? '' : 'display: none;' }}"
+                    @disabled(!$isStageOptVisible)
+                  >
                     {{ $pStage['name'] }}
                   </option>
                 @endforeach
@@ -4204,6 +4420,84 @@ html.dark-mode .toast {
         console.error('Failed to update stage KPI 2', err);
       }
     });
+  }
+
+  // 3.5 Dynamic Pipeline Category Filter Controller
+  const pipelineCategoryFilter = document.getElementById('dashPipelineCategoryFilter');
+  if (pipelineCategoryFilter) {
+    const filterPipelineStagesByCategory = (selectedCat) => {
+      // 1. Filter pipeline strip pills
+      const pills = document.querySelectorAll('.dash-pipeline-strip .pipeline-flow-pill');
+      let visibleCount = 0;
+      pills.forEach((pill) => {
+        const pillCatId = pill.getAttribute('data-category-id') || 'uncategorized';
+        const matches = (selectedCat === 'all') || (pillCatId === selectedCat);
+        pill.style.display = matches ? '' : 'none';
+        if (matches) visibleCount++;
+      });
+
+      const emptyEl = document.getElementById('dashPipelineStripEmpty');
+      if (emptyEl) {
+        emptyEl.style.display = visibleCount === 0 ? 'block' : 'none';
+      }
+
+      // 2. Filter Stage Activity Dropdown
+      const actSelect = document.getElementById('stageActivitySelect');
+      if (actSelect) {
+        let currentOptionStillVisible = false;
+        const currentVal = actSelect.value;
+        Array.from(actSelect.options).forEach((opt) => {
+          const optCat = opt.getAttribute('data-category-id') || 'uncategorized';
+          const matches = (selectedCat === 'all') || (optCat === selectedCat);
+          opt.style.display = matches ? '' : 'none';
+          opt.disabled = !matches;
+          if (matches && String(opt.value) === String(currentVal)) {
+            currentOptionStillVisible = true;
+          }
+        });
+
+        if (!currentOptionStillVisible) {
+          const firstVisible = Array.from(actSelect.options).find(opt => !opt.disabled && opt.style.display !== 'none');
+          if (firstVisible) {
+            actSelect.value = firstVisible.value;
+            actSelect.dispatchEvent(new Event('change', { bubbles: true }));
+          }
+        }
+
+        actSelect.dispatchEvent(new CustomEvent('crm-dropdown:update'));
+      }
+
+      // 3. Update Kanban link
+      const kanbanLink = document.getElementById('dashKanbanLink');
+      if (kanbanLink) {
+        try {
+          const kUrl = new URL(kanbanLink.href, window.location.origin);
+          if (selectedCat && selectedCat !== 'all') {
+            kUrl.searchParams.set('category_id', selectedCat);
+          } else {
+            kUrl.searchParams.delete('category_id');
+          }
+          kanbanLink.href = kUrl.toString();
+        } catch (e) {}
+      }
+
+      // 4. Update hidden filter input
+      const hiddenInput = document.getElementById('dashFilterCategoryHidden');
+      if (hiddenInput) {
+        hiddenInput.value = selectedCat === 'all' ? '' : selectedCat;
+      }
+
+      // 5. Update URL parameter without full reload
+      updateUrlParam('category_id', selectedCat === 'all' ? '' : selectedCat);
+    };
+
+    pipelineCategoryFilter.addEventListener('change', (e) => {
+      filterPipelineStagesByCategory(e.target.value);
+    });
+
+    if (pipelineCategoryFilter.value && pipelineCategoryFilter.value !== 'all') {
+      filterPipelineStagesByCategory(pipelineCategoryFilter.value);
+    }
   }
 
   // 4. Dynamic Stage Activity Selector
