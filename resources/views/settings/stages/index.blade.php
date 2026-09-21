@@ -6,9 +6,14 @@
 @section('page-icon', 'bi-diagram-3')
 
 @section('top-actions')
-    <button type="button" class="btn primary" onclick="openAddStageModal()">
-        <i class="bi bi-plus-lg"></i> {{ __('crm.add_additional_stage') }}
-    </button>
+    <div style="display:flex; align-items:center; gap:8px;">
+        <button type="button" class="btn soft" onclick="openAddCategoryModal()" style="border-color:#cbd5e1; background:#fff;">
+            <i class="bi bi-collection-fill" style="color:#0284c7;"></i> {{ __('crm.add_stage_category') ?: 'إنشاء مسار جديد' }}
+        </button>
+        <button type="button" class="btn primary" onclick="openAddStageModal()">
+            <i class="bi bi-plus-lg"></i> {{ __('crm.add_additional_stage') ?: 'إضافة مرحلة' }}
+        </button>
+    </div>
 @endsection
 
 @section('content')
@@ -56,11 +61,23 @@
                         @endif
                     </div>
                 </div>
-                <div>
+                <div style="display:flex; align-items:center; gap:8px;">
                     @if ($cat)
-                        <a href="{{ route('v2.settings.stage_categories.index') }}" class="btn small soft" style="font-size:12px; padding:0 10px;" title="إدارة إعدادات المسار">
-                            <i class="bi bi-gear"></i> إعدادات المسار
-                        </a>
+                        <button type="button" class="btn small soft" style="font-size:12px; padding:4px 10px; color:#0284c7; border-color:#bae6fd; background:#f0f9ff;" onclick="openAddStageModal({{ $cat->id }})" title="إضافة مرحلة لهذا المسار">
+                            <i class="bi bi-plus-lg"></i> إضافة مرحلة
+                        </button>
+                        <button type="button" class="btn small soft" style="font-size:12px; padding:4px 10px;" onclick='openEditCategoryModal(@json($cat))' title="تعديل إعدادات المسار">
+                            <i class="bi bi-pencil"></i> تعديل المسار
+                        </button>
+                        @if ($catStages->isEmpty())
+                            <form action="{{ route('v2.settings.stage_categories.destroy', $cat) }}" method="POST" onsubmit="return confirm('هل أنت متأكد من حذف هذا المسار؟');" style="margin:0;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn small danger" style="padding:4px 8px;" title="حذف المسار">
+                                    <i class="bi bi-trash"></i>
+                                </button>
+                            </form>
+                        @endif
                     @endif
                 </div>
             </div>
@@ -271,7 +288,7 @@ $crmStageIcons = [
             </div>
             <div style="margin-bottom:14px;">
                 <label>{{ __('crm.stage_category') }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small></label>
-                <select name="pipeline_stage_category_id" style="width:100%; padding:10px 14px; border:1px solid #dbe1e9; border-radius:10px; font-size:14px; background:#fff; color:var(--dark);">
+                <select name="pipeline_stage_category_id" id="addStageCategoryId" style="width:100%; padding:10px 14px; border:1px solid #dbe1e9; border-radius:10px; font-size:14px; background:#fff; color:var(--dark);">
                     <option value="">-- {{ __('crm.no_category_direct') }} --</option>
                     @foreach ($categories as $cat)
                         <option value="{{ $cat->id }}">{{ $cat->name_ar }}</option>
@@ -508,13 +525,17 @@ document.addEventListener('click', function(e) {
     }
 });
 
-function openAddStageModal() {
+function openAddStageModal(preselectedCategoryId = null) {
     clearIconSelection('addStage');
     document.getElementById('stageColorPicker').value = '#7b61df';
     document.getElementById('stageColorInput').value = '#7b61df';
     const addHasFollowups = document.getElementById('addStageHasFollowups');
     if (addHasFollowups) {
         addHasFollowups.value = '1';
+    }
+    const catSelect = document.getElementById('addStageCategoryId');
+    if (catSelect && preselectedCategoryId) {
+        catSelect.value = preselectedCategoryId;
     }
     const modal = document.getElementById('addStageModal');
     modal._openedAt = Date.now();
@@ -581,7 +602,6 @@ function openSafeDeleteStageModal(stage, count) {
     modal._openedAt = Date.now();
     modal.style.display = 'flex';
 }
-
 function onSafeDeleteActionChange(radio) {
     const moveGroup = document.getElementById('safeDeleteMoveGroup');
     if (radio.value === 'move') {
@@ -592,5 +612,354 @@ function onSafeDeleteActionChange(radio) {
         document.getElementById('safeDeleteDestinationStage').required = false;
     }
 }
+
+function openAddCategoryModal() {
+    const modal = document.getElementById('addCategoryModal');
+    modal._openedAt = Date.now();
+    modal.style.display = 'flex';
+}
+
+function openEditCategoryModal(category) {
+    const form = document.getElementById('editCategoryForm');
+    form.action = `/settings/stage-categories/${category.id}`;
+    document.getElementById('editCategoryNameAr').value = category.name_ar || '';
+    document.getElementById('editCategoryNameEn').value = category.name_en || '';
+    document.getElementById('editCategoryDescriptionAr').value = category.description_ar || '';
+    document.getElementById('editCategoryColorInput').value = category.color || '#3478f6';
+    document.getElementById('editCategoryColorPicker').value = category.color || '#3478f6';
+
+    const iconSelect = document.getElementById('editCategoryIconSelect');
+    if (iconSelect && category.icon) {
+        iconSelect.value = category.icon;
+    }
+
+    const autoTransferCb = document.getElementById('editAutoTransferCb');
+    const autoTransferWrap = document.getElementById('editAutoTransferFields');
+    if (autoTransferCb) {
+        autoTransferCb.checked = !!category.auto_transfer_enabled;
+        if (autoTransferWrap) {
+            autoTransferWrap.style.display = category.auto_transfer_enabled ? 'block' : 'none';
+        }
+    }
+
+    const actionSelect = document.getElementById('editAutoTransferAction');
+    if (actionSelect && category.auto_transfer_action) {
+        actionSelect.value = category.auto_transfer_action;
+    }
+
+    const triggerStageSelect = document.getElementById('editTriggerStageSelect');
+    if (triggerStageSelect) {
+        triggerStageSelect.value = category.trigger_stage_id || '';
+        syncStatusesForTrigger('editTriggerStageSelect', 'editTriggerStatusSelect', category.trigger_status_id);
+    }
+
+    const targetStageSelect = document.getElementById('editTargetStageSelect');
+    if (targetStageSelect) {
+        targetStageSelect.value = category.target_stage_id || '';
+    }
+
+    const modal = document.getElementById('editCategoryModal');
+    modal._openedAt = Date.now();
+    modal.style.display = 'flex';
+}
+
+const allStagesData = @json($allStages ?? []);
+
+function syncStatusesForTrigger(stageSelectId, statusSelectId, selectedStatusId = null) {
+    const stageSelect = document.getElementById(stageSelectId);
+    const statusSelect = document.getElementById(statusSelectId);
+    if (!stageSelect || !statusSelect) return;
+
+    const stageId = parseInt(stageSelect.value, 10);
+    statusSelect.innerHTML = '<option value="">-- أي حالة في هذه المرحلة --</option>';
+
+    if (!stageId) return;
+
+    const stage = allStagesData.find(s => s.id === stageId);
+    if (stage && stage.statuses && stage.statuses.length > 0) {
+        stage.statuses.forEach(st => {
+            const opt = document.createElement('option');
+            opt.value = st.id;
+            opt.textContent = st.name_ar || st.name_en || st.code;
+            if (selectedStatusId && String(st.id) === String(selectedStatusId)) {
+                opt.selected = true;
+            }
+            statusSelect.appendChild(opt);
+        });
+    }
+}
 </script>
+
+<!-- ADD CATEGORY MODAL -->
+<div id="addCategoryModal" class="crm-body-modal-shell" style="display:none;" onclick="handleBackdropClick(event, 'addCategoryModal')">
+    <div class="crm-body-modal-dialog" style="max-width: 620px;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-collection-fill" style="color:var(--red);"></i> {{ __('crm.add_stage_category') ?: 'إنشاء مسار عمل جديد' }}
+            </h3>
+            <button type="button" onclick="closeModal('addCategoryModal')" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+
+        <form action="{{ route('v2.settings.stage_categories.store') }}" method="POST">
+            @csrf
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.category_name_ar') ?: 'اسم المسار بالعربية' }} <span style="color:var(--red)">*</span>
+                    </label>
+                    <input type="text" name="name_ar" required placeholder="مثال: مسار الاشتراكات" dir="rtl"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); text-align:right;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.category_name_en') ?: 'اسم المسار بالإنجليزية' }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
+                    </label>
+                    <input type="text" name="name_en" placeholder="e.g. Subscriptions Pipeline"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                    {{ __('crm.description') ?: 'الوصف' }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
+                </label>
+                <textarea name="description_ar" rows="2" placeholder="اكتب وصفاً موجزاً لطبيعة هذا المسار..." dir="rtl"
+                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical; text-align:right;"></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.color_col') ?: 'لون المسار' }}
+                    </label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="addCategoryColorPicker" value="#3478f6"
+                               onchange="document.getElementById('addCategoryColorInput').value = this.value;"
+                               style="width:44px; height:42px; border:1px solid var(--line); border-radius:8px; cursor:pointer; padding:2px; background:none;">
+                        <input type="text" name="color" id="addCategoryColorInput" value="#3478f6"
+                               oninput="document.getElementById('addCategoryColorPicker').value = this.value;"
+                               placeholder="#3478f6"
+                               style="flex:1; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.icon_class') ?: 'أيقونة المسار' }}
+                    </label>
+                    <select name="icon" style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                        <option value="bi-arrow-repeat">تجديد ومتابعة دورية (bi-arrow-repeat)</option>
+                        <option value="bi-repeat">تكرار واشتراكات (bi-repeat)</option>
+                        <option value="bi-person-check">مشترك مؤكد (bi-person-check)</option>
+                        <option value="bi-telephone-outbound">مبيعات وتواصل (bi-telephone-outbound)</option>
+                        <option value="bi-telephone">هاتف وتواصل (bi-telephone)</option>
+                        <option value="bi-collection">مجموعة مسارات (bi-collection)</option>
+                        <option value="bi-folder2-open">مجلد أعمال (bi-folder2-open)</option>
+                        <option value="bi-tags">وسوم وفئات (bi-tags)</option>
+                        <option value="bi-funnel">قمع بيع (bi-funnel)</option>
+                        <option value="bi-briefcase">حقيبة أعمال (bi-briefcase)</option>
+                        <option value="bi-diagram-3">مخطط مراحل (bi-diagram-3)</option>
+                        <option value="bi-kanban">لوحة كانبان (bi-kanban)</option>
+                        <option value="bi-check2-all">اكتمال وإنجاز (bi-check2-all)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- AUTOMATIC TRANSFER CONFIGURATION -->
+            <div style="margin-bottom:20px; border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; cursor:pointer; margin-bottom:10px;">
+                    <input type="checkbox" name="auto_transfer_enabled" value="1" onchange="document.getElementById('addAutoTransferFields').style.display = this.checked ? 'block' : 'none';">
+                    <i class="bi bi-lightning-charge-fill" style="color:#4f46e5;"></i>
+                    <span>{{ __('ترحيل / نسخ العميل تلقائيًا إلى هذا المسار عند وصوله لمرحلة محددة') }}</span>
+                </label>
+
+                <div id="addAutoTransferFields" style="display:none; margin-top:12px; border-top:1px dashed var(--line); padding-top:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('نوع الإجراء') }}
+                            </label>
+                            <select name="auto_transfer_action" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="clone">{{ __('استنساخ عميل جديد في هذا المسار (Cloned Lead)') }}</option>
+                                <option value="move">{{ __('نقل نفس العميل بالكامل إلى هذا المسار (Move)') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('مرحلة الإطلاق والتحويل (المسار المصدر)') }}
+                            </label>
+                            <select name="trigger_stage_id" id="addTriggerStageSelect" onchange="syncStatusesForTrigger('addTriggerStageSelect', 'addTriggerStatusSelect')" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('اختر المرحلة المحفزة') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }} @if ($stg->category) ({{ $stg->category->name_ar }}) @endif</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('حالة محددة للإطلاق (اختياري - أي حالة افتراضيًا)') }}
+                            </label>
+                            <select name="trigger_status_id" id="addTriggerStatusSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أي حالة في هذه المرحلة') }} --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('المرحلة الابتدائية في هذا المسار المستهدف') }}
+                            </label>
+                            <select name="target_stage_id" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أول مرحلة في هذا المسار تلقائيًا') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+                <button type="button" class="btn light" onclick="closeModal('addCategoryModal')">{{ __('crm.cancel') }}</button>
+                <button type="submit" class="btn primary">{{ __('crm.save_category') ?: 'حفظ المسار' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- EDIT CATEGORY MODAL -->
+<div id="editCategoryModal" class="crm-body-modal-shell" style="display:none;" onclick="handleBackdropClick(event, 'editCategoryModal')">
+    <div class="crm-body-modal-dialog" style="max-width: 620px;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px; border-bottom:1px solid var(--line); padding-bottom:12px;">
+            <h3 style="margin:0; font-size:18px; font-weight:800; display:flex; align-items:center; gap:8px;">
+                <i class="bi bi-pencil-square" style="color:var(--red);"></i> {{ __('crm.edit_stage_category') ?: 'تعديل مسار العمل' }}
+            </h3>
+            <button type="button" onclick="closeModal('editCategoryModal')" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--muted);">&times;</button>
+        </div>
+
+        <form id="editCategoryForm" method="POST">
+            @csrf
+            @method('PATCH')
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.category_name_ar') ?: 'اسم المسار بالعربية' }} <span style="color:var(--red)">*</span>
+                    </label>
+                    <input type="text" name="name_ar" id="editCategoryNameAr" required dir="rtl"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); text-align:right;">
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.category_name_en') ?: 'اسم المسار بالإنجليزية' }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
+                    </label>
+                    <input type="text" name="name_en" id="editCategoryNameEn"
+                           style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                </div>
+            </div>
+
+            <div style="margin-bottom:16px;">
+                <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                    {{ __('crm.description') ?: 'الوصف' }} <small style="color:var(--muted)">({{ __('crm.optional') }})</small>
+                </label>
+                <textarea name="description_ar" id="editCategoryDescriptionAr" rows="2" dir="rtl"
+                          style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark); resize:vertical; text-align:right;"></textarea>
+            </div>
+
+            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px; margin-bottom:16px;">
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.color_col') ?: 'لون المسار' }}
+                    </label>
+                    <div style="display:flex; align-items:center; gap:8px;">
+                        <input type="color" id="editCategoryColorPicker" value="#3478f6"
+                               onchange="document.getElementById('editCategoryColorInput').value = this.value;"
+                               style="width:44px; height:42px; border:1px solid var(--line); border-radius:8px; cursor:pointer; padding:2px; background:none;">
+                        <input type="text" name="color" id="editCategoryColorInput" value="#3478f6"
+                               oninput="document.getElementById('editCategoryColorPicker').value = this.value;"
+                               placeholder="#3478f6"
+                               style="flex:1; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                    </div>
+                </div>
+                <div>
+                    <label style="display:block; margin-bottom:6px; font-weight:700; font-size:13px;">
+                        {{ __('crm.icon_class') ?: 'أيقونة المسار' }}
+                    </label>
+                    <select name="icon" id="editCategoryIconSelect" style="width:100%; padding:10px 14px; border:1px solid var(--line); border-radius:10px; font-size:14px; background:var(--bg); color:var(--dark);">
+                        <option value="bi-arrow-repeat">تجديد ومتابعة دورية (bi-arrow-repeat)</option>
+                        <option value="bi-repeat">تكرار واشتراكات (bi-repeat)</option>
+                        <option value="bi-person-check">مشترك مؤكد (bi-person-check)</option>
+                        <option value="bi-telephone-outbound">مبيعات وتواصل (bi-telephone-outbound)</option>
+                        <option value="bi-telephone">هاتف وتواصل (bi-telephone)</option>
+                        <option value="bi-collection">مجموعة مسارات (bi-collection)</option>
+                        <option value="bi-folder2-open">مجلد أعمال (bi-folder2-open)</option>
+                        <option value="bi-tags">وسوم وفئات (bi-tags)</option>
+                        <option value="bi-funnel">قمع بيع (bi-funnel)</option>
+                        <option value="bi-briefcase">حقيبة أعمال (bi-briefcase)</option>
+                        <option value="bi-diagram-3">مخطط مراحل (bi-diagram-3)</option>
+                        <option value="bi-kanban">لوحة كانبان (bi-kanban)</option>
+                        <option value="bi-check2-all">اكتمال وإنجاز (bi-check2-all)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- AUTOMATIC TRANSFER CONFIGURATION -->
+            <div style="margin-bottom:20px; border:1px solid var(--line); border-radius:10px; padding:14px; background:var(--bg);">
+                <label style="display:flex; align-items:center; gap:8px; font-weight:800; font-size:13px; cursor:pointer; margin-bottom:10px;">
+                    <input type="checkbox" name="auto_transfer_enabled" id="editAutoTransferCb" value="1" onchange="document.getElementById('editAutoTransferFields').style.display = this.checked ? 'block' : 'none';">
+                    <i class="bi bi-lightning-charge-fill" style="color:#4f46e5;"></i>
+                    <span>{{ __('ترحيل / نسخ العميل تلقائيًا إلى هذا المسار عند وصوله لمرحلة محددة') }}</span>
+                </label>
+
+                <div id="editAutoTransferFields" style="display:none; margin-top:12px; border-top:1px dashed var(--line); padding-top:12px;">
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('نوع الإجراء') }}
+                            </label>
+                            <select name="auto_transfer_action" id="editAutoTransferAction" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="clone">{{ __('استنساخ عميل جديد في هذا المسار (Cloned Lead)') }}</option>
+                                <option value="move">{{ __('نقل نفس العميل بالكامل إلى هذا المسار (Move)') }}</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('مرحلة الإطلاق والتحويل (المسار المصدر)') }}
+                            </label>
+                            <select name="trigger_stage_id" id="editTriggerStageSelect" onchange="syncStatusesForTrigger('editTriggerStageSelect', 'editTriggerStatusSelect')" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('اختر المرحلة المحفزة') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }} @if ($stg->category) ({{ $stg->category->name_ar }}) @endif</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px;">
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('حالة محددة للإطلاق (اختياري - أي حالة افتراضيًا)') }}
+                            </label>
+                            <select name="trigger_status_id" id="editTriggerStatusSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أي حالة في هذه المرحلة') }} --</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label style="display:block; margin-bottom:4px; font-size:12px; font-weight:700;">
+                                {{ __('المرحلة الابتدائية في هذا المسار المستهدف') }}
+                            </label>
+                            <select name="target_stage_id" id="editTargetStageSelect" style="width:100%; padding:8px 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:#fff;">
+                                <option value="">-- {{ __('أول مرحلة في هذا المسار تلقائيًا') }} --</option>
+                                @foreach ($allStages as $stg)
+                                    <option value="{{ $stg->id }}">{{ $stg->localizedName() }}</option>
+                                @endforeach
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex; justify-content:flex-end; gap:10px; border-top:1px solid var(--line); padding-top:16px;">
+                <button type="button" class="btn light" onclick="closeModal('editCategoryModal')">{{ __('crm.cancel') }}</button>
+                <button type="submit" class="btn primary">{{ __('crm.update_category') ?: 'حفظ التعديلات' }}</button>
+            </div>
+        </form>
+    </div>
+</div>
 @endsection

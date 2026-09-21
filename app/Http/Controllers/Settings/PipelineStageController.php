@@ -36,11 +36,26 @@ class PipelineStageController extends Controller
             ->get();
 
         $categories = PipelineStageCategory::query()
-            ->where('is_active', true)
+            ->with([
+                'stages' => static fn ($q) => $q->whereNull('deleted_at')->orderBy('position')->orderBy('id'),
+                'triggerStage',
+                'triggerStatus',
+                'targetStage',
+                'targetStatus',
+            ])
+            ->withCount([
+                'stages' => static fn ($q) => $q->whereNull('deleted_at'),
+            ])
             ->orderBy('position')
             ->orderBy('id')
             ->get();
 
+        $allStages = PipelineStage::query()
+            ->whereNull('deleted_at')
+            ->with(['statuses' => static fn ($q) => $q->orderBy('position')->orderBy('id'), 'category'])
+            ->orderBy('position')
+            ->orderBy('id')
+            ->get();
         $totalStagesCount = $stages->count();
         $primaryStagesCount = $stages->where('is_primary', true)->count();
         $customStagesCount = $stages->where('is_primary', false)->count();
@@ -63,6 +78,7 @@ class PipelineStageController extends Controller
 
         return view('settings.stages.index', [
             'stages' => $stages,
+            'allStages' => $allStages,
             'groupedStages' => $groupedStages,
             'categories' => $categories,
             'totalStagesCount' => $totalStagesCount,

@@ -713,11 +713,8 @@
             <a class="{{ request()->routeIs('v2.settings') ? 'active' : '' }}" href="{{ route('v2.settings') }}">
                 <i class="bi bi-grid-1x2"></i> {{ __('crm.overview') }}
             </a>
-            <a class="{{ request()->routeIs('v2.settings.stages.*') ? 'active' : '' }}" href="{{ route('v2.settings.stages.index') }}">
-                <i class="bi bi-diagram-3"></i> {{ __('crm.stages_and_statuses') }}
-            </a>
-            <a class="{{ request()->routeIs('v2.settings.stage_categories.*') ? 'active' : '' }}" href="{{ route('v2.settings.stage_categories.index') }}">
-                <i class="bi bi-collection"></i> {{ __('crm.stage_categories') }}
+            <a class="{{ request()->routeIs('v2.settings.stages.*') || request()->routeIs('v2.settings.stage_categories.*') ? 'active' : '' }}" href="{{ route('v2.settings.stages.index') }}">
+                <i class="bi bi-diagram-3"></i> {{ __('crm.pipelines_and_stages') ?? 'المسارات والمراحل' }}
             </a>
             @can('users.view')
                 <a class="{{ request()->routeIs('v2.settings.users.*') ? 'active' : '' }}" href="{{ route('v2.settings.users.index') }}">

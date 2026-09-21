@@ -76,9 +76,7 @@ class PipelineAutoTransferAndCloneTest extends TestCase
             'trigger_stage_id' => $subscribedStage->id,
             'trigger_status_id' => $subscribedStatus->id,
         ]);
-
-        $response->assertRedirect(route('v2.settings.stage_categories.index'));
-
+        $response->assertRedirect(route('v2.settings.stages.index'));
         $this->assertDatabaseHas('pipeline_stage_categories', [
             'name_ar' => 'مسار الاشتراكات',
             'auto_transfer_enabled' => true,

@@ -15,43 +15,9 @@ use Illuminate\Support\Facades\DB;
 
 class PipelineStageCategoryController extends Controller
 {
-    public function index(): View
+    public function index(): RedirectResponse
     {
-        $this->assertCrmDatabase();
-
-        $categories = PipelineStageCategory::query()
-            ->with([
-                'stages' => static fn ($q) => $q->orderBy('position')->orderBy('id'),
-                'triggerStage',
-                'triggerStatus',
-                'targetStage',
-                'targetStatus',
-            ])
-            ->withCount('stages')
-            ->orderBy('position')
-            ->orderBy('id')
-            ->get();
-        $allStages = PipelineStage::query()
-            ->whereNull('deleted_at')
-            ->with(['statuses' => static fn ($q) => $q->orderBy('position')->orderBy('id'), 'category'])
-            ->orderBy('position')
-            ->orderBy('id')
-            ->get();
-        $totalCategoriesCount = $categories->count();
-        $activeCategoriesCount = $categories->where('is_active', true)->count();
-        $assignedStagesCount = PipelineStage::query()
-            ->whereNotNull('pipeline_stage_category_id')
-            ->count();
-        $unassignedStagesCount = $allStages->count() - $assignedStagesCount;
-
-        return view('settings.stage-categories.index', [
-            'categories' => $categories,
-            'allStages' => $allStages,
-            'totalCategoriesCount' => $totalCategoriesCount,
-            'activeCategoriesCount' => $activeCategoriesCount,
-            'assignedStagesCount' => $assignedStagesCount,
-            'unassignedStagesCount' => max(0, $unassignedStagesCount),
-        ]);
+        return redirect()->route('v2.settings.stages.index');
     }
 
     public function store(Request $request): RedirectResponse
@@ -110,8 +76,8 @@ class PipelineStageCategoryController extends Controller
         PipelineStage::clearSidebarCache();
 
         return redirect()
-            ->route('v2.settings.stage_categories.index')
-            ->with('success', 'تمت إضافة فئة المراحل بنجاح.');
+            ->route('v2.settings.stages.index')
+            ->with('success', 'تمت إضافة المسار بنجاح.');
     }
 
     public function update(Request $request, PipelineStageCategory $category): RedirectResponse
@@ -213,8 +179,8 @@ class PipelineStageCategoryController extends Controller
         PipelineStage::clearSidebarCache();
 
         return redirect()
-            ->route('v2.settings.stage_categories.index')
-            ->with('success', 'تم تحديث فئة المراحل بنجاح.');
+            ->route('v2.settings.stages.index')
+            ->with('success', 'تم تحديث بيانات المسار بنجاح.');
     }
 
     public function destroy(PipelineStageCategory $category): RedirectResponse
@@ -248,8 +214,8 @@ class PipelineStageCategoryController extends Controller
         PipelineStage::clearSidebarCache();
 
         return redirect()
-            ->route('v2.settings.stage_categories.index')
-            ->with('success', 'تم حذف فئة المراحل بنجاح.');
+            ->route('v2.settings.stages.index')
+            ->with('success', 'تم حذف المسار بنجاح.');
     }
 
     private function assertCrmDatabase(): void

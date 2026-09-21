@@ -42,8 +42,8 @@
             </a>
         @endcan
         <a class="stat-card action-card" href="{{ route('v2.settings.stages.index') }}">
-            <span><i class="bi bi-diagram-3" style="color:#dc2637"></i> {{ __('crm.stages_and_statuses') }}</span>
-            <b style="font-size:17px;margin-top:8px">{{ __('crm.stages_settings_heading') }}</b>
+            <span><i class="bi bi-diagram-3" style="color:#dc2637"></i> {{ __('crm.pipelines_and_stages') ?? 'المسارات والمراحل' }}</span>
+            <b style="font-size:17px;margin-top:8px">{{ __('إدارة مسارات العمل والمراحل والأسئلة') }}</b>
         </a>
                         <a class="stat-card action-card" href="{{ route('v2.settings.lead-sources.index') }}">
             <span><i class="bi bi-funnel-fill" style="color:#f59e0b"></i> مصادر العملاء</span>
@@ -52,10 +52,6 @@
         <a class="stat-card action-card" href="{{ route('v2.settings.followup-customer-fields.index') }}">
             <span><i class="bi bi-card-checklist" style="color:#0ea5e9"></i> {{ __('crm.followup_customer_fields') }}</span>
             <b style="font-size:17px;margin-top:8px">{{ __('حقول بيانات العملاء') }}</b>
-        </a>
-        <a class="stat-card action-card" href="{{ route('v2.settings.stage_categories.index') }}">
-            <span><i class="bi bi-collection" style="color:#0284c7"></i> {{ __('crm.stage_categories') }}</span>
-            <b style="font-size:17px;margin-top:8px">{{ __('crm.stage_categories_heading') }}</b>
         </a>
         @can('users.view')
             <a class="stat-card action-card" href="{{ route('v2.settings.users.index') }}">
