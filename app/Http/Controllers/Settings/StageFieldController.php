@@ -213,6 +213,8 @@ class StageFieldController extends Controller
             'show_on_transition' => (bool) ($validated['show_on_transition'] ?? true),
             'show_on_stage_view' => (bool) ($validated['show_on_stage_view'] ?? true),
             'show_in_history' => (bool) ($validated['show_in_history'] ?? true),
+            'show_in_daily_tasks' => (bool) ($validated['show_in_daily_tasks'] ?? false),
+            'daily_tasks_filter_values' => $this->extractDailyTasksFilterValues($request, $validated),
             'is_active' => true,
             'position' => $nextPos,
         ]);
@@ -263,9 +265,10 @@ class StageFieldController extends Controller
             'show_on_transition' => (bool) ($validated['show_on_transition'] ?? true),
             'show_on_stage_view' => (bool) ($validated['show_on_stage_view'] ?? true),
             'show_in_history' => (bool) ($validated['show_in_history'] ?? true),
+            'show_in_daily_tasks' => (bool) ($validated['show_in_daily_tasks'] ?? false),
+            'daily_tasks_filter_values' => $this->extractDailyTasksFilterValues($request, $validated),
         ]);
 
-        StageFieldSchema::flushCache((int) $stage->id);
 
         return redirect()
             ->route('v2.settings.stages.fields.index', $stage)
@@ -496,14 +499,14 @@ class StageFieldController extends Controller
             'show_on_transition' => ['nullable', 'boolean'],
             'show_on_stage_view' => ['nullable', 'boolean'],
             'show_in_history' => ['nullable', 'boolean'],
+            'show_in_daily_tasks' => ['nullable', 'boolean'],
+            'daily_tasks_filter_values' => ['nullable'],
             'condition_field' => ['nullable', 'string', 'max:100'],
             'condition_operator' => ['nullable', 'string', Rule::in(array_keys(PipelineStageField::OPERATORS))],
             'condition_value' => ['nullable', 'string', 'max:255'],
             'options_raw' => ['nullable', 'string'],
             'options' => ['nullable', 'array'],
         ];
-
-        // Safe auto-key generation for non-technical users
         if ($field === null) {
             $rawKey = $request->input('key');
             if (empty($rawKey)) {
@@ -584,6 +587,26 @@ class StageFieldController extends Controller
         ];
     }
 
+    private function extractDailyTasksFilterValues(Request $request, array $validated): ?array
+    {
+        if (empty($validated['show_in_daily_tasks'])) {
+            return null;
+        }
+
+        $rawValues = $request->input('daily_tasks_filter_values');
+        if (is_array($rawValues)) {
+            $filtered = array_values(array_filter(array_map('trim', $rawValues), static fn ($v) => $v !== ''));
+            return !empty($filtered) ? $filtered : null;
+        }
+
+        if (is_string($rawValues) && trim($rawValues) !== '') {
+            $lines = preg_split('/[\r\n,]+/', $rawValues);
+            $filtered = array_values(array_filter(array_map('trim', $lines), static fn ($v) => $v !== ''));
+            return !empty($filtered) ? $filtered : null;
+        }
+
+        return null;
+    }
     private function assertCrmDatabase(): void
     {
         CrmDatabaseGuard::ensureConnected();

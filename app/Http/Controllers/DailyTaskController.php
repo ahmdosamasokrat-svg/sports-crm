@@ -8,6 +8,7 @@ use App\Models\Lead;
 use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\PipelineStage;
+use App\Models\PipelineStageField;
 use App\Models\User;
 use App\Security\CrmPermission;
 use App\Support\CrmDatabaseGuard;
@@ -41,7 +42,24 @@ class DailyTaskController extends Controller
 
         // Extract and sanitize filter params
         $scope = trim((string) $request->query('scope', 'all'));
-        $validScopes = ['all', 'overdue', 'today', 'upcoming', 'no_date', 'completed'];
+        $validScopes = [
+            'all', 'overdue', 'today', 'upcoming', 'no_date', 'completed',
+            'today_trials', 'attended_not_subscribed', 'trial_no_shows',
+        ];
+
+        // Load custom dynamic question filters configured via GUI (Option B)
+        $customQuestionFilters = PipelineStageField::query()
+            ->where('show_in_daily_tasks', true)
+            ->where('is_active', true)
+            ->with('stage')
+            ->orderBy('pipeline_stage_id')
+            ->orderBy('position')
+            ->get();
+
+        foreach ($customQuestionFilters as $cqf) {
+            $validScopes[] = 'q_' . $cqf->id;
+        }
+
         if (!in_array($scope, $validScopes, true)) {
             $scope = 'all';
         }
@@ -99,6 +117,99 @@ class DailyTaskController extends Controller
         $todayCount = (int) ($scopeCounts->today_count ?? 0);
         $upcomingCount = (int) ($scopeCounts->upcoming_count ?? 0);
         $noDateCount = (int) ($scopeCounts->no_date_count ?? 0);
+
+        // Academy Specialized Scope Counts
+        $todayDateStr = $now->toDateString();
+        $stage17Ids = PipelineStage::query()->where('id', 17)->orWhere('name_ar', 'تجربة محجوزة')->pluck('id')->all() ?: [17];
+        $stage18Ids = PipelineStage::query()->where('id', 18)->orWhere('name_ar', 'متابعة ما بعد التجربة')->pluck('id')->all() ?: [18];
+
+        // 1. Today's Trials (Stage 17: تجربة محجوزة with trial_date = today OR next_follow_up_at = today)
+        $todayTrialsCount = (clone $filteredCountBase)
+            ->whereHas('status', static fn (Builder $q): Builder => $q->whereIn('pipeline_stage_id', $stage17Ids))
+            ->where(static function (Builder $q) use ($todayDateStr, $todayStart, $todayEnd): void {
+                $q->whereBetween('next_follow_up_at', [$todayStart, $todayEnd])
+                    ->orWhereExists(static function ($sub): void {
+                        $sub->selectRaw('1')
+                            ->from('lead_stage_field_values')
+                            ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                            ->where('field_key', 'trial_date')
+                            ->whereDate('value', now()->toDateString());
+                    });
+            })
+            ->count();
+
+        // 2. Attended - Not Subscribed (Stage 18: متابعة ما بعد التجربة with attended = 'نعم' and subscribed != 'نعم')
+        $attendedNotSubscribedCount = (clone $filteredCountBase)
+            ->whereHas('status', static fn (Builder $q): Builder => $q->whereIn('pipeline_stage_id', $stage18Ids))
+            ->whereExists(static function ($sub): void {
+                $sub->selectRaw('1')
+                    ->from('lead_stage_field_values')
+                    ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                    ->where('field_key', 'attended')
+                    ->where('value', 'نعم');
+            })
+            ->whereNotExists(static function ($sub): void {
+                $sub->selectRaw('1')
+                    ->from('lead_stage_field_values')
+                    ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                    ->where('field_key', 'subscribed')
+                    ->where('value', 'نعم');
+            })
+            ->count();
+
+        // 3. Trial No-Shows (Stage 17 with trial_status = 'لم يحضر' OR Stage 18 with attended = 'لا')
+        $trialNoShowsCount = (clone $filteredCountBase)
+            ->where(static function (Builder $q) use ($stage17Ids, $stage18Ids): void {
+                $q->where(static function (Builder $sq17) use ($stage17Ids): void {
+                    $sq17->whereHas('status', static fn (Builder $st): Builder => $st->whereIn('pipeline_stage_id', $stage17Ids))
+                        ->whereExists(static function ($sub): void {
+                            $sub->selectRaw('1')
+                                ->from('lead_stage_field_values')
+                                ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                                ->where('field_key', 'trial_status')
+                                ->where('value', 'لم يحضر');
+                        });
+                })->orWhere(static function (Builder $sq18) use ($stage18Ids): void {
+                    $sq18->whereHas('status', static fn (Builder $st): Builder => $st->whereIn('pipeline_stage_id', $stage18Ids))
+                        ->whereExists(static function ($sub): void {
+                            $sub->selectRaw('1')
+                                ->from('lead_stage_field_values')
+                                ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                                ->where('field_key', 'attended')
+                                ->where('value', 'لا');
+                        });
+                });
+            })
+            ->count();
+
+        // Calculate counts for custom dynamic question filters
+        $customQuestionCounts = [];
+        foreach ($customQuestionFilters as $cqf) {
+            $cqfQuery = (clone $filteredCountBase)
+                ->whereHas('status', static fn (Builder $q): Builder => $q->where('pipeline_stage_id', $cqf->pipeline_stage_id));
+
+            $filterVals = $cqf->daily_tasks_filter_values;
+            if (!empty($filterVals) && is_array($filterVals)) {
+                $cqfQuery->whereExists(static function ($sub) use ($cqf, $filterVals): void {
+                    $sub->selectRaw('1')
+                        ->from('lead_stage_field_values')
+                        ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                        ->where('pipeline_stage_field_id', $cqf->id)
+                        ->whereIn('value', $filterVals);
+                });
+            } else {
+                $cqfQuery->whereExists(static function ($sub) use ($cqf): void {
+                    $sub->selectRaw('1')
+                        ->from('lead_stage_field_values')
+                        ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                        ->where('pipeline_stage_field_id', $cqf->id)
+                        ->whereNotNull('value')
+                        ->where('value', '!=', '');
+                });
+            }
+
+            $customQuestionCounts[$cqf->id] = $cqfQuery->count();
+        }
 
         $completedTodayQuery = LeadFollowup::query()
             ->whereBetween('followed_up_at', [$todayStart, $todayEnd])
@@ -240,6 +351,100 @@ class DailyTaskController extends Controller
             }
 
             $completedTodayFollowups = $completedQuery->paginate(self::PER_PAGE)->withQueryString();
+        } elseif ($scope === 'today_trials') {
+            $stage17Ids = PipelineStage::query()->where('id', 17)->orWhere('name_ar', 'تجربة محجوزة')->pluck('id')->all() ?: [17];
+            $query = (clone $leadsBase)
+                ->whereHas('status', static fn (Builder $q): Builder => $q->whereIn('pipeline_stage_id', $stage17Ids))
+                ->where(static function (Builder $q) use ($todayStart, $todayEnd): void {
+                    $q->whereBetween('next_follow_up_at', [$todayStart, $todayEnd])
+                        ->orWhereExists(static function ($sub): void {
+                            $sub->selectRaw('1')
+                                ->from('lead_stage_field_values')
+                                ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                                ->where('field_key', 'trial_date')
+                                ->whereDate('value', now()->toDateString());
+                        });
+                });
+            $applySorting($query);
+            $paginatedTasks = $query->paginate(self::PER_PAGE)->withQueryString();
+        } elseif ($scope === 'attended_not_subscribed') {
+            $stage18Ids = PipelineStage::query()->where('id', 18)->orWhere('name_ar', 'متابعة ما بعد التجربة')->pluck('id')->all() ?: [18];
+            $query = (clone $leadsBase)
+                ->whereHas('status', static fn (Builder $q): Builder => $q->whereIn('pipeline_stage_id', $stage18Ids))
+                ->whereExists(static function ($sub): void {
+                    $sub->selectRaw('1')
+                        ->from('lead_stage_field_values')
+                        ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                        ->where('field_key', 'attended')
+                        ->where('value', 'نعم');
+                })
+                ->whereNotExists(static function ($sub): void {
+                    $sub->selectRaw('1')
+                        ->from('lead_stage_field_values')
+                        ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                        ->where('field_key', 'subscribed')
+                        ->where('value', 'نعم');
+                });
+            $applySorting($query);
+            $paginatedTasks = $query->paginate(self::PER_PAGE)->withQueryString();
+        } elseif ($scope === 'trial_no_shows') {
+            $stage17Ids = PipelineStage::query()->where('id', 17)->orWhere('name_ar', 'تجربة محجوزة')->pluck('id')->all() ?: [17];
+            $stage18Ids = PipelineStage::query()->where('id', 18)->orWhere('name_ar', 'متابعة ما بعد التجربة')->pluck('id')->all() ?: [18];
+            $query = (clone $leadsBase)
+                ->where(static function (Builder $q) use ($stage17Ids, $stage18Ids): void {
+                    $q->where(static function (Builder $sq17) use ($stage17Ids): void {
+                        $sq17->whereHas('status', static fn (Builder $st): Builder => $st->whereIn('pipeline_stage_id', $stage17Ids))
+                            ->whereExists(static function ($sub): void {
+                                $sub->selectRaw('1')
+                                    ->from('lead_stage_field_values')
+                                    ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                                    ->where('field_key', 'trial_status')
+                                    ->where('value', 'لم يحضر');
+                            });
+                    })->orWhere(static function (Builder $sq18) use ($stage18Ids): void {
+                        $sq18->whereHas('status', static fn (Builder $st): Builder => $st->whereIn('pipeline_stage_id', $stage18Ids))
+                            ->whereExists(static function ($sub): void {
+                                $sub->selectRaw('1')
+                                    ->from('lead_stage_field_values')
+                                    ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                                    ->where('field_key', 'attended')
+                                    ->where('value', 'لا');
+                            });
+                    });
+                });
+            $applySorting($query);
+            $paginatedTasks = $query->paginate(self::PER_PAGE)->withQueryString();
+        } elseif (str_starts_with($scope, 'q_')) {
+            $cqfId = (int) substr($scope, 2);
+            $cqf = $customQuestionFilters->firstWhere('id', $cqfId);
+
+            if ($cqf) {
+                $query = (clone $leadsBase)
+                    ->whereHas('status', static fn (Builder $q): Builder => $q->where('pipeline_stage_id', $cqf->pipeline_stage_id));
+
+                $filterVals = $cqf->daily_tasks_filter_values;
+                if (!empty($filterVals) && is_array($filterVals)) {
+                    $query->whereExists(static function ($sub) use ($cqf, $filterVals): void {
+                        $sub->selectRaw('1')
+                            ->from('lead_stage_field_values')
+                            ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                            ->where('pipeline_stage_field_id', $cqf->id)
+                            ->whereIn('value', $filterVals);
+                    });
+                } else {
+                    $query->whereExists(static function ($sub) use ($cqf): void {
+                        $sub->selectRaw('1')
+                            ->from('lead_stage_field_values')
+                            ->whereColumn('lead_stage_field_values.lead_id', 'leads.id')
+                            ->where('pipeline_stage_field_id', $cqf->id)
+                            ->whereNotNull('value')
+                            ->where('value', '!=', '');
+                    });
+                }
+
+                $applySorting($query);
+                $paginatedTasks = $query->paginate(self::PER_PAGE)->withQueryString();
+            }
         }
 
         // Data for filters and modals
@@ -287,6 +492,11 @@ class DailyTaskController extends Controller
             'upcomingCount' => $upcomingCount,
             'noDateCount' => $noDateCount,
             'completedTodayCount' => $completedTodayCount,
+            'todayTrialsCount' => $todayTrialsCount,
+            'attendedNotSubscribedCount' => $attendedNotSubscribedCount,
+            'trialNoShowsCount' => $trialNoShowsCount,
+            'customQuestionFilters' => $customQuestionFilters,
+            'customQuestionCounts' => $customQuestionCounts,
             'totalDueToday' => $totalDueToday,
             'completionRate' => $completionRate,
             'overdueTasks' => $overdueTasks,

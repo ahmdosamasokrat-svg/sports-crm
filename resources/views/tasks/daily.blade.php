@@ -282,6 +282,33 @@
   color: var(--task-blue);
  }
 
+ .task-scope-pill.academy-trials {
+  border-color: #cbd5e1;
+ }
+ .task-scope-pill.academy-trials.active {
+  border-color: #0284c7;
+  background: #f0f9ff;
+  color: #0284c7;
+ }
+
+ .task-scope-pill.academy-attended {
+  border-color: #cbd5e1;
+ }
+ .task-scope-pill.academy-attended.active {
+  border-color: #d97706;
+  background: #fffbeb;
+  color: #d97706;
+ }
+
+ .task-scope-pill.academy-noshow {
+  border-color: #cbd5e1;
+ }
+ .task-scope-pill.academy-noshow.active {
+  border-color: #e11d48;
+  background: #fff1f2;
+  color: #e11d48;
+ }
+
  .task-scope-pill.upcoming.active {
   border-color: var(--task-purple);
   background: #faf5ff;
@@ -1656,10 +1683,64 @@
      <span>{{ __('crm.scope_completed') }}</span>
      <span class="task-pill-badge">{{ number_format($completedTodayCount) }}</span>
     </a>
-   </div>
 
-   {{-- Filter Controls --}}
-   <div class="task-filters-row">
+    {{-- Academy-Specific Filters (Spec 31 & Loop 2) --}}
+    <span style="display:inline-block; width:1px; height:18px; background:#cbd5e1; margin:0 2px;"></span>
+
+    <a
+     class="task-scope-pill academy-trials {{ $scope === 'today_trials' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'today_trials'])) }}"
+     title="تجارب اليوم المحجوزة بالأكاديمية"
+    >
+     <i class="bi bi-calendar-event"></i>
+     <span>تجارب اليوم</span>
+     <span class="task-pill-badge" style="{{ $todayTrialsCount > 0 ? 'background:#0284c7; color:#fff;' : '' }}">{{ number_format($todayTrialsCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill academy-attended {{ $scope === 'attended_not_subscribed' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'attended_not_subscribed'])) }}"
+     title="حضروا التجربة ولم يشتركوا بعد"
+    >
+     <i class="bi bi-person-check"></i>
+     <span>حضروا ولم يشتركوا</span>
+     <span class="task-pill-badge" style="{{ $attendedNotSubscribedCount > 0 ? 'background:#d97706; color:#fff;' : '' }}">{{ number_format($attendedNotSubscribedCount) }}</span>
+    </a>
+
+    <a
+     class="task-scope-pill academy-noshow {{ $scope === 'trial_no_shows' ? 'active' : '' }}"
+     href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => 'trial_no_shows'])) }}"
+     title="لم يحضروا التجربة المحددة"
+    >
+     <i class="bi bi-person-x"></i>
+     <span>لم يحضروا التجربة</span>
+     <span class="task-pill-badge" style="{{ $trialNoShowsCount > 0 ? 'background:#e11d48; color:#fff;' : '' }}">{{ number_format($trialNoShowsCount) }}</span>
+    </a>
+
+    @if (!empty($customQuestionFilters) && $customQuestionFilters->isNotEmpty())
+     <span style="display:inline-block; width:1px; height:18px; background:#cbd5e1; margin:0 2px;"></span>
+     @foreach ($customQuestionFilters as $cqf)
+      @php
+       $cqfScope = 'q_' . $cqf->id;
+       $cqfCount = (int) ($customQuestionCounts[$cqf->id] ?? 0);
+       $cqfLabel = $cqf->localizedLabel();
+       if (!empty($cqf->daily_tasks_filter_values) && is_array($cqf->daily_tasks_filter_values)) {
+           $cqfLabel .= ': ' . implode('/', $cqf->daily_tasks_filter_values);
+       }
+      @endphp
+      <a
+       class="task-scope-pill {{ $scope === $cqfScope ? 'active' : '' }}"
+       href="{{ route('v2.tasks.daily', array_merge(request()->query(), ['scope' => $cqfScope])) }}"
+       title="{{ $cqf->stage?->name_ar }}: {{ $cqf->localizedLabel() }}"
+       style="{{ $scope === $cqfScope ? 'border-color:#4f46e5; background:#eef2ff; color:#4f46e5;' : 'border-color:#e0e7ff; background:#f5f3ff; color:#4338ca;' }}"
+      >
+       <i class="bi bi-filter-circle"></i>
+       <span>{{ $cqfLabel }}</span>
+       <span class="task-pill-badge" style="{{ $cqfCount > 0 ? 'background:#4f46e5; color:#fff;' : '' }}">{{ number_format($cqfCount) }}</span>
+      </a>
+     @endforeach
+    @endif
+   </div>
     <div class="task-search-input-wrap">
      <i class="bi bi-search"></i>
      <input
@@ -1969,20 +2050,32 @@
        'no_date' => 'no-date',
        default => 'today',
    };
-   $scopeTitle = match($scope) {
-       'overdue' => __('crm.overdue_section_title'),
-       'today' => __('crm.today_section_title'),
-       'upcoming' => __('crm.upcoming_section_title'),
-       'no_date' => __('crm.no_date_section_title'),
-       default => __('crm.today_section_title'),
-   };
-   $scopeDesc = match($scope) {
-       'overdue' => __('crm.overdue_section_desc'),
-       'today' => __('crm.today_section_desc'),
-       'upcoming' => __('crm.upcoming_section_desc'),
-       'no_date' => __('crm.no_date_section_desc'),
-       default => __('crm.today_section_desc'),
-   };
+   if (str_starts_with($scope, 'q_')) {
+       $activeCqf = $customQuestionFilters->firstWhere('id', (int) substr($scope, 2));
+       $scopeTitle = $activeCqf ? $activeCqf->localizedLabel() : __('crm.today_section_title');
+       $scopeDesc = $activeCqf ? ('فلتر مخصص استناداً لمرحلة: ' . ($activeCqf->stage?->name_ar ?? '')) : '';
+   } else {
+       $scopeTitle = match($scope) {
+           'overdue' => __('crm.overdue_section_title'),
+           'today' => __('crm.today_section_title'),
+           'upcoming' => __('crm.upcoming_section_title'),
+           'no_date' => __('crm.no_date_section_title'),
+           'today_trials' => 'تجارب اليوم المحجوزة',
+           'attended_not_subscribed' => 'اللاعبون الذين حضروا ولم يشتركوا بعد',
+           'trial_no_shows' => 'اللاعبون الذين لم يحضروا موعد التجربة',
+           default => __('crm.today_section_title'),
+       };
+       $scopeDesc = match($scope) {
+           'overdue' => __('crm.overdue_section_desc'),
+           'today' => __('crm.today_section_desc'),
+           'upcoming' => __('crm.upcoming_section_desc'),
+           'no_date' => __('crm.no_date_section_desc'),
+           'today_trials' => 'متابعة مواعيد تجارب اليوم والتأكد من الحضور والتأكيد',
+           'attended_not_subscribed' => 'عملاء مؤهلون أتموا الحضور وبحاجة لمتابعة إغلاق الاشتراك',
+           'trial_no_shows' => 'إعادة التواصل مع الغائبين لإعادة جدولة التجربة',
+           default => __('crm.today_section_desc'),
+       };
+   }
   @endphp
 
   <section class="task-section-block {{ $blockClass }}">

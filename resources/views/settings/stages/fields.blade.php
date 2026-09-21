@@ -174,6 +174,16 @@
                                                     <i class="bi bi-diagram-2"></i> {{ __('crm.conditional_rule_summary', ['field' => $condField?->localizedLabel() ?? $field->conditions['field']]) }}
                                                 </span>
                                             @endif
+
+                                            @if ($field->show_in_daily_tasks)
+                                                <span>•</span>
+                                                <span class="badge" style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0;">
+                                                    <i class="bi bi-filter-square"></i> فلتر بالمهام اليومية
+                                                    @if (!empty($field->daily_tasks_filter_values))
+                                                        ({{ implode(', ', (array) $field->daily_tasks_filter_values) }})
+                                                    @endif
+                                                </span>
+                                            @endif
                                         </div>
                                     </div>
                                 </div>
@@ -413,6 +423,27 @@
                 <small class="hint">{{ __('crm.options_builder_hint') }}</small>
             </div>
 
+            <!-- DAILY TASKS FILTER TOGGLE (OPTION B) -->
+            <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:14px; margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; margin:0; font-size:13px; font-weight:800; color:#15803d;">
+                    <input type="checkbox" id="qShowInDailyTasks" name="show_in_daily_tasks" value="1" onchange="toggleDailyTasksFilterValues(this.checked)">
+                    <span><i class="bi bi-filter-square"></i> إظهار هذا السؤال كفلتر سريع في شاشة المهام اليومية (Daily Tasks Filter)</span>
+                </label>
+                <small style="display:block; margin-inline-start:24px; color:#166534; font-size:11px; margin-top:2px;">
+                    يسمح لموظف المبيعات والإدارة بفلترة العملاء استناداً لإجابة هذا السؤال من التبويبات العلوية في صفحة مهامي اليوم.
+                </small>
+
+                <div id="dailyTasksFilterValuesWrap" style="display:none; margin-top:10px; padding-top:10px; border-top:1px dashed #bbf7d0;">
+                    <label style="font-size:12px; font-weight:700; color:#166534; margin-bottom:4px; display:block;">
+                        القيم المحددة للفلترة (اختياري - اترك فارغاً للفلترة على وجود أي إجابة):
+                    </label>
+                    <input type="text" id="qDailyTasksFilterValues" name="daily_tasks_filter_values" placeholder="مثال: نعم, لا أو حضر (افصل بفواصل)">
+                    <small style="font-size:10.5px; color:#15803d; display:block; margin-top:4px;">
+                        اكتب القيم مفصولة بفواصل، أو سيتم إنشاء تاب مخصص لكل قيمة محددة في شاشة المهام اليومية.
+                    </small>
+                </div>
+            </div>
+
             <!-- FIRST-CLASS BRANCHING / DEPENDENCY SECTION -->
             <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:14px; margin-bottom:16px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
@@ -647,6 +678,10 @@ function toggleAdvancedOptions() {
         txt.textContent = @json(__('crm.show_advanced_options'));
     }
 }
+function toggleDailyTasksFilterValues(isChecked) {
+    const wrap = document.getElementById('dailyTasksFilterValuesWrap');
+    if (wrap) wrap.style.display = isChecked ? 'block' : 'none';
+}
 
 function toggleConditionInputs(isChecked) {
     const row = document.getElementById('conditionInputsRow');
@@ -738,6 +773,9 @@ function openAddQuestionModal() {
     document.getElementById('qPlaceholder').value = '';
     document.getElementById('qHelpText').value = '';
     document.getElementById('qDefaultValue').value = '';
+    document.getElementById('qShowInDailyTasks').checked = false;
+    document.getElementById('qDailyTasksFilterValues').value = '';
+    toggleDailyTasksFilterValues(false);
     const qDocCb = document.getElementById('qIsQuotationDoc');
     if (qDocCb) qDocCb.checked = false;
 
@@ -803,6 +841,15 @@ function openEditQuestionModal(field) {
     document.getElementById('qPlaceholder').value = field.placeholder_ar || '';
     document.getElementById('qHelpText').value = field.help_text_ar || '';
     document.getElementById('qDefaultValue').value = field.default_value || '';
+
+    const showInDaily = !!field.show_in_daily_tasks;
+    document.getElementById('qShowInDailyTasks').checked = showInDaily;
+    toggleDailyTasksFilterValues(showInDaily);
+    let dValues = field.daily_tasks_filter_values || '';
+    if (Array.isArray(dValues)) {
+        dValues = dValues.join(', ');
+    }
+    document.getElementById('qDailyTasksFilterValues').value = dValues;
 
     const qDocCb = document.getElementById('qIsQuotationDoc');
     if (qDocCb) {
