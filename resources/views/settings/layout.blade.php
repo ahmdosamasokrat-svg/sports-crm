@@ -716,6 +716,12 @@
             <a class="{{ request()->routeIs('v2.settings.stages.*') || request()->routeIs('v2.settings.stage_categories.*') ? 'active' : '' }}" href="{{ route('v2.settings.stages.index') }}">
                 <i class="bi bi-diagram-3"></i> {{ __('crm.pipelines_and_stages') ?? 'المسارات والمراحل' }}
             </a>
+            <a class="{{ request()->routeIs('v2.settings.referrals.*') ? 'active' : '' }}" href="{{ route('v2.settings.referrals.index') }}">
+                <i class="bi bi-gift"></i> {{ __('crm.referrals_settings') ?? 'إعدادات الإحالات' }}
+            </a>
+            <a class="{{ request()->routeIs('v2.settings.appointments.*') ? 'active' : '' }}" href="{{ route('v2.settings.appointments.index') }}">
+                <i class="bi bi-calendar2-check"></i> {{ __('crm.appointments_settings') ?? 'إعدادات المواعيد' }}
+            </a>
             @can('users.view')
                 <a class="{{ request()->routeIs('v2.settings.users.*') ? 'active' : '' }}" href="{{ route('v2.settings.users.index') }}">
                     <i class="bi bi-people"></i> {{ __('crm.users') }}

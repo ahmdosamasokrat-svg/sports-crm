@@ -16,11 +16,12 @@
 .crm-notification-title-group{display:flex;flex-direction:column;gap:4px;min-width:0}
 .crm-attention-total-badge{display:inline-flex;align-items:center;justify-content:center;min-width:22px;height:22px;padding:0 6px;border-radius:999px;background:#ec4899;color:#fff;font-size:11px;font-weight:900;font-variant-numeric:tabular-nums;vertical-align:middle;margin-inline-start:6px}
 .crm-attention-total-badge[hidden]{display:none}
-.crm-attention-filters{display:grid;grid-template-columns:repeat(4,1fr);gap:6px;padding:12px 16px;border-bottom:1px solid #e4e8ef;background:#fafbfc}
+.crm-attention-filters{display:grid;grid-template-columns:repeat(auto-fit,minmax(60px,1fr));gap:6px;padding:12px 16px;border-bottom:1px solid #e4e8ef;background:#fafbfc}
 .crm-attention-pill{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:3px;padding:8px 4px;border:1px solid #dce2ea;border-radius:9px;background:#fff;color:#4b5563;font-size:11px;font-weight:800;cursor:pointer;transition:all .15s ease;touch-action:manipulation}
 .crm-attention-pill:hover{border-color:#cbd5e1;background:#f8fafc}
 .crm-attention-pill.active{border-color:#182033;background:#182033;color:#fff}
 .crm-attention-pill.is-overdue.active{border-color:#ef4444;background:#ef4444;color:#fff}
+.crm-attention-pill.is-birthdays.active{border-color:#ec4899;background:#ec4899;color:#fff}
 .crm-attention-pill .pill-dot{width:6px;height:6px;border-radius:50%}
 .crm-attention-pill .dot-overdue{background:#ef4444}
 .crm-attention-pill .dot-today{background:#f59e0b}
@@ -38,6 +39,7 @@
 .crm-attention-item-badge.badge-today{background:#fef3c7;color:#92400e}
 .crm-attention-item-badge.badge-tomorrow{background:#eff6ff;color:#1e40af}
 .crm-attention-item-badge.badge-later{background:#f3e8ff;color:#6b21a8}
+.crm-attention-item-badge.badge-birthday,.crm-attention-item-badge.is-birthday{background:#fdf2f8;color:#db2777;border:1px solid #fbcfe8}
 .crm-attention-item-bottom{display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:11px;color:#6b7280}
 .crm-attention-item-meta{display:flex;align-items:center;gap:8px;min-width:0;overflow:hidden}
 .crm-attention-item-stage{display:inline-flex;align-items:center;gap:4px;font-weight:700;color:#374151;white-space:nowrap}

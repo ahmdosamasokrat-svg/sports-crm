@@ -251,6 +251,22 @@ Route::middleware(['auth', 'active'])->group(function (): void {
     Route::middleware('can:leads.view')->group(function (): void {
         Route::get('/leads', [LeadController::class, 'index'])
             ->name('v2.leads');
+        Route::get('/birthdays', [\App\Http\Controllers\BirthdayController::class, 'index'])
+            ->name('v2.birthdays.index');
+        Route::get('/appointments', [\App\Http\Controllers\AppointmentController::class, 'index'])
+            ->name('v2.appointments.index');
+        Route::post('/appointments/{lead}/attended', [\App\Http\Controllers\AppointmentController::class, 'markAttended'])
+            ->whereNumber('lead')
+            ->name('v2.appointments.attended');
+        Route::post('/appointments/{lead}/no-show', [\App\Http\Controllers\AppointmentController::class, 'markNoShow'])
+            ->whereNumber('lead')
+            ->name('v2.appointments.no_show');
+        Route::post('/appointments/{lead}/reschedule', [\App\Http\Controllers\AppointmentController::class, 'reschedule'])
+            ->whereNumber('lead')
+            ->name('v2.appointments.reschedule');
+        Route::post('/appointments/{lead}/cancel', [\App\Http\Controllers\AppointmentController::class, 'cancel'])
+            ->whereNumber('lead')
+            ->name('v2.appointments.cancel');
         Route::get('/leads/kanban', [DashboardController::class, 'kanban'])
             ->name('v2.leads.kanban');
         Route::get('/leads/kanban/column', [DashboardController::class, 'kanbanColumn'])
@@ -631,6 +647,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->middleware('can:branches.manage')
                 ->name('.branches.destroy');
 
+            // Appointments Settings GUI
+            Route::get('/appointments', [\App\Http\Controllers\Settings\AppointmentSettingController::class, 'index'])
+                ->name('.appointments.index');
+            Route::post('/appointments', [\App\Http\Controllers\Settings\AppointmentSettingController::class, 'update'])
+                ->name('.appointments.update');
+
             Route::get('/followup-customer-fields', [FollowupCustomerFieldController::class, 'index'])
                 ->name('.followup-customer-fields.index');
             Route::post('/followup-customer-fields', [FollowupCustomerFieldController::class, 'store'])
@@ -647,6 +669,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             Route::delete('/followup-customer-fields/{field}', [FollowupCustomerFieldController::class, 'destroy'])
                 ->whereNumber('field')
                 ->name('.followup-customer-fields.destroy');
+
+            // Referral Settings GUI
+            Route::get('/referrals', [\App\Http\Controllers\Settings\ReferralSettingController::class, 'index'])
+                ->name('.referrals.index');
+            Route::post('/referrals', [\App\Http\Controllers\Settings\ReferralSettingController::class, 'update'])
+                ->name('.referrals.update');
 
             Route::get('/users', [UserController::class, 'index'])
                 ->middleware('can:users.view')

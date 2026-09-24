@@ -171,7 +171,10 @@ class NotificationDispatcher
         $error = null;
         $scheduledAt = $now;
 
-        if (! (bool) config("crm_notifications.channels.$channel", false)) {
+        if ($occurrence->source_kind === 'lead_birthday' && in_array($channel, ['sms', 'whatsapp'], true)) {
+            $status = NotificationDelivery::STATUS_SUPPRESSED;
+            $error = 'Birthday reminders are internal notifications only; external messaging is disabled.';
+        } elseif (! (bool) config("crm_notifications.channels.$channel", false)) {
             $status = NotificationDelivery::STATUS_SUPPRESSED;
             $error = 'Channel is disabled by system configuration.';
         } elseif (! $preference->channelEnabled($channel)) {
@@ -230,7 +233,7 @@ class NotificationDispatcher
     private function resolveSource(NotificationOccurrence $occurrence): Lead|CalendarEvent|User|null
     {
         return match ($occurrence->source_kind) {
-            'lead_followup' => Lead::query()->find($occurrence->source_id),
+            'lead_followup', 'lead_birthday' => Lead::query()->find($occurrence->source_id),
             'calendar_event' => CalendarEvent::query()->find($occurrence->source_id),
             'user' => User::query()->find($occurrence->source_id),
             default => null,

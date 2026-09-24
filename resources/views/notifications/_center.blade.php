@@ -30,6 +30,7 @@
  data-label-tasks-truncated="{{ __('crm.notification_tasks_truncated') }}"
  data-label-view-all="{{ __('crm.notification_view_all_tasks') }}"
  data-daily-tasks-url="{{ route('v2.tasks.daily', ['employee_id' => auth()->id()]) }}"
+ data-birthdays-url="{{ route('v2.birthdays.index') }}"
 >
  <div class="crm-notification-backdrop" data-notification-close hidden></div>
  <section
@@ -53,6 +54,27 @@
     <i class="bi bi-x-lg" aria-hidden="true"></i>
    </button>
   </header>
+  @if (\App\Support\BirthdayModuleGuard::isEnabled())
+  <div id="crmNotificationBirthdayBanner" class="crm-bday-drawer-banner" style="display:none; margin: 0 16px 12px; padding: 10px 14px; background: linear-gradient(135deg, #fdf2f8 0%, #fff 100%); border: 1px solid #fbcfe8; border-radius: 12px; font-size: 12.5px; color: #831843; align-items: center; justify-content: space-between; gap: 8px;">
+   <div style="display:flex; align-items:center; gap:8px;">
+    <svg class="crm-bday-svg-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:transparent; border:none; display:inline-block; vertical-align:middle; flex-shrink:0;" aria-hidden="true">
+     <path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/>
+     <path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/>
+     <path d="M2 21h20"/>
+     <path d="M7 8v2"/>
+     <path d="M12 8v2"/>
+     <path d="M17 8v2"/>
+     <circle cx="7" cy="4" r="1.2" fill="#db2777"/>
+     <circle cx="12" cy="4" r="1.2" fill="#db2777"/>
+     <circle cx="17" cy="4" r="1.2" fill="#db2777"/>
+    </svg>
+    <span><strong id="bdayMonthCountText">0</strong> {{ __('crm.birthdays_this_month') ?? 'أعياد ميلاد هذا الشهر' }} (<span id="bdayTodayCountText">0</span> {{ __('اليوم') }})</span>
+   </div>
+   <a href="{{ route('v2.birthdays.index') }}" style="font-weight:800; font-size:11.5px; color:#db2777; text-decoration:none; padding:4px 10px; background:#fce7f3; border-radius:8px; border:1px solid #fbcfe8; white-space:nowrap;">
+    {{ __('عرض الكل') }} &rarr;
+   </a>
+  </div>
+  @endif
 
   <div class="crm-attention-filters" role="tablist" aria-label="{{ __('crm.notification_filter') }}">
    <button class="crm-attention-pill is-overdue" type="button" data-attention-filter="overdue" role="tab" aria-selected="false">
@@ -75,6 +97,13 @@
     <span class="pill-label">{{ __('crm.later') }}</span>
     <span class="pill-count" id="countLater">0</span>
    </button>
+   @if (\App\Support\BirthdayModuleGuard::isEnabled())
+   <button class="crm-attention-pill is-birthdays" type="button" data-attention-filter="birthdays" role="tab" aria-selected="false" title="{{ __('crm.birthdays_this_month') ?? 'أعياد ميلاد هذا الشهر' }}">
+    <span class="pill-dot dot-birthdays" style="background:#ec4899;"></span>
+    <span class="pill-label"><i class="bi bi-cake2"></i> {{ __('crm.birthdays') ?? 'المواليد' }}</span>
+    <span class="pill-count" id="countBirthdays" style="background:rgba(236,72,153,0.15); color:#db2777;">0</span>
+   </button>
+   @endif
   </div>
 
   <section class="crm-attention-content" aria-labelledby="crmNotificationTitle">

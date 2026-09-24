@@ -5,10 +5,8 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Models\Lead;
-use App\Models\LeadStatus;
-use App\Models\PipelineStage;
-use App\Security\CrmPermission;
 use App\Support\CrmDatabaseGuard;
+use App\Support\ReferralFieldSchema;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -23,41 +21,26 @@ class ReferralController extends Controller
     {
         $this->assertCrmDatabase();
 
-        Gate::authorize('create', Lead::class);
-
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'phone' => ['required', 'string', 'max:30'],
-            'activity' => ['nullable', 'string', 'max:100'],
-            'notes' => ['nullable', 'string', 'max:1000'],
-        ]);
-
-        // Default initial status: earliest status of primary stage or active stage
-        $initialStatusId = LeadStatus::query()
-            ->whereHas('stage', fn ($q) => $q->where('is_active', true))
-            ->orderBy('position')
-            ->orderBy('id')
-            ->value('id');
+        if (! ReferralFieldSchema::isEnabled()) {
+            return response()->json([
+                'success' => false,
+                'message' => __('crm.referrals_disabled_notice') ?: 'نظام تسجيل الإحالات معطل حالياً من الإعدادات.',
+            ], 403);
+        }
+        try {
+            $validated = ReferralFieldSchema::validate($request);
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            return response()->json([
+                'success' => false,
+                'message' => $e->validator->errors()->first() ?: 'خطأ في التحقق من البيانات.',
+                'errors' => $e->errors(),
+            ], 422);
+        }
 
         $actor = $request->user();
 
-        $referralLead = DB::transaction(function () use ($validated, $lead, $actor, $initialStatusId) {
-            return Lead::query()->create([
-                'name' => trim($validated['name']),
-                'phone' => trim($validated['phone']),
-                'activity' => $validated['activity'] ?? $lead->activity,
-                'source' => 'referral',
-                'branch_id' => $lead->branch_id ?? $actor->branch_id,
-                'lead_status_id' => $initialStatusId,
-                'assigned_user_id' => $actor->id,
-                'assigned_employee' => $actor->name,
-                'created_by' => $actor->name,
-                'created_by_user_id' => $actor->id,
-                'referred_by_lead_id' => $lead->id,
-                'notes' => ! empty($validated['notes'])
-                    ? "إحالة من المشترك: {$lead->name} (#ID: {$lead->id})\n" . trim($validated['notes'])
-                    : "إحالة من المشترك: {$lead->name} (#ID: {$lead->id})",
-            ]);
+        $referralLead = DB::transaction(function () use ($lead, $validated, $actor): Lead {
+            return ReferralFieldSchema::persist($lead, $validated, $actor);
         });
 
         return response()->json([

@@ -4,6 +4,7 @@ namespace App\Models;
 
 use App\Models\Concerns\LogsActivity;
 use App\Security\CrmPermission;
+use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -15,6 +16,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 class Lead extends Model
 {
     use LogsActivity, SoftDeletes;
+
     protected $fillable = [
         'parent_lead_id',
         'referred_by_lead_id',
@@ -57,6 +59,7 @@ class Lead extends Model
         'deleted_from_stage_id',
         'deleted_reason',
     ];
+
     protected function casts(): array
     {
         return [
@@ -199,12 +202,21 @@ class Lead extends Model
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
+
+    public function appointmentAttendanceRecords(): HasMany
+    {
+        return $this->hasMany(AppointmentAttendanceRecord::class)
+            ->orderByDesc('created_at')
+            ->orderByDesc('id');
+    }
+
     public function documents(): HasMany
     {
         return $this->hasMany(LeadDocument::class, 'lead_id')
             ->orderByDesc('created_at')
             ->orderByDesc('id');
     }
+
     public function deletedByUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'deleted_by_user_id');
@@ -214,7 +226,6 @@ class Lead extends Model
     {
         return $this->belongsTo(PipelineStage::class, 'deleted_from_stage_id');
     }
-
 
     public function parentLead(): BelongsTo
     {
@@ -254,7 +265,7 @@ class Lead extends Model
         }
 
         try {
-            return \Carbon\Carbon::parse($this->birth_date)->age;
+            return Carbon::parse($this->birth_date)->age;
         } catch (\Throwable) {
             return null;
         }

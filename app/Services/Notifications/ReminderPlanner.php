@@ -35,6 +35,7 @@ class ReminderPlanner
                 NotificationRule::EVENT_FOLLOWUP_DUE,
                 NotificationRule::EVENT_FOLLOWUP_OVERDUE,
                 NotificationRule::EVENT_CALENDAR_DUE,
+                NotificationRule::EVENT_BIRTHDAY_REMINDER,
             ])
             ->get();
         $created = 0;
@@ -44,6 +45,7 @@ class ReminderPlanner
                 NotificationRule::EVENT_FOLLOWUP_DUE => $this->planFollowupsDue($rule, $now),
                 NotificationRule::EVENT_FOLLOWUP_OVERDUE => $this->planFollowupsOverdue($rule, $now),
                 NotificationRule::EVENT_CALENDAR_DUE => $this->planCalendarDue($rule, $now),
+                NotificationRule::EVENT_BIRTHDAY_REMINDER => $this->planBirthdaysDue($rule, $now),
                 default => 0,
             };
         }
@@ -239,6 +241,46 @@ class ReminderPlanner
 
         return $created;
     }
+    private function planBirthdaysDue(NotificationRule $rule, CarbonInterface $now): int
+    {
+        if (! \App\Support\BirthdayModuleGuard::isEnabled()) {
+            return 0;
+        }
+
+        $offset = max(0, (int) $rule->trigger_offset_minutes);
+        $targetDate = $now->copy()->addMinutes($offset);
+        $targetMonth = (int) $targetDate->month;
+        $targetDay = (int) $targetDate->day;
+        $created = 0;
+
+        Lead::query()
+            ->with(['assignedUser.groups.permissions', 'creator.groups.permissions'])
+            ->whereNotNull('birth_date')
+            ->whereMonth('birth_date', $targetMonth)
+            ->whereDay('birth_date', $targetDay)
+            ->whereNull('deleted_at')
+            ->orderBy('id')
+            ->chunkById(200, function ($leads) use ($rule, $now, $offset, $targetDate, &$created): void {
+                foreach ($leads as $lead) {
+                    if (! $this->matcher->matches($rule, $lead)) {
+                        continue;
+                    }
+
+                    $dueAt = $targetDate->copy()->startOfDay();
+                    $triggerAt = $dueAt->copy()->subMinutes($offset)->startOfMinute();
+                    if ($triggerAt->isAfter($now)) {
+                        continue;
+                    }
+
+                    foreach ($this->recipientResolver->resolve($rule, $lead) as $recipient) {
+                        $created += $this->createOccurrence($rule, $lead, $recipient, $dueAt, $triggerAt);
+                    }
+                }
+            });
+
+        return $created;
+    }
+
 
     private function createOccurrence(
         NotificationRule $rule,
@@ -247,7 +289,9 @@ class ReminderPlanner
         ?CarbonInterface $dueAt,
         CarbonInterface $triggerAt,
     ): int {
-        $sourceKind = $source instanceof Lead ? 'lead_followup' : 'calendar_event';
+        $sourceKind = $source instanceof Lead
+            ? ($rule->event_key === NotificationRule::EVENT_BIRTHDAY_REMINDER ? 'lead_birthday' : 'lead_followup')
+            : 'calendar_event';
 
         $occurrence = NotificationOccurrence::query()->firstOrCreate([
             'notification_rule_id' => $rule->getKey(),

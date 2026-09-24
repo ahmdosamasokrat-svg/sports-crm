@@ -134,6 +134,21 @@ class NotificationController extends Controller
         $totalAttention = $overdueCount + $todayCount;
         $totalAll = $overdueCount + $todayCount + $tomorrowCount + $laterCount;
 
+        $birthdaysMonthCount = 0;
+        $birthdaysTodayCount = 0;
+        if (\App\Support\BirthdayModuleGuard::isEnabled()) {
+            $bdayBase = Lead::query()
+                ->accessibleTo($user)
+                ->whereNotNull('birth_date');
+            $birthdaysMonthCount = (clone $bdayBase)
+                ->whereMonth('birth_date', $now->month)
+                ->count();
+            $birthdaysTodayCount = (clone $bdayBase)
+                ->whereMonth('birth_date', $now->month)
+                ->whereDay('birth_date', $now->day)
+                ->count();
+        }
+
         // Query for specific requested filter or default
         $filterQuery = clone $baseQuery;
         if ($filter === 'overdue') {
@@ -148,6 +163,8 @@ class NotificationController extends Controller
         } elseif ($filter === 'later') {
             $filterQuery->where('next_follow_up_at', '>', $tomorrowEnd);
             $totalForFilter = $laterCount;
+        } elseif ($filter === 'birthdays') {
+            $totalForFilter = $birthdaysMonthCount;
         } else {
             $filterQuery->where('next_follow_up_at', '<=', $todayEnd);
             $totalForFilter = $totalAttention;
@@ -240,6 +257,51 @@ class NotificationController extends Controller
             ];
         })->values()->all();
 
+        if ($filter === 'birthdays') {
+            $bdayLeads = Lead::query()
+                ->accessibleTo($user)
+                ->whereNotNull('birth_date')
+                ->whereMonth('birth_date', $now->month)
+                ->with([
+                    'status:id,pipeline_stage_id,code,name_ar,color',
+                    'status.stage:id,code,name_ar,color,position,is_active',
+                    'assignedUser:id,name',
+                ])
+                ->orderByRaw('DAY(birth_date) ASC')
+                ->limit($limit)
+                ->get();
+
+            $attentionItems = $bdayLeads->map(function (Lead $lead) use ($now): array {
+                $birthDate = \Carbon\Carbon::parse($lead->birth_date);
+                $daysRemaining = \App\Services\BirthdayService::getDaysUntilBirthday($birthDate, $now);
+                $turningAge = \App\Services\BirthdayService::getAgeOnNextBirthday($birthDate, $now);
+                $isToday = $daysRemaining === 0;
+
+                return [
+                    'id' => $lead->getKey(),
+                    'lead_id' => $lead->getKey(),
+                    'name' => $lead->name,
+                    'company_name' => $lead->company_name,
+                    'status' => $isToday ? 'عيد ميلاد اليوم!' : "يكمل {$turningAge} سنة",
+                    'stage_name' => $lead->status?->stage?->name_ar ?? $lead->activity ?? 'لاعب',
+                    'stage_color' => '#ec4899',
+                    'employee_name' => $lead->assignedUser?->name ?? '—',
+                    'due_formatted' => $isToday ? 'اليوم' : $birthDate->format('d/m'),
+                    'due_time' => $birthDate->format('Y-m-d'),
+                    'due_date' => $birthDate->format('d/m'),
+                    'bucket' => 'birthday',
+                    'bucket_label' => $isToday ? 'عيد ميلاد اليوم!' : "يكمل {$turningAge} سنة ({$birthDate->format('d/m')})",
+                    'bucket_class' => 'is-birthday',
+                    'action_url' => route('v2.leads.show', $lead, false),
+                    'lead_url' => route('v2.leads.show', $lead, false),
+                    'is_overdue' => false,
+                    'is_today' => $isToday,
+                    'is_tomorrow' => $daysRemaining === 1,
+                    'is_later' => $daysRemaining > 1,
+                ];
+            })->values()->all();
+        }
+
         $groups = $leads
             ->groupBy(static fn (Lead $lead): string => (string) ($lead->status?->pipeline_stage_id ?? 'unassigned'))
             ->map(function ($stageLeads) use ($now, $todayStart, $userId): array {
@@ -302,6 +364,8 @@ class NotificationController extends Controller
                 'today' => $todayCount,
                 'tomorrow' => $tomorrowCount,
                 'later' => $laterCount,
+                'birthdays_month' => $birthdaysMonthCount,
+                'birthdays_today' => $birthdaysTodayCount,
                 'total' => $totalAttention,
                 'total_all' => $totalAll,
                 'filter' => $filter ?: 'attention',
@@ -309,7 +373,9 @@ class NotificationController extends Controller
                 'limit' => $limit,
                 'has_more' => $totalForFilter > count($attentionItems),
                 'more_count' => max(0, $totalForFilter - count($attentionItems)),
-                'view_all_url' => route('v2.tasks.daily', ['scope' => in_array($filter, ['overdue', 'today', 'tomorrow', 'later'], true) ? $filter : 'all', 'employee_id' => $userId]),
+                'view_all_url' => $filter === 'birthdays'
+                    ? route('v2.birthdays.index')
+                    : route('v2.tasks.daily', ['scope' => in_array($filter, ['overdue', 'today', 'tomorrow', 'later'], true) ? $filter : 'all', 'employee_id' => $userId]),
                 'timezone' => (string) config('app.timezone'),
                 'as_of' => $now->toIso8601String(),
                 'truncated' => $totalAttention > $leads->count(),

@@ -31,6 +31,8 @@ class NotificationRule extends Model
 
     public const EVENT_SYSTEM_TEST = 'system.test';
 
+    public const EVENT_BIRTHDAY_REMINDER = 'birthday.reminder';
+
     public const EVENTS = [
         self::EVENT_FOLLOWUP_DUE,
         self::EVENT_FOLLOWUP_OVERDUE,
@@ -39,6 +41,7 @@ class NotificationRule extends Model
         self::EVENT_CALENDAR_DUE,
         self::EVENT_CALENDAR_UPDATED,
         self::EVENT_CALENDAR_CANCELED,
+        self::EVENT_BIRTHDAY_REMINDER,
         self::EVENT_SYSTEM_TEST,
     ];
 

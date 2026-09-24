@@ -27,6 +27,10 @@
  const getCountToday = () => document.getElementById('countToday') || center.querySelector('#countToday');
  const getCountTomorrow = () => document.getElementById('countTomorrow') || center.querySelector('#countTomorrow');
  const getCountLater = () => document.getElementById('countLater') || center.querySelector('#countLater');
+ const getCountBirthdays = () => document.getElementById('countBirthdays') || center.querySelector('#countBirthdays');
+ const getBdayBanner = () => document.getElementById('crmNotificationBirthdayBanner') || center.querySelector('#crmNotificationBirthdayBanner');
+ const getBdayMonthCountText = () => document.getElementById('bdayMonthCountText') || center.querySelector('#bdayMonthCountText');
+ const getBdayTodayCountText = () => document.getElementById('bdayTodayCountText') || center.querySelector('#bdayTodayCountText');
 
  const config = center.dataset;
  const locale = config.locale === 'en' ? 'en' : 'ar';
@@ -126,6 +130,12 @@
   const name = document.createElement('strong');
   name.className = 'crm-attention-item-name';
   name.textContent = item.name || '';
+  if (item.bucket === 'birthday') {
+   const iconWrap = document.createElement('span');
+   iconWrap.style.cssText = 'display:inline-flex; align-items:center; margin-inline-end:6px; background:transparent; border:none; vertical-align:middle;';
+   iconWrap.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#db2777" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="background:transparent; border:none;" aria-hidden="true"><path d="M20 21v-8a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8"/><path d="M4 16s.5-1 2-1 2.5 2 4 2 2.5-2 4-2 2.5 2 4 2 2-1 2-1"/><path d="M2 21h20"/><path d="M7 8v2"/><path d="M12 8v2"/><path d="M17 8v2"/><circle cx="7" cy="4" r="1.2" fill="#db2777"/><circle cx="12" cy="4" r="1.2" fill="#db2777"/><circle cx="17" cy="4" r="1.2" fill="#db2777"/></svg>';
+   name.prepend(iconWrap);
+  }
   const badge = document.createElement('span');
   badge.className = `crm-attention-item-badge ${item.bucket_class || 'badge-' + item.bucket}`;
   badge.textContent = item.bucket_label || item.status || '';
@@ -210,6 +220,23 @@
     if (countTomorrow) countTomorrow.textContent = String(meta.tomorrow ?? 0);
     if (countLater) countLater.textContent = String(meta.later ?? 0);
 
+    const countBirthdays = getCountBirthdays();
+    if (countBirthdays) countBirthdays.textContent = String(meta.birthdays_month ?? 0);
+
+    const bdayBanner = getBdayBanner();
+    if (bdayBanner) {
+     const bdayMonth = Number(meta.birthdays_month ?? 0);
+     const bdayToday = Number(meta.birthdays_today ?? 0);
+     if (bdayMonth > 0) {
+      bdayBanner.style.display = 'flex';
+      const mText = getBdayMonthCountText();
+      const tText = getBdayTodayCountText();
+      if (mText) mText.textContent = String(bdayMonth);
+      if (tText) tText.textContent = String(bdayToday);
+     } else {
+      bdayBanner.style.display = 'none';
+     }
+    }
     // Update top total attention count (overdue + today)
     const totalAttention = Number(meta.total ?? 0);
     if (totalBadge) {
@@ -230,6 +257,16 @@
       attentionViewAll.href = meta.view_all_url || (config.dailyTasksUrl ? `${config.dailyTasksUrl}?scope=${activeFilter}` : '#');
      }
      return;
+    }
+    if (activeFilter === 'birthdays') {
+     if (attentionSummary) {
+      attentionSummary.textContent = locale === 'ar' ? `أعياد ميلاد هذا الشهر (${totalForFilter})` : `Birthdays this month (${totalForFilter})`;
+     }
+     if (attentionViewAll) {
+      attentionViewAll.href = meta.view_all_url || config.birthdaysUrl || '/birthdays';
+      const span = attentionViewAll.querySelector('span');
+      if (span) span.textContent = locale === 'ar' ? 'عرض شاشة أعياد الميلاد' : 'View Birthdays Screen';
+     }
     }
 
     const visibleItems = items.slice(0, visibleTasksLimit);

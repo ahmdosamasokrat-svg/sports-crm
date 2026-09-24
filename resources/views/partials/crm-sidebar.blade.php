@@ -413,6 +413,28 @@
    <span class="crm-label label">{{ __('crm.calendar_and_events') }}</span>
   </a>
   @endcan
+  @if (\App\Support\BirthdayModuleGuard::isEnabled())
+  @can('leads.view')
+  <a
+   class="crm-link link {{ request()->routeIs('v2.birthdays.*') ? 'active' : '' }}"
+   href="{{ route('v2.birthdays.index') }}"
+  >
+   <span class="crm-ico ico"><i class="bi bi-cake2"></i></span>
+   <span class="crm-label label">{{ __('crm.birthdays') ?? 'أعياد الميلاد' }}</span>
+  </a>
+  @endcan
+  @endif
+  @if (\App\Models\AppointmentSetting::current()->is_enabled)
+  @can('leads.view')
+  <a
+   class="crm-link link {{ request()->routeIs('v2.appointments.*') ? 'active' : '' }}"
+   href="{{ route('v2.appointments.index') }}"
+  >
+   <span class="crm-ico ico"><i class="bi bi-calendar2-check"></i></span>
+   <span class="crm-label label">{{ __('crm.appointments') ?? 'المواعيد والتجارب' }}</span>
+  </a>
+  @endcan
+  @endif
 
   @if(app(\App\Services\VoipService::class)->isConfigured())
   @can('voip.live_panel')

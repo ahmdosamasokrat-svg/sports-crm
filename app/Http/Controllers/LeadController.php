@@ -4,16 +4,23 @@ namespace App\Http\Controllers;
 
 use App\Models\Branch;
 use App\Models\Campaign;
+use App\Models\Guardian;
 use App\Models\Lead;
 use App\Models\LeadDocument;
-use App\Models\LeadFollowup;
 use App\Models\LeadStatus;
 use App\Models\PipelineStage;
+use App\Models\PipelineStageField;
 use App\Models\User;
 use App\Security\CrmPermission;
 use App\Security\LeadAssignment;
+use App\Services\ActivityLogger;
+use App\Services\LeadTrashService;
 use App\Support\CrmDatabaseGuard;
+use App\Support\FollowupCustomerFieldSchema;
+use App\Support\LeadSourceHelper;
 use App\Support\LeadStageFieldFilters;
+use App\Support\ReferralFieldSchema;
+use App\Support\StageFieldSchema;
 use Carbon\Carbon;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -22,6 +29,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 class LeadController extends Controller
@@ -167,7 +175,7 @@ class LeadController extends Controller
             ->sort()
             ->values();
 
-        $sources = \App\Support\LeadSourceHelper::getAllSources($user);
+        $sources = LeadSourceHelper::getAllSources($user);
 
         if (
             $filters['source'] !== ''
@@ -264,7 +272,7 @@ class LeadController extends Controller
         // Dynamically filter any custom customer fields passed via cf[key]=val
         $cfFilters = (array) $request->query('cf', []);
         if (! empty($cfFilters)) {
-            $allCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)->keyBy('key');
+            $allCustomerFields = FollowupCustomerFieldSchema::fields(false)->keyBy('key');
             foreach ($cfFilters as $cfKey => $cfVal) {
                 if ($cfVal === null || $cfVal === '') {
                     continue;
@@ -273,7 +281,7 @@ class LeadController extends Controller
                 if ($cfModel && $cfModel->lead_attribute) {
                     $query->where($cfModel->lead_attribute, $cfVal);
                 } else {
-                    $query->where('custom_fields->' . $cfKey, $cfVal);
+                    $query->where('custom_fields->'.$cfKey, $cfVal);
                 }
             }
         }
@@ -351,7 +359,7 @@ class LeadController extends Controller
 
         $totalLeads = (int) (clone $leadCountBase)->count();
 
-        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+        $customerFields = FollowupCustomerFieldSchema::fields();
 
         $activeQuery = array_filter(
             $filters,
@@ -381,8 +389,7 @@ class LeadController extends Controller
         $branches = ($user && $user->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL))
             ? Branch::query()->active()->orderBy('name_ar')->get()
             : collect();
-        $guardians = \App\Models\Guardian::query()->orderBy('name')->get(['id', 'name', 'phone']);
-
+        $guardians = Guardian::query()->orderBy('name')->get(['id', 'name', 'phone']);
 
         return view(
             'leads.index',
@@ -468,13 +475,13 @@ class LeadController extends Controller
                 : 'بدون مرحلة'
         );
 
-        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
+        $sources = LeadSourceHelper::getAllSources($actor);
 
         $totalLeads = Lead::query()
             ->accessibleTo($actor)
             ->count();
 
-        $customerFields = \App\Support\FollowupCustomerFieldSchema::fields();
+        $customerFields = FollowupCustomerFieldSchema::fields();
         $branches = $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
             ? Branch::query()->active()->orderBy('name_ar')->get()
             : collect();
@@ -934,13 +941,13 @@ class LeadController extends Controller
             'quotation_file_path' => $quotationPath,
         ];
 
-$stage = $status->stage;
+        $stage = $status->stage;
 
         // Extract dynamic customer fields
         $customFieldsInput = $request->input('customer_fields', $request->input('custom_fields', []));
         if (! empty($customFieldsInput) && is_array($customFieldsInput)) {
             $cleanedCustom = [];
-            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $allFields = FollowupCustomerFieldSchema::fields(false);
             $fieldsByKey = $allFields->keyBy('key');
             foreach ($customFieldsInput as $cKey => $cVal) {
                 if ($cVal === null || $cVal === '') {
@@ -959,8 +966,8 @@ $stage = $status->stage;
         }
         $normalizedStageValues = [];
         if ($stage !== null) {
-            $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);
-            $split = \App\Support\StageFieldSchema::splitValues($stage, $normalizedStageValues);
+            $normalizedStageValues = StageFieldSchema::validateAndExtract($stage, $request, $actor);
+            $split = StageFieldSchema::splitValues($stage, $normalizedStageValues);
             foreach ($split['canonical'] as $cAttr => $cVal) {
                 if (! in_array($cAttr, ['id', 'created_at', 'updated_at', 'lead_status_id'], true)) {
                     $leadData[$cAttr] = $cVal;
@@ -1001,7 +1008,7 @@ $stage = $status->stage;
                     }
 
                     if ($stage !== null && ! empty($normalizedStageValues)) {
-                        \App\Support\StageFieldSchema::persistValues($lead, $stage, $normalizedStageValues, null, $actor);
+                        StageFieldSchema::persistValues($lead, $stage, $normalizedStageValues, null, $actor);
                     }
 
                     return $lead;
@@ -1079,27 +1086,33 @@ $stage = $status->stage;
 
         $this->assertCrmV2Database();
 
+        $hasAttendanceTable = \Illuminate\Support\Facades\Schema::hasTable('appointment_attendance_records');
+        $withRelations = [
+            'status.stage.category',
+            'parentLead.status.stage.category',
+            'clonedLeads.status.stage.category',
+            'guardian',
+            'siblings.status.stage.category',
+            'branch:id,name_ar,name_en,code',
+            'assignedUser:id,name',
+            'creator:id,name',
+            'stageValues.field',
+            'stageValues.stage',
+            'stageValues.createdByUser:id,name',
+            'followups.user:id,name',
+            'followups.fromStatus.stage',
+            'followups.toStatus.stage',
+            'statusHistory.changedByUser:id,name',
+            'statusHistory.fromStatus.stage',
+            'statusHistory.toStatus.stage',
+            'statusHistory.stageFieldValues.field',
+        ];
+        if ($hasAttendanceTable) {
+            $withRelations[] = 'appointmentAttendanceRecords.recordedBy:id,name';
+        }
+
         $leadRecord = Lead::query()
-            ->with([
-                'status.stage.category',
-                'parentLead.status.stage.category',
-                'clonedLeads.status.stage.category',
-                'guardian',
-                'siblings.status.stage.category',
-                'branch:id,name_ar,name_en,code',
-                'assignedUser:id,name',
-                'creator:id,name',
-                'stageValues.field',
-                'stageValues.stage',
-                'stageValues.createdByUser:id,name',
-                'followups.user:id,name',
-                'followups.fromStatus.stage',
-                'followups.toStatus.stage',
-                'statusHistory.changedByUser:id,name',
-                'statusHistory.fromStatus.stage',
-                'statusHistory.toStatus.stage',
-                'statusHistory.stageFieldValues.field',
-            ])
+            ->with($withRelations)
             ->findOrFail(
                 (int) $lead
             );
@@ -1548,6 +1561,7 @@ $stage = $status->stage;
             'leads.show',
             [
                 'lead' => $leadRecord,
+                'appointmentAttendanceRecords' => $hasAttendanceTable ? $leadRecord->appointmentAttendanceRecords : collect(),
                 'latestFollowups' => $latestFollowups,
                 'followupCommunicationTypes' => $followupCommunicationTypes,
                 'statusColor' => $statusColor,
@@ -1563,12 +1577,15 @@ $stage = $status->stage;
                 'stageHistoryGroups' => $stageHistoryGroups,
                 'stageSections' => $stageSections,
                 'currentStageId' => $currentStageId,
-                'academyActivities' => \App\Models\PipelineStageField::query()
+                'academyActivities' => PipelineStageField::query()
                     ->whereIn('key', ['requested_activity', 'activity'])
                     ->whereNotNull('options')
                     ->first()?->normalizedOptions() ?? [],
-                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
-                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
+                'customerFields' => FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => FollowupCustomerFieldSchema::currentValues($leadRecord),
+                'referralsEnabled' => ReferralFieldSchema::isEnabled(),
+                'referralFields' => ReferralFieldSchema::getActiveFields(),
+                'allowReferralNotes' => ReferralFieldSchema::allowNotes(),
             ]
         );
     }
@@ -1609,7 +1626,7 @@ $stage = $status->stage;
             ->orderBy('id')
             ->get();
 
-        $sources = \App\Support\LeadSourceHelper::getAllSources($actor);
+        $sources = LeadSourceHelper::getAllSources($actor);
 
         $quotationPath = trim(
             (string) $leadRecord->quotation_file_path
@@ -1632,14 +1649,13 @@ $stage = $status->stage;
                 .' — ارفع ملفًا جديدًا لاستبداله.'
             : 'لا يوجد ملف حالي — الحد الأقصى 2MB.';
         $currentStage = $leadRecord->status?->stage;
-        $stageFields = $currentStage ? \App\Support\StageFieldSchema::getFieldsForStage($currentStage, true) : collect();
+        $stageFields = $currentStage ? StageFieldSchema::getFieldsForStage($currentStage, true) : collect();
         $latestStageValues = $leadRecord->stageValues()
             ->where('pipeline_stage_id', $leadRecord->status?->pipeline_stage_id)
             ->get()
             ->unique('field_key')
             ->pluck('value', 'field_key')
             ->all();
-
 
         return view(
             'leads.edit',
@@ -1657,8 +1673,8 @@ $stage = $status->stage;
                 'quotationFileHelpText' => $quotationFileHelpText,
                 'stageFields' => $stageFields,
                 'latestStageValues' => $latestStageValues,
-                'customerFields' => \App\Support\FollowupCustomerFieldSchema::fields(),
-                'customerFieldValues' => \App\Support\FollowupCustomerFieldSchema::currentValues($leadRecord),
+                'customerFields' => FollowupCustomerFieldSchema::fields(),
+                'customerFieldValues' => FollowupCustomerFieldSchema::currentValues($leadRecord),
                 'branches' => $actor->hasPermission(CrmPermission::BRANCHES_SCOPE_ALL)
                     ? Branch::query()->active()->orderBy('name_ar')->get()
                     : collect(),
@@ -1744,8 +1760,8 @@ $stage = $status->stage;
             'One or more selected leads could not be loaded.'
         );
 
-        $dynamicCustomerFields = \App\Support\FollowupCustomerFieldSchema::fields(false)
-            ->filter(fn ($f) => empty($f->lead_attribute) || !in_array($f->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address', 'source', 'users_count', 'branches_count'], true));
+        $dynamicCustomerFields = FollowupCustomerFieldSchema::fields(false)
+            ->filter(fn ($f) => empty($f->lead_attribute) || ! in_array($f->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address', 'source', 'users_count', 'branches_count'], true));
 
         $headers = [
             'رقم العميل',
@@ -1919,6 +1935,7 @@ $stage = $status->stage;
 
                         if ($rawVal === null || $rawVal === '') {
                             $leadRow[] = '';
+
                             continue;
                         }
 
@@ -1971,7 +1988,7 @@ $stage = $status->stage;
                 ? "Exported {$selectedLeads->count()} leads to an Excel spreadsheet"
                 : "قام بتصدير {$selectedLeads->count()} عميل إلى ملف إكسيل";
 
-            \App\Services\ActivityLogger::log(
+            ActivityLogger::log(
                 action: 'lead.exported',
                 module: 'leads',
                 description: $desc,
@@ -2004,7 +2021,7 @@ $stage = $status->stage;
 
     public function bulkDelete(
         Request $request,
-        \App\Services\LeadTrashService $trashService
+        LeadTrashService $trashService
     ): RedirectResponse {
         $this->assertCrmV2Database();
         $actor = $request->user();
@@ -2063,7 +2080,7 @@ $stage = $status->stage;
         $target = User::query()->findOrFail((int) $validated['target_user_id']);
 
         if (! LeadAssignment::canAssignTo($actor, $target)) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'target_user_id' => 'لا تملك صلاحية إسناد العملاء إلى هذا الموظف.',
             ]);
         }
@@ -2077,7 +2094,7 @@ $stage = $status->stage;
             ->get();
 
         if ($leads->isEmpty()) {
-            throw \Illuminate\Validation\ValidationException::withMessages([
+            throw ValidationException::withMessages([
                 'lead_ids' => 'لم يتم العثور على أي عملاء متاحين للإسناد.',
             ]);
         }
@@ -2085,7 +2102,7 @@ $stage = $status->stage;
         if ($target->hasRestrictedPipelineStageAccess()) {
             foreach ($leads as $lead) {
                 if ($lead->status && ! $target->canAccessPipelineStage((int) $lead->status->pipeline_stage_id)) {
-                    throw \Illuminate\Validation\ValidationException::withMessages([
+                    throw ValidationException::withMessages([
                         'target_user_id' => 'الموظف المختار لا يملك صلاحية الوصول إلى مرحلة العميل: '.$lead->name,
                     ]);
                 }
@@ -2107,7 +2124,7 @@ $stage = $status->stage;
             ? "Assigned {$assignedCount} leads to employee {$target->name}"
             : "قام بإسناد {$assignedCount} عميل إلى الموظف {$target->name}";
 
-        \App\Services\ActivityLogger::log(
+        ActivityLogger::log(
             action: 'lead.bulk_assign',
             module: 'leads',
             description: $desc,
@@ -2261,6 +2278,7 @@ $stage = $status->stage;
             ]
         );
     }
+
     public function downloadDocument(
         Request $request,
         string $lead,
@@ -2296,12 +2314,11 @@ $stage = $status->stage;
             $disk->path($doc->path),
             [
                 'Content-Type' => $doc->mime_type ?: 'application/octet-stream',
-                'Content-Disposition' => 'inline; filename="' . addcslashes($doc->original_name, '"\\') . '"',
+                'Content-Disposition' => 'inline; filename="'.addcslashes($doc->original_name, '"\\').'"',
                 'X-Content-Type-Options' => 'nosniff',
             ]
         );
     }
-
 
     public function update(
         Request $request,
@@ -2696,7 +2713,7 @@ $stage = $status->stage;
         $customerFieldsInput = $request->input('customer_fields', $request->input('custom_fields', null));
         if ($customerFieldsInput !== null && is_array($customerFieldsInput)) {
             $existingCustom = is_array($leadRecord->custom_fields) ? $leadRecord->custom_fields : [];
-            $allFields = \App\Support\FollowupCustomerFieldSchema::fields(false);
+            $allFields = FollowupCustomerFieldSchema::fields(false);
             $fieldsByKey = $allFields->keyBy('key');
             foreach ($customerFieldsInput as $cKey => $cVal) {
                 $fieldModel = $fieldsByKey->get($cKey);
@@ -2714,8 +2731,8 @@ $stage = $status->stage;
         }
         $normalizedStageValues = [];
         if ($stage !== null) {
-            $normalizedStageValues = \App\Support\StageFieldSchema::validateAndExtract($stage, $request, $actor);
-            $split = \App\Support\StageFieldSchema::splitValues($stage, $normalizedStageValues);
+            $normalizedStageValues = StageFieldSchema::validateAndExtract($stage, $request, $actor);
+            $split = StageFieldSchema::splitValues($stage, $normalizedStageValues);
             foreach ($split['canonical'] as $cAttr => $cVal) {
                 if (! in_array($cAttr, ['id', 'created_at', 'updated_at', 'lead_status_id'], true)) {
                     $leadData[$cAttr] = $cVal;
@@ -2745,7 +2762,6 @@ $stage = $status->stage;
             }
         }
 
-
         try {
             DB::transaction(
                 static function () use (
@@ -2757,7 +2773,7 @@ $stage = $status->stage;
                 ): void {
                     $leadRecord->update($leadData);
                     if ($stage !== null && ! empty($normalizedStageValues)) {
-                        \App\Support\StageFieldSchema::persistValues($leadRecord, $stage, $normalizedStageValues, null, $actor);
+                        StageFieldSchema::persistValues($leadRecord, $stage, $normalizedStageValues, null, $actor);
                     }
                 }
             );
@@ -3428,8 +3444,8 @@ XML;
             );
         }
 
-       return $columnName;
-   }
+        return $columnName;
+    }
 
     public function updateTemperature(
         Request $request,
@@ -3459,8 +3475,8 @@ XML;
         return back()->with('success', __('crm.updated_successfully') ?: 'تم تحديث درجة حرارة العميل بنجاح');
     }
 
-   private function assertCrmV2Database(): void
-   {
+    private function assertCrmV2Database(): void
+    {
         CrmDatabaseGuard::ensureConnected();
     }
 }

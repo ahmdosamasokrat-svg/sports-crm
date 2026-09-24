@@ -26,9 +26,10 @@
     <style>
         *{box-sizing:border-box}
         :root{--red:#ef4444;--red-dark:#dc2626;--dark:#182033;--muted:#7e899b;--line:#e4e8ef;--bg:#f4f6f9;--card:#fff;--blue:#3478f6}
-        body{margin:0;background:var(--bg);color:var(--dark);font-family:'Plus Jakarta Sans', 'Cairo', sans-serif !important;}
-        .crm-app{min-height:100vh;display:flex}
-        .crm-main{min-width:0;flex:1;padding:24px 30px 60px}
+        html{max-width:100%;overflow-x:clip}
+        body{margin:0;background:var(--bg);color:var(--dark);font-family:'Plus Jakarta Sans', 'Cairo', sans-serif !important;max-width:100%;overflow-x:clip;position:relative}
+        .crm-app{min-height:100vh;display:flex;max-width:100%;overflow-x:clip}
+        .crm-main{min-width:0;flex:1 1 auto;padding:24px 30px 60px;max-width:100%;overflow-x:clip;box-sizing:border-box}
         .btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;min-height:42px;padding:0 16px;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);font-weight:800;text-decoration:none;cursor:pointer;font-family:inherit;font-size:13px;transition:all .15s}
         .btn.primary{background:var(--red);border-color:var(--red);color:#fff}
         .btn.primary:hover{background:#b81829;border-color:#b81829;color:#fff}
@@ -250,6 +251,18 @@
         .followup-change-old{color:#b42332;text-decoration:line-through}
         .followup-change-new{color:#15803d;font-weight:800}
 
+        .attendance-history-list{display:grid;gap:8px}
+        .attendance-history-record{padding:11px 12px;border:1px solid var(--line);border-radius:10px;background:var(--bg)}
+        .attendance-history-head{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:7px}
+        .attendance-history-outcome{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;font-size:11px;font-weight:900}
+        .attendance-history-outcome.attended{background:rgba(22,163,74,.1);color:#15803d}
+        .attendance-history-outcome.no-show{background:rgba(239,68,68,.1);color:#b42332}
+        .attendance-history-date{font-size:12px;font-weight:800;color:var(--dark)}
+        .attendance-history-details{display:flex;flex-wrap:wrap;gap:5px 16px}
+        .attendance-history-detail{font-size:12px;color:var(--muted)}
+        .attendance-history-detail strong{color:var(--dark)}
+        .attendance-history-notes{margin:8px 0 0;padding-top:7px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--dark);white-space:pre-line}
+
         html.dark-mode {
             --bg: #09090b;
             --card: #18181b;
@@ -277,6 +290,7 @@
         html.dark-mode .audio-seek { background: rgba(255,255,255,0.12); }
         html.dark-mode .followup-field-changes { background: #18181b; border-color: rgba(255,255,255,0.08); }
         html.dark-mode .followup-change-item { background: rgba(255,255,255,0.03); }
+        html.dark-mode .attendance-history-record { background: rgba(255,255,255,0.03); }
 
         /* Stage Details Panel */
         .stage-selector-field-group {
@@ -441,27 +455,388 @@
             border-color: rgba(255,255,255,0.08);
             color: #e4e4e7;
         }
+        /* Grid containment and column flexibility */
+        .details-grid {
+            display: grid !important;
+            grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) !important;
+            gap: 20px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .details-grid > div {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .panel {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .stage-panes-wrapper, .stage-pane {
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+        }
 
-        @media(max-width:1024px){
-            .details-grid{grid-template-columns:1fr}
-            .metrics-bar{grid-template-columns:repeat(2,1fr)}
+        /* Drawer override for mobile RTL */
+        @media (max-width: 900px) {
+            html[dir="rtl"] body.crm-side-open #crmSidebar,
+            html[dir="rtl"] body.side-open #crmSidebar,
+            html[dir="rtl"] body.transfer-side-open #crmSidebar,
+            html[dir="rtl"].crm-side-open #crmSidebar,
+            html[dir="rtl"].side-open #crmSidebar,
+            html[dir="rtl"].transfer-side-open #crmSidebar {
+                transform: none !important;
+            }
         }
-        @media(max-width:768px){
-            .crm-main{padding:16px 12px 60px;min-width:0;width:100%;max-width:100%}
-            .top-actions{width:100%;flex-wrap:wrap;gap:8px}
-            .top-actions .btn{flex:1 1 auto;min-height:44px}
-            .lead-header-top{flex-direction:column;align-items:stretch;gap:14px}
-            .lead-stage-card{align-self:flex-start}
-            .metrics-bar{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-            .call-filters{grid-template-columns:1fr}
-            .call-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}
-            .call-row{grid-template-columns:1fr;gap:8px}
-            .info-row{flex-wrap:wrap;gap:8px}
-            .info-row .btn.small{min-height:44px;min-width:44px;height:44px;padding:0 12px}
+
+        /* Topbar actions responsive wrapping */
+        @media (max-width: 1200px) {
+            .lead-detail-page .crm-topbar,
+            .lead-detail-page .topbar.crm-topbar,
+            .lead-detail-page header.crm-topbar {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+                padding: 12px 16px !important;
+                min-height: auto !important;
+            }
+            .lead-detail-page .crm-topbar-left {
+                width: 100% !important;
+                justify-content: flex-start !important;
+            }
+            .lead-detail-page .crm-topbar-right {
+                width: 100% !important;
+                justify-content: space-between !important;
+                gap: 10px !important;
+                flex-wrap: wrap !important;
+            }
+            .lead-detail-page .crm-topbar-actions {
+                flex: 1 1 auto !important;
+                flex-wrap: wrap !important;
+            }
+            .lead-detail-page .crm-topbar-user {
+                margin-inline-start: auto !important;
+            }
         }
-        @media(max-width:480px){
-            .metrics-bar{grid-template-columns:1fr}
-            .call-metrics{grid-template-columns:1fr}
+        /* Stage Navigation / Stage Jump Pills Bar */
+        .stage-jump-pills-bar {
+            display: flex !important;
+            gap: 8px !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
+            padding: 10px 14px !important;
+            background: var(--bg) !important;
+            border: 1px solid var(--line) !important;
+            border-radius: 12px !important;
+            margin: 12px 0 16px !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: thin !important;
+            scrollbar-color: var(--line) transparent !important;
+        }
+        .stage-jump-pills-bar::-webkit-scrollbar {
+            height: 4px;
+        }
+        .stage-jump-pills-bar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .stage-jump-pills-bar::-webkit-scrollbar-thumb {
+            background: var(--line);
+            border-radius: 4px;
+        }
+        .stage-jump-pill {
+            display: inline-flex !important;
+            align-items: center !important;
+            gap: 6px !important;
+            padding: 6px 14px !important;
+            border-radius: 8px !important;
+            font-size: 12px !important;
+            font-weight: 700 !important;
+            white-space: nowrap !important;
+            flex-shrink: 0 !important;
+            cursor: pointer !important;
+            transition: all .15s ease !important;
+        }
+
+        /* Stage Field Cards */
+        .stage-fields-grid {
+            display: grid !important;
+            grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            gap: 10px !important;
+            padding: 12px 16px !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .stage-field-card {
+            background: var(--bg) !important;
+            padding: 10px 14px !important;
+            border-radius: 10px !important;
+            border: 1px solid var(--line) !important;
+            display: flex !important;
+            flex-direction: column !important;
+            gap: 4px !important;
+            min-width: 0 !important;
+            max-width: 100% !important;
+            box-sizing: border-box !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+        }
+        .stage-field-card .info-label {
+            display: flex !important;
+            align-items: center !important;
+            gap: 4px !important;
+            font-size: 11.5px !important;
+            color: var(--muted) !important;
+            font-weight: 700 !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            max-width: 100% !important;
+        }
+        .stage-field-card .info-value {
+            font-size: 13px !important;
+            word-break: break-word !important;
+            overflow-wrap: anywhere !important;
+            max-width: 100% !important;
+        }
+
+        /* Summary Cards / Metrics Bar */
+        .metrics-bar {
+            display: grid !important;
+            grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+            gap: 12px !important;
+            margin-top: 16px !important;
+            padding-top: 16px !important;
+            border-top: 1px solid var(--line) !important;
+            width: 100% !important;
+            box-sizing: border-box !important;
+        }
+        .metric-box {
+            min-width: 0 !important;
+            box-sizing: border-box !important;
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            padding: 12px 14px !important;
+        }
+        .metric-box span,
+        .metric-box b {
+            word-break: break-word !important;
+            overflow-wrap: break-word !important;
+            max-width: 100% !important;
+        }
+
+        /* Viewport 1366px */
+        @media (max-width: 1365px) and (min-width: 1025px) {
+            .metrics-bar {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 12px !important;
+            }
+        }
+
+        /* Viewport 1024px */
+        @media (max-width: 1024px) {
+            .details-grid {
+                grid-template-columns: 1fr !important;
+                gap: 16px !important;
+            }
+            .metrics-bar {
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 10px !important;
+            }
+            .stage-fields-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+            }
+        }
+
+        /* Viewport 768px */
+        @media (max-width: 768px) {
+            .crm-main {
+                padding: 16px 14px 60px !important;
+                width: 100% !important;
+                max-width: 100% !important;
+            }
+            .lead-header-card {
+                padding: 8px 0 14px !important;
+                margin-bottom: 8px !important;
+            }
+            .lead-header-top {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 12px !important;
+            }
+            .lead-identity {
+                width: 100% !important;
+                gap: 12px !important;
+            }
+            .lead-names {
+                min-width: 0 !important;
+                flex: 1 1 auto !important;
+            }
+            .lead-names h2 {
+                font-size: 18px !important;
+                word-break: break-word !important;
+            }
+            .lead-names p {
+                display: flex !important;
+                flex-wrap: wrap !important;
+                gap: 6px !important;
+                font-size: 12px !important;
+            }
+            .lead-stage-card {
+                align-self: flex-start !important;
+                max-width: 100% !important;
+            }
+            .lead-detail-page .crm-topbar-actions {
+                width: 100% !important;
+                gap: 6px !important;
+            }
+            .lead-detail-page .crm-topbar-actions .btn,
+            .lead-detail-page .crm-topbar-actions a,
+            .lead-detail-page .crm-topbar-actions button {
+                flex: 1 1 calc(50% - 6px) !important;
+                min-width: 120px !important;
+                justify-content: center !important;
+                min-height: 40px !important;
+                height: auto !important;
+                padding: 8px 10px !important;
+                font-size: 12.5px !important;
+                white-space: nowrap !important;
+            }
+            .metrics-bar {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 10px !important;
+            }
+            .stage-fields-grid {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                gap: 8px !important;
+                padding: 10px 12px !important;
+            }
+            .call-filters {
+                flex-direction: column !important;
+                align-items: stretch !important;
+            }
+            .call-filters > div {
+                width: 100% !important;
+                min-width: 0 !important;
+            }
+            .call-filters button {
+                width: 100% !important;
+            }
+            .call-metrics {
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+            }
+            .call-row {
+                flex-direction: column !important;
+                align-items: stretch !important;
+                gap: 8px !important;
+            }
+            .call-row > div:nth-child(3),
+            .call-row > div:nth-child(4) {
+                text-align: start !important;
+            }
+            .info-row {
+                flex-wrap: wrap !important;
+                gap: 8px !important;
+            }
+            .stage-pane-header {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 8px !important;
+            }
+        }
+
+        /* Viewport 480px / 390px */
+        @media (max-width: 480px) {
+            .crm-main {
+                padding: 12px 10px 40px !important;
+            }
+            .lead-avatar {
+                width: 44px !important;
+                height: 44px !important;
+                font-size: 18px !important;
+                border-radius: 12px !important;
+                flex: 0 0 44px !important;
+            }
+            .lead-names h2 {
+                font-size: 16px !important;
+            }
+            .lead-stage-card {
+                width: 100% !important;
+                justify-content: flex-start !important;
+                border-radius: 14px !important;
+                padding: 8px 12px !important;
+            }
+            .metrics-bar {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+            }
+            .stage-fields-grid {
+                grid-template-columns: 1fr !important;
+                gap: 8px !important;
+                padding: 8px 10px !important;
+            }
+            .stage-field-card {
+                padding: 8px 10px !important;
+            }
+            .call-metrics {
+                grid-template-columns: 1fr !important;
+            }
+            .stage-view-filter-dock {
+                width: 100% !important;
+                display: flex !important;
+            }
+            .stage-view-filter-dock .stage-filter-btn {
+                flex: 1 1 50% !important;
+                justify-content: center !important;
+            }
+            .panel-head {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+            }
+            .panel-head .btn {
+                width: 100% !important;
+                justify-content: center !important;
+            }
+            .info-row {
+                flex-direction: column !important;
+                align-items: flex-start !important;
+                gap: 4px !important;
+            }
+            .info-value {
+                text-align: start !important;
+                align-self: stretch !important;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .lead-detail-page .crm-topbar-actions .btn,
+            .lead-detail-page .crm-topbar-actions a,
+            .lead-detail-page .crm-topbar-actions button {
+                flex: 1 1 100% !important;
+                min-width: 0 !important;
+            }
+        }
+
+        /* Dark mode overrides for responsive elements */
+        html.dark-mode .stage-jump-pills-bar {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
+        }
+        html.dark-mode .stage-jump-pill:not(.is-current) {
+            background: transparent !important;
+            color: var(--dark) !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+        html.dark-mode .stage-jump-pill.is-current {
+            background: rgba(255, 255, 255, 0.08) !important;
+            color: #fff !important;
+        }
+        html.dark-mode .stage-field-card {
+            background: rgba(255, 255, 255, 0.02) !important;
+            border-color: rgba(255, 255, 255, 0.08) !important;
         }
         /* Kanban popup embedded mode */
         body.kanban-followup-popup {
@@ -501,7 +876,7 @@
                     $showTopActions .= '<a class="btn primary" href="tel:' . $callPhone . '" title="' . __('crm.call_action') . '"><i class="bi bi-telephone-outbound"></i> ' . __('crm.call_action') . '</a>';
                 }
             }
-            if (auth()->user()?->can('leads.create')) {
+            if (($referralsEnabled ?? true) && auth()->user()?->can('leads.create')) {
                 $showTopActions .= '<button type="button" class="btn soft" onclick="openReferralModal()" title="إحالة عميل جديد من خلال هذا المشترك" style="color:#059669; border-color:#a7f3d0; background:#ecfdf5;"><i class="bi bi-person-plus"></i> إحالة صديق</button>';
             }
         @endphp
@@ -1045,9 +1420,9 @@
 
                                 <!-- Fields List -->
                                 @if (!empty($section['fields']))
-                                    <div class="info-list" style="padding: 12px 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 10px;">
+                                    <div class="info-list stage-fields-grid">
                                         @foreach ($section['fields'] as $field)
-                                            <div class="info-row" style="background: var(--bg); padding: 8px 12px; border-radius: 8px; border: 1px solid var(--line); display: flex; flex-direction: column; gap: 4px;">
+                                            <div class="info-row stage-field-card">
                                                 <span class="info-label" style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--muted); font-weight:700;">
                                                     <i class="bi bi-dot" style="font-size:18px; color:{{ $section['color'] }}; line-height:0.5;"></i>
                                                     {{ $field['label'] }}
@@ -1315,6 +1690,61 @@
                     </section>
                 @endcan
 
+
+                <section class="panel" id="leadAttendanceHistory">
+                    <div class="panel-head">
+                        <h2><i class="bi bi-person-check"></i> {{ __('crm.attendance_history') }}</h2>
+                        <span class="badge">{{ $appointmentAttendanceRecords->count() }}</span>
+                    </div>
+
+                    @if ($appointmentAttendanceRecords->isNotEmpty())
+                        <div class="attendance-history-list">
+                            @foreach ($appointmentAttendanceRecords as $attendance)
+                                @php
+                                    $branchName = app()->getLocale() === 'en'
+                                        ? ($attendance->branch_name_en ?: $attendance->branch_name_ar)
+                                        : ($attendance->branch_name_ar ?: $attendance->branch_name_en);
+                                @endphp
+                                <article class="attendance-history-record">
+                                    <div class="attendance-history-head">
+                                        <span class="attendance-history-outcome {{ $attendance->outcome === 'attended' ? 'attended' : 'no-show' }}">
+                                            <i class="bi {{ $attendance->outcome === 'attended' ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
+                                            {{ $attendance->outcome === 'attended' ? __('crm.attended') : __('crm.no_show') }}
+                                        </span>
+                                        <span class="attendance-history-date">
+                                            {{ $attendance->appointment_date?->format('Y-m-d') ?? __('crm.unspecified') }}
+                                            @if ($attendance->appointment_time)
+                                                · {{ $attendance->appointment_time }}
+                                            @endif
+                                        </span>
+                                    </div>
+                                    <div class="attendance-history-details">
+                                        @if ($attendance->activity)
+                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_activity') }}:</strong> {{ $attendance->activity }}</span>
+                                        @endif
+                                        @if ($branchName)
+                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_branch') }}:</strong> {{ $branchName }}</span>
+                                        @endif
+                                        @if ($attendance->coach)
+                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_coach') }}:</strong> {{ $attendance->coach }}</span>
+                                        @endif
+                                        @if ($attendance->recordedBy?->name)
+                                            <span class="attendance-history-detail"><strong>{{ __('crm.recorded_by') }}</strong> {{ $attendance->recordedBy->name }}</span>
+                                        @endif
+                                        <span class="attendance-history-detail"><strong>{{ __('crm.attendance_recorded_at') }}:</strong> {{ $attendance->created_at?->format('Y-m-d h:i A') ?? '—' }}</span>
+                                    </div>
+                                    @if ($attendance->notes)
+                                        <p class="attendance-history-notes"><strong>{{ __('crm.notes') }}:</strong> {{ $attendance->notes }}</p>
+                                    @endif
+                                </article>
+                            @endforeach
+                        </div>
+                    @else
+                        <div class="attendance-history-record" style="text-align:center;color:var(--muted);">
+                            {{ __('crm.no_attendance_records') }}
+                        </div>
+                    @endif
+                </section>
 
                 <!-- CUSTOMER ACTIVITY TIMELINE -->
                 <section class="panel">
@@ -1656,6 +2086,7 @@
                 if (dir === 'inbound') {
                     dirColor = '#16a34a';
                     dirIcon = 'bi-telephone-inbound-fill';
+
                 } else if (dir === 'outbound') {
                     dirColor = '#0284c7';
                     dirIcon = 'bi-telephone-outbound-fill';
@@ -1961,41 +2392,72 @@
         <form id="createReferralForm" onsubmit="submitCreateReferral(event)" style="display:flex; flex-direction:column; flex:1;">
             <div style="margin-bottom:14px;">
                 <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('اسم اللاعب أو الصديق المُحال') }} <span style="color:var(--red)">*</span></label>
-                <input type="text" id="newReferralName" required placeholder="مثال: يوسف خالد"
+                <input type="text" id="newReferralName" name="name" required placeholder="مثال: يوسف خالد"
                        style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
             </div>
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:12px; margin-bottom:14px;">
-                <div>
-                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('رقم الهاتف / واتساب') }} <span style="color:var(--red)">*</span></label>
-                    <input type="tel" id="newReferralPhone" required placeholder="05xxxxxxxx"
-                           style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); direction:ltr; text-align:start;">
-                </div>
-                <div>
-                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('النشاط المهتم به') }}</label>
-                    <select id="newReferralActivity" style="width:100%; height:38px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
-                        <option value="">-- اختر النشاط الرياضي --</option>
-                        @if (!empty($academyActivities))
-                            @foreach ($academyActivities as $actOpt)
-                                <option value="{{ $actOpt['value'] }}" {{ $lead->activity === $actOpt['value'] ? 'selected' : '' }}>
-                                    {{ $actOpt['label_ar'] }}
-                                </option>
-                            @endforeach
-                        @else
-                            <option value="كرة قدم" {{ $lead->activity === 'كرة قدم' ? 'selected' : '' }}>كرة قدم</option>
-                            <option value="سباحة" {{ $lead->activity === 'سباحة' ? 'selected' : '' }}>سباحة</option>
-                            <option value="جمباز" {{ $lead->activity === 'جمباز' ? 'selected' : '' }}>جمباز</option>
-                            <option value="كاراتيه" {{ $lead->activity === 'كاراتيه' ? 'selected' : '' }}>كاراتيه</option>
-                            <option value="كرة سلة" {{ $lead->activity === 'كرة سلة' ? 'selected' : '' }}>كرة سلة</option>
-                            <option value="أخرى">أخرى</option>
-                        @endif
-                    </select>
-                </div>
+            <div style="margin-bottom:14px;">
+                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('رقم الهاتف / واتساب') }} <span style="color:var(--red)">*</span></label>
+                <input type="tel" id="newReferralPhone" name="phone" required placeholder="05xxxxxxxx"
+                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); direction:ltr; text-align:start;">
             </div>
-            <div style="margin-bottom:16px;">
-                <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الإحالة (اختياري)') }}</label>
-                <textarea id="newReferralNotes" rows="2" placeholder="أي تفاصيل عن اللاعب أو ولي أمره أو معرفته بالمشترك..."
-                          style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
-            </div>
+
+            <!-- DYNAMIC REFERRAL STAGE FIELDS -->
+            @if (!empty($referralFields) && $referralFields->isNotEmpty())
+                <div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap:12px; margin-bottom:14px;">
+                    @foreach ($referralFields as $rField)
+                        @php
+                            $rfKey = $rField->key;
+                            $rfLabel = $rField->localizedLabel();
+                            $rfReq = (bool) $rField->is_required;
+                            $rfPlaceholder = $rField->localizedPlaceholder();
+                            $rfOpts = $rField->normalizedOptions();
+                        @endphp
+                        <div class="referral-dyn-field {{ $rField->type === 'textarea' ? 'full-width' : '' }}" style="{{ $rField->type === 'textarea' ? 'grid-column: 1 / -1;' : '' }}">
+                            <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">
+                                {{ $rfLabel }}
+                                @if ($rfReq) <span style="color:var(--red)">*</span> @endif
+                            </label>
+
+                            @if (in_array($rField->type, ['select', 'radio']))
+                                <select name="referral_fields[{{ $rfKey }}]" class="js-referral-input" data-field-key="{{ $rfKey }}" {{ $rfReq ? 'required' : '' }}
+                                        style="width:100%; height:38px; padding:0 10px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                                    <option value="">-- {{ $rfPlaceholder ?: 'اختر ' . $rfLabel }} --</option>
+                                    @foreach ($rfOpts as $opt)
+                                        <option value="{{ $opt['value'] }}" {{ ($rfKey === 'activity' || $rfKey === 'requested_activity') && $lead->activity === $opt['value'] ? 'selected' : '' }}>
+                                            {{ $opt['label_ar'] ?: $opt['value'] }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                            @elseif ($rField->type === 'textarea')
+                                <textarea name="referral_fields[{{ $rfKey }}]" class="js-referral-input" data-field-key="{{ $rfKey }}" rows="2" placeholder="{{ $rfPlaceholder }}" {{ $rfReq ? 'required' : '' }}
+                                          style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+                            @elseif ($rField->type === 'checkbox' || $rField->type === 'boolean')
+                                <label style="display:inline-flex; align-items:center; gap:8px; height:38px; cursor:pointer;">
+                                    <input type="checkbox" name="referral_fields[{{ $rfKey }}]" value="1" class="js-referral-input" data-field-key="{{ $rfKey }}" style="width:16px; height:16px; accent-color:#059669;">
+                                    <span style="font-size:12.5px; font-weight:600;">{{ $rfLabel }}</span>
+                                </label>
+                            @elseif ($rField->type === 'number' || $rField->type === 'currency')
+                                <input type="number" step="any" name="referral_fields[{{ $rfKey }}]" class="js-referral-input" data-field-key="{{ $rfKey }}" placeholder="{{ $rfPlaceholder }}" {{ $rfReq ? 'required' : '' }}
+                                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                            @elseif ($rField->type === 'date')
+                                <input type="date" name="referral_fields[{{ $rfKey }}]" class="js-referral-input" data-field-key="{{ $rfKey }}" {{ $rfReq ? 'required' : '' }}
+                                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                            @else
+                                <input type="text" name="referral_fields[{{ $rfKey }}]" class="js-referral-input" data-field-key="{{ $rfKey }}" placeholder="{{ $rfPlaceholder }}" {{ $rfReq ? 'required' : '' }}
+                                       style="width:100%; height:38px; padding:0 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark);">
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
+            @endif
+
+            @if ($allowReferralNotes ?? true)
+                <div style="margin-bottom:16px;">
+                    <label style="display:block; margin-bottom:4px; font-weight:700; font-size:12.5px;">{{ __('ملاحظات الإحالة (اختياري)') }}</label>
+                    <textarea id="newReferralNotes" name="notes" rows="2" placeholder="أي تفاصيل عن اللاعب أو ولي أمره أو معرفته بالمشترك..."
+                              style="width:100%; padding:8px 12px; border:1px solid var(--line); border-radius:8px; font-size:13px; background:var(--bg); color:var(--dark); resize:vertical;"></textarea>
+                </div>
+            @endif
             <div style="display:flex; justify-content:flex-end; align-items:center; gap:8px; border-top:1px solid var(--line); padding-top:14px; margin-top:auto;">
                 <button type="button" class="btn small soft" onclick="closeReferralModal()" style="min-height:34px; height:34px; padding:0 14px; font-size:12px; width:auto; flex:0 0 auto;">{{ __('إلغاء') }}</button>
                 <button type="submit" id="saveReferralBtn" class="btn small primary" style="min-height:34px; height:34px; padding:0 16px; font-size:12px; width:auto; flex:0 0 auto; background:#059669; border-color:#059669;">{{ __('تسجيل الإحالة') }}</button>
@@ -2043,12 +2505,24 @@ async function submitCreateReferral(e) {
     btn.disabled = true;
     btn.textContent = 'جاري التسجيل...';
 
+    const form = document.getElementById('createReferralForm');
+    const formData = new FormData(form);
     const payload = {
-        name: document.getElementById('newReferralName').value.trim(),
-        phone: document.getElementById('newReferralPhone').value.trim(),
-        activity: document.getElementById('newReferralActivity').value.trim(),
-        notes: document.getElementById('newReferralNotes').value.trim(),
+        name: (formData.get('name') || '').trim(),
+        phone: (formData.get('phone') || '').trim(),
+        notes: (formData.get('notes') || '').trim(),
+        referral_fields: {},
     };
+
+    form.querySelectorAll('.js-referral-input').forEach(el => {
+        const key = el.getAttribute('data-field-key');
+        if (!key) return;
+        if (el.type === 'checkbox') {
+            payload.referral_fields[key] = el.checked ? '1' : '0';
+        } else {
+            payload.referral_fields[key] = el.value.trim();
+        }
+    });
 
     try {
         const res = await fetch(`/leads/${leadId}/referrals`, {
@@ -2064,17 +2538,18 @@ async function submitCreateReferral(e) {
         const data = await res.json();
         if (res.ok && data.success) {
             closeReferralModal();
-            document.getElementById('createReferralForm').reset();
+            form.reset();
             alert(data.message || 'تم تسجيل الإحالة بنجاح!');
             window.location.reload();
         } else {
-            alert(data.message || 'حدث خطأ أثناء حفظ الإحالة. تحقق من البيانات.');
+            const msg = data.message || (data.errors ? Object.values(data.errors).flat().join('\n') : 'حدث خطأ أثناء حفظ الإحالة.');
+            alert(msg);
         }
     } catch (err) {
         alert('تعذر الاتصال بالخادم. حاول مرة أخرى.');
     } finally {
         btn.disabled = false;
-        btn.textContent = 'تسجيل الإحالة الآن';
+        btn.textContent = 'تسجيل الإحالة';
     }
 }
 let guardianSearchTimeout = null;

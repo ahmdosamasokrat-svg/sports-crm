@@ -53,6 +53,24 @@
             <span><i class="bi bi-card-checklist" style="color:#0ea5e9"></i> {{ __('crm.followup_customer_fields') }}</span>
             <b style="font-size:17px;margin-top:8px">{{ __('حقول بيانات العملاء') }}</b>
         </a>
+        <a class="stat-card action-card" href="{{ route('v2.settings.referrals.index') }}">
+            <span><i class="bi bi-gift-fill" style="color:#059669"></i> {{ __('crm.referrals_settings') ?? 'إعدادات الإحالات' }}</span>
+            <b style="font-size:17px;margin-top:8px">{{ __('تخصيص الإحالات وحقول الأسئلة') }}</b>
+        </a>
+        <a class="stat-card action-card" href="{{ route('v2.settings.appointments.index') }}">
+            <span><i class="bi bi-calendar2-check-fill" style="color:#0284c7"></i> {{ __('crm.appointments_settings') ?? 'إعدادات المواعيد' }}</span>
+            <b style="font-size:17px;margin-top:8px">{{ __('تخصيص لوحة ومراحل المواعيد') }}</b>
+            <span class="badge" style="margin-top:6px; background: {{ \App\Models\AppointmentSetting::current()->is_enabled ? '#f0f9ff; color:#0369a1; border:1px solid #bae6fd' : '#fef2f2; color:#991b1b; border:1px solid #fecaca' }}; font-size:11px; width:fit-content;">
+                {{ \App\Models\AppointmentSetting::current()->is_enabled ? 'مفعل ويعمل حالياً' : 'معطل ومغلق' }}
+            </span>
+        </a>
+        <a class="stat-card action-card" href="{{ route('v2.birthdays.index') }}">
+            <span><i class="bi bi-cake2-fill" style="color:#ec4899"></i> {{ __('crm.birthdays') ?? 'أعياد الميلاد' }}</span>
+            <b style="font-size:17px;margin-top:8px">{{ __('شاشة وتنبيهات أعياد الميلاد') }}</b>
+            <span class="badge" style="margin-top:6px; background: {{ \App\Support\BirthdayModuleGuard::isEnabled() ? '#ecfdf5; color:#065f46; border:1px solid #a7f3d0' : '#fef2f2; color:#991b1b; border:1px solid #fecaca' }}; font-size:11px; width:fit-content;">
+                {{ \App\Support\BirthdayModuleGuard::isEnabled() ? 'مفعل (مرتبط بالبيانات)' : 'يتطلب حقل تاريخ الميلاد' }}
+            </span>
+        </a>
         @can('users.view')
             <a class="stat-card action-card" href="{{ route('v2.settings.users.index') }}">
                 <span><i class="bi bi-people" style="color:#2563eb"></i> {{ __('crm.users') }}</span>

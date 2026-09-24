@@ -34,7 +34,9 @@ class NotificationPayloadFactory
                 'name' => $sourceName,
                 'time' => $time ?? trans('crm.not_specified', [], $locale),
             ], $locale),
-            'source_kind' => $source instanceof Lead ? 'lead_followup' : 'calendar_event',
+            'source_kind' => $source instanceof Lead
+                ? ($rule->event_key === NotificationRule::EVENT_BIRTHDAY_REMINDER ? 'lead_birthday' : 'lead_followup')
+                : 'calendar_event',
             'source_id' => (int) $source->getKey(),
             'source_name' => $sourceName,
             'due_at' => $dueAt?->toIso8601String(),

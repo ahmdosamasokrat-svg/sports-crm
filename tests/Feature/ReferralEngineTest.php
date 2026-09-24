@@ -26,6 +26,13 @@ class ReferralEngineTest extends TestCase
     {
         parent::setUp();
 
+        \App\Models\ReferralSetting::query()->updateOrCreate(
+            ['id' => 1],
+            ['is_enabled' => true, 'allow_notes' => true, 'target_pipeline_stage_id' => null]
+        );
+        \App\Models\ReferralField::query()->delete();
+        \App\Support\ReferralFieldSchema::flushCache();
+
         $this->branch = Branch::query()->firstOrCreate(
             ['code' => 'main'],
             ['name_ar' => 'الفرع الرئيسي', 'name_en' => 'Main Branch']
