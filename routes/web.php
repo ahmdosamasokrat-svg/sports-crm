@@ -676,6 +676,12 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             Route::post('/referrals', [\App\Http\Controllers\Settings\ReferralSettingController::class, 'update'])
                 ->name('.referrals.update');
 
+            // Lead Profile Layout Settings GUI
+            Route::get('/lead-profile', [\App\Http\Controllers\Settings\LeadProfileSettingController::class, 'index'])
+                ->name('.lead_profile.index');
+            Route::post('/lead-profile', [\App\Http\Controllers\Settings\LeadProfileSettingController::class, 'update'])
+                ->name('.lead_profile.update');
+
             Route::get('/users', [UserController::class, 'index'])
                 ->middleware('can:users.view')
                 ->name('.users.index');

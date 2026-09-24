@@ -64,6 +64,13 @@
                 {{ \App\Models\AppointmentSetting::current()->is_enabled ? 'مفعل ويعمل حالياً' : 'معطل ومغلق' }}
             </span>
         </a>
+        <a class="stat-card action-card" href="{{ route('v2.settings.lead_profile.index') }}">
+            <span><i class="bi bi-layout-text-window-reverse" style="color:#6366f1"></i> {{ __('crm.lead_profile_settings') ?? 'تنسيق ملف العميل' }}</span>
+            <b style="font-size:17px;margin-top:8px">{{ __('تخصيص وترتيب تبويبات صفحة العميل') }}</b>
+            <span class="badge" style="margin-top:6px; background: #eef2ff; color:#4338ca; border:1px solid #c7d2fe; font-size:11px; width:fit-content;">
+                {{ \App\Models\LeadProfileSetting::current()->layout_mode === 'hybrid' ? 'الوضع المختلط (بطاقة + تبويبات)' : 'عرض كامل للتبويبات' }}
+            </span>
+        </a>
         <a class="stat-card action-card" href="{{ route('v2.birthdays.index') }}">
             <span><i class="bi bi-cake2-fill" style="color:#ec4899"></i> {{ __('crm.birthdays') ?? 'أعياد الميلاد' }}</span>
             <b style="font-size:17px;margin-top:8px">{{ __('شاشة وتنبيهات أعياد الميلاد') }}</b>

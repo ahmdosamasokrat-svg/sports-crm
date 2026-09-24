@@ -722,6 +722,9 @@
             <a class="{{ request()->routeIs('v2.settings.appointments.*') ? 'active' : '' }}" href="{{ route('v2.settings.appointments.index') }}">
                 <i class="bi bi-calendar2-check"></i> {{ __('crm.appointments_settings') ?? 'إعدادات المواعيد' }}
             </a>
+            <a class="{{ request()->routeIs('v2.settings.lead_profile.*') ? 'active' : '' }}" href="{{ route('v2.settings.lead_profile.index') }}">
+                <i class="bi bi-layout-text-window-reverse"></i> {{ __('crm.lead_profile_settings') ?? 'تنسيق ملف العميل' }}
+            </a>
             @can('users.view')
                 <a class="{{ request()->routeIs('v2.settings.users.*') ? 'active' : '' }}" href="{{ route('v2.settings.users.index') }}">
                     <i class="bi bi-people"></i> {{ __('crm.users') }}

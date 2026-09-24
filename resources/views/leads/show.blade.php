@@ -263,6 +263,148 @@
         .attendance-history-detail strong{color:var(--dark)}
         .attendance-history-notes{margin:8px 0 0;padding-top:7px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--dark);white-space:pre-line}
 
+        /* Configurable Lead Profile Tab Navigation */
+        .profile-tabs-wrapper { margin-top: 6px; }
+        .profile-tabs-nav {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 14px;
+            padding: 6px;
+            margin-bottom: 20px;
+            overflow-x: auto;
+            scrollbar-width: none;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+        }
+        .profile-tabs-nav::-webkit-scrollbar { display: none; }
+        .profile-tab-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 9px 16px;
+            border-radius: 10px;
+            border: 1px solid transparent;
+            background: transparent;
+            color: var(--muted);
+            font-size: 13px;
+            font-weight: 800;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all .15s ease;
+            text-decoration: none;
+            user-select: none;
+            line-height: 1;
+        }
+        .profile-tab-btn i { font-size: 15px; }
+        .profile-tab-btn:hover {
+            background: var(--bg);
+            color: var(--dark);
+        }
+        .profile-tab-btn.is-active {
+            background: var(--red);
+            color: #ffffff !important;
+            border-color: var(--red);
+            box-shadow: 0 4px 12px rgba(220, 38, 55, 0.25);
+        }
+        .profile-tab-btn.is-active .tab-badge {
+            background: rgba(255, 255, 255, 0.25);
+            color: #ffffff;
+            border-color: transparent;
+        }
+        .tab-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2px 7px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 900;
+            background: var(--bg);
+            color: var(--muted);
+            border: 1px solid var(--line);
+        }
+        .profile-tab-pane {
+            display: none;
+        }
+        .profile-tab-pane.is-active {
+            display: block;
+            animation: tabPaneFadeIn .18s ease-in-out;
+        }
+        @keyframes tabPaneFadeIn {
+            from { opacity: 0; transform: translateY(4px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Profile Layout Grid */
+        .profile-hybrid-grid {
+            display: grid;
+            grid-template-columns: 340px 1fr;
+            gap: 20px;
+            align-items: start;
+        }
+        @media (max-width: 1080px) {
+            .profile-hybrid-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        .profile-persistent-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            position: sticky;
+            top: 20px;
+        }
+        .profile-summary-card {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 16px;
+            padding: 18px 20px;
+            box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
+        }
+        .profile-summary-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 10px;
+            margin-bottom: 14px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--line);
+        }
+        .profile-summary-title {
+            margin: 0;
+            font-size: 14px;
+            font-weight: 900;
+            color: var(--dark);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .profile-summary-rows {
+            display: grid;
+            gap: 8px;
+        }
+        .profile-summary-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 7px 10px;
+            background: var(--bg);
+            border: 1px solid var(--line);
+            border-radius: 8px;
+            font-size: 12px;
+        }
+        .profile-summary-row .label {
+            color: var(--muted);
+            font-weight: 700;
+        }
+        .profile-summary-row .value {
+            color: var(--dark);
+            font-weight: 800;
+            text-align: end;
+        }
+
         html.dark-mode {
             --bg: #09090b;
             --card: #18181b;
@@ -291,6 +433,11 @@
         html.dark-mode .followup-field-changes { background: #18181b; border-color: rgba(255,255,255,0.08); }
         html.dark-mode .followup-change-item { background: rgba(255,255,255,0.03); }
         html.dark-mode .attendance-history-record { background: rgba(255,255,255,0.03); }
+        html.dark-mode .profile-tabs-nav { background: #18181b; border-color: rgba(255,255,255,0.08); }
+        html.dark-mode .profile-tab-btn { color: #a1a1aa; }
+        html.dark-mode .profile-tab-btn:hover { background: rgba(255,255,255,0.04); color: #f4f4f5; }
+        html.dark-mode .profile-summary-card { background: #18181b; border-color: rgba(255,255,255,0.08); }
+        html.dark-mode .profile-summary-row { background: rgba(255,255,255,0.03); border-color: rgba(255,255,255,0.08); }
 
         /* Stage Details Panel */
         .stage-selector-field-group {
@@ -1056,839 +1203,981 @@
             </div>
         </section>
 
-        <div class="details-grid">
-            <!-- LEFT COLUMN: PROFILE, CONTACTS & RECORDS -->
-            <div>
-                <!-- CUSTOMER CORE INFO -->
-                <section class="panel">
-                    <div class="panel-head">
-                        <h2><i class="bi bi-info-circle"></i> {{ __('crm.customer_data') }}</h2>
-                    </div>
-                    <div class="info-list">
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.full_name') }}</span>
-                            <span class="info-value">{{ $lead->name }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.company_name') }}</span>
-                            <span class="info-value">{{ $lead->company_name ?: '—' }}</span>
-                        </div>
-                        @if ($lead->job_title)
-                            <div class="info-row">
-                                <span class="info-label">{{ __('crm.job_title') }}</span>
-                                <span class="info-value">{{ $lead->job_title }}</span>
-                            </div>
-                        @endif
-                        @if ($lead->activity)
-                            <div class="info-row">
-                                <span class="info-label">{{ __('crm.activity') }}</span>
-                                <span class="info-value">{{ $lead->activity }}</span>
-                            </div>
-                        @endif
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.birth_date') ?? 'تاريخ الميلاد' }}</span>
-                            <span class="info-value">
-                                @if ($lead->birth_date)
-                                    {{ $lead->birth_date->format('Y-m-d') }}
-                                    <span class="badge" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-weight:700;margin-inline-start:6px;font-size:12px;">
-                                        <i class="bi bi-cake2"></i> {{ $lead->age }} {{ __('سنة') }}
-                                    </span>
-                                @else
-                                    —
-                                @endif
+        @php
+            $leadDocs = $lead->relationLoaded('documents') ? $lead->documents : $lead->documents()->with('stage', 'uploader')->get();
+            $quotationDocs = $leadDocs->where('category', \App\Models\LeadDocument::CATEGORY_QUOTATION);
+            $otherDocs = $leadDocs->where('category', '!=', \App\Models\LeadDocument::CATEGORY_QUOTATION);
+            $canViewQuotations = auth()->user()?->can('quotations.view');
+
+            $layoutMode = $profileSetting->layout_mode ?? 'hybrid';
+            $defaultTab = $profileSetting->default_tab ?? 'timeline';
+
+            $tabCounts = [
+                'timeline' => $timelineEvents->count(),
+                'client_data' => null,
+                'stage_data' => collect($stageSections ?? [])->flatMap(fn($s) => $s['fields'] ?? [])->filter(fn($f) => !empty($f['value']))->count(),
+                'appointments' => ($appointmentAttendanceRecords->count() > 0 ? $appointmentAttendanceRecords->count() : null),
+                'voip_calls' => null,
+                'documents' => ($otherDocs->count() ?? 0) + ($quotationDocs->count() ?? 0) + ($hasQuotationFile ? 1 : 0),
+                'referrals' => ($lead->referredBy ? 1 : 0) + $lead->referrals->count() + $lead->siblings->count(),
+                'notes' => $lead->notes ? 1 : null,
+            ];
+        @endphp
+
+        <div class="profile-tabs-wrapper {{ $layoutMode === 'hybrid' ? 'profile-hybrid-grid' : 'profile-fullwidth-grid' }}">
+            @if ($layoutMode === 'hybrid')
+                <!-- PERSISTENT CLIENT SUMMARY SIDEBAR -->
+                <aside class="profile-persistent-sidebar">
+                    <div class="profile-summary-card">
+                        <div class="profile-summary-head">
+                            <span class="profile-summary-title">
+                                <i class="bi bi-person-lines-fill" style="color:var(--red);"></i>
+                                {{ __('crm.customer_summary') ?? 'ملخص العميل' }}
                             </span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.age') ?? 'العمر (محسوب تلقائيًا)' }}</span>
-                            <span class="info-value">
-                                @if ($lead->age !== null)
-                                    <strong style="color:var(--dark); font-size:14px;">{{ $lead->age }}</strong> {{ __('سنوات') }}
-                                @else
-                                    <span style="color:var(--muted)">{{ __('غير محدد (يتطلب تاريخ الميلاد)') }}</span>
-                                @endif
-                            </span>
-                        </div>
-                        <!-- GUARDIAN & SIBLINGS (DYNAMIC INTERFACE) -->
-                        <div class="info-row" style="flex-direction: column; align-items: stretch; gap: 8px; background: rgba(248, 250, 252, 0.6); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 6px 0;">
-                            <div style="display:flex; justify-content:space-between; align-items:center;">
-                                <span class="info-label" style="font-weight:800; color:var(--dark); display:flex; align-items:center; gap:6px;">
-                                    <i class="bi bi-people-fill" style="color:#4f46e5;"></i> {{ __('ولي الأمر (Guardian)') }}
-                                </span>
-                                <div id="guardianActionBtns">
-                                    @if ($lead->guardian)
-                                        <button type="button" class="btn small soft" onclick="unlinkGuardian()" style="color:#dc2626; padding:3px 8px; font-size:11px;" title="{{ __('فك ارتباط ولي الأمر') }}">
-                                            <i class="bi bi-x-circle"></i> {{ __('إلغاء الربط') }}
-                                        </button>
-                                    @endif
-                                </div>
-                            </div>
-
-                            <!-- CURRENT LINKED GUARDIAN BADGE -->
-                            <div id="linkedGuardianDisplay" style="{{ $lead->guardian ? 'display:block;' : 'display:none;' }}">
-                                @if ($lead->guardian)
-                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
-                                        <span class="badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; font-size:13px; font-weight:700; padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
-                                            <i class="bi bi-person-check-fill"></i>
-                                            <span id="guardianDisplayName">{{ $lead->guardian->name }}</span>
-                                            <small style="color:#6366f1; font-weight:600;">(#ID {{ $lead->guardian->id }})</small>
-                                            @if ($lead->guardian->relationship)
-                                                <span style="opacity:0.7;">• {{ $lead->guardian->relationship }}</span>
-                                            @endif
-                                            @if ($lead->guardian->phone)
-                                                <span style="direction:ltr; font-family:var(--font-mono); font-size:12px;">• {{ $lead->guardian->phone }}</span>
-                                            @endif
-                                        </span>
-                                    </div>
-                                    @if ($lead->guardian->notes)
-                                        <div id="guardianNotesWrap" style="display:flex; align-items:flex-start; gap:6px; margin-top:6px; font-size:12px; color:var(--dark); background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px;">
-                                            <i class="bi bi-card-text" style="color:#4f46e5; margin-top:2px;"></i>
-                                            <div>
-                                                <strong style="color:var(--muted); font-size:11px; display:block;">{{ __('ملاحظات الأسرة:') }}</strong>
-                                                <span id="guardianNotesText">{{ $lead->guardian->notes }}</span>
-                                            </div>
-                                        </div>
-                                    @endif
-                                @endif
-                            </div>
-
-                            <!-- GUARDIAN SEARCH & ADD INTERFACE -->
-                            <div id="unlinkedGuardianControls" style="{{ $lead->guardian ? 'display:none;' : 'display:block;' }}">
-                                <div style="display:flex; gap:8px; align-items:center;">
-                                    <div style="position:relative; flex:1;">
-                                        <input type="text" id="guardianSearchInput" placeholder="🔍 ابحث عن ولي أمر بالاسم أو الهاتف..." 
-                                               style="width:100%; height:36px; padding:0 10px; font-size:12.5px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--dark);" autocomplete="off">
-                                        <div id="guardianSearchResults" style="display:none; position:absolute; top:calc(100% + 4px); inset-inline-start:0; width:100%; max-height:200px; overflow-y:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; z-index:120; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
-                                    </div>
-                                    <button type="button" class="btn small primary" onclick="openCreateGuardianModal()" style="height:36px; font-size:12px; white-space:nowrap; padding:0 12px; display:inline-flex; align-items:center; gap:4px;">
-                                        <i class="bi bi-plus-lg"></i> {{ __('ولي أمر جديد') }}
-                                    </button>
-                                </div>
-                            </div>
-
-                            <!-- SIBLINGS SECTION (DYNAMIC RADAR) -->
-                            <div id="guardianSiblingsWrap" style="{{ ($lead->guardian && $lead->siblings->isNotEmpty()) ? 'display:block;' : 'display:none;' }} margin-top:6px; border-top:1px dashed var(--line); padding-top:8px;">
-                                <span style="font-size:11px; font-weight:700; color:var(--muted); display:block; margin-bottom:4px;">
-                                    <i class="bi bi-diagram-2"></i> {{ __('الأشقاء المسجلون لنفس ولي الأمر:') }}
-                                </span>
-                                <div id="siblingsList" style="display:flex; flex-wrap:wrap; gap:6px;">
-                                    @if ($lead->guardian)
-                                        @foreach ($lead->siblings as $sibling)
-                                            <a href="{{ route('v2.leads.show', $sibling) }}" class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;">
-                                                <i class="bi bi-person"></i> #{{ $sibling->id }} {{ $sibling->name }}
-                                                <small style="color:#64748b;">({{ $sibling->status?->stage?->localizedName() ?? '—' }})</small>
-                                            </a>
-                                        @endforeach
-                                    @endif
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- REFERRALS & REFERRER NETWORK SECTION -->
-                        @if ($lead->referredBy || $lead->referrals->isNotEmpty())
-                            <div class="info-row" style="flex-direction: column; align-items: stretch; gap: 8px; background: rgba(236, 253, 245, 0.5); border: 1px solid #a7f3d0; border-radius: 10px; padding: 12px; margin: 6px 0;">
-                                @if ($lead->referredBy)
-                                    <div>
-                                        <span class="info-label" style="font-weight:800; color:#065f46; display:flex; align-items:center; gap:6px; font-size:12px;">
-                                            <i class="bi bi-gift-fill"></i> مُحال من المشترك:
-                                        </span>
-                                        <a href="{{ route('v2.leads.show', $lead->referredBy) }}" style="display:inline-flex; align-items:center; gap:6px; margin-top:4px; font-weight:700; color:#047857; text-decoration:none; background:#fff; padding:4px 10px; border-radius:6px; border:1px solid #6ee7b7; font-size:12px;">
-                                            <i class="bi bi-person-heart"></i> #{{ $lead->referredBy->id }} {{ $lead->referredBy->name }}
-                                        </a>
-                                    </div>
-                                @endif
-
-                                @if ($lead->referrals->isNotEmpty())
-                                    <div style="{{ $lead->referredBy ? 'margin-top:6px; border-top:1px dashed #a7f3d0; padding-top:6px;' : '' }}">
-                                        <span class="info-label" style="font-weight:800; color:#065f46; display:flex; align-items:center; gap:6px; font-size:12px; margin-bottom:6px;">
-                                            <i class="bi bi-people"></i> إحالات قام بها هذا المشترك ({{ $lead->referrals->count() }}):
-                                        </span>
-                                        <div style="display:flex; flex-wrap:wrap; gap:6px;" id="referralsListContainer">
-                                            @foreach ($lead->referrals as $refLead)
-                                                <a href="{{ route('v2.leads.show', $refLead) }}" class="badge" style="background:#fff; color:#065f46; border:1px solid #6ee7b7; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:4px 8px; border-radius:6px;">
-                                                    <i class="bi bi-person"></i> #{{ $refLead->id }} {{ $refLead->name }}
-                                                    <small style="color:#047857;">({{ $refLead->status?->stage?->localizedName() ?? '—' }})</small>
-                                                </a>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @else
-                            <div id="dynamicReferralsNetwork" style="display:none;" class="info-row"></div>
-                        @endif
-
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.address') }}</span>
-                            <span class="info-value">{{ trim(($lead->governorate ?? '').' '.($lead->address ?? '')) ?: '—' }}</span>
-                        </div>
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.solution_type') }}</span>
-                            <span class="info-value">{{ $solutionTypeLabel ?: '—' }}</span>
-                        </div>
-                        @if ($lead->lines_count)
-                            <div class="info-row">
-                                <span class="info-label">عدد الخطوط المطلوبة</span>
-                                <span class="info-value">{{ $lead->lines_count }} خطوط</span>
-                            </div>
-                        @endif
-                        @if ($lead->extensions)
-                            <div class="info-row">
-                                <span class="info-label">التحويلات المطلوبة</span>
-                                <span class="info-value">{{ $lead->extensions }}</span>
-                            </div>
-                        @endif
-                        @if ($lead->departments)
-                            <div class="info-row">
-                                <span class="info-label">الأقسام المطلوبة</span>
-                                <span class="info-value">{{ $lead->departments }}</span>
-                            </div>
-                        @endif
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.lead_source') }}</span>
-                            <span class="info-value">{{ $lead->source ? __($lead->source) : '—' }}</span>
-                        </div>
-                       <div class="info-row">
-                           <span class="info-label">{{ __('crm.assigned_employee') }}</span>
-                           <span class="info-value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
-                       </div>
-                       <!-- DYNAMIC CUSTOMER FIELDS (TEMPERATURE, FITNESS GOALS, ETC.) -->
-                       @if (!empty($customerFields))
-                           @foreach ($customerFields as $cField)
-                               @php
-                                   $cfVal = $customerFieldValues[$cField->key] ?? null;
-                               @endphp
-                                @if (!in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address'], true))
-                                   <div class="info-row">
-                                       <span class="info-label">{{ $cField->localizedLabel() }}</span>
-                                       <span class="info-value">
-                                            @if ($cField->key === 'lead_temperature')
-                                                @php
-                                                    $cfTempStyle = match($cfVal) {
-                                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
-                                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
-                                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
-                                                        default => 'background:var(--bg);color:var(--muted);border:1px dashed var(--line);'
-                                                    };
-                                                    $cfDisplay = match($cfVal) {
-                                                        'hot' => '🔥 ' . (app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)'),
-                                                        'warm' => '⚡ ' . (app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)'),
-                                                        'cold' => '❄️ ' . (app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)'),
-                                                        default => '🔘 ' . (app()->getLocale() === 'en' ? 'Not Set' : 'غير محدد')
-                                                    };
-                                                @endphp
-                                                <div style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;">
-                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $cfTempStyle }}">
-                                                        <i class="bi bi-thermometer-half"></i> {{ $cfDisplay }}
-                                                    </span>
-                                                    @can('update', $lead)
-                                                        <form method="POST" action="{{ route('v2.leads.temperature.update', $lead) }}" style="margin:0;display:inline-flex;align-items:center;">
-                                                            @csrf
-                                                            @method('PATCH')
-                                                            <select name="temperature" onchange="this.form.submit()" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--dark);cursor:pointer;" title="{{ app()->getLocale() === 'en' ? 'Change Temperature' : 'تغيير درجة الحرارة مباشرة' }}">
-                                                                <option value="" @selected(empty($cfVal))>-- {{ app()->getLocale() === 'en' ? 'Set Temperature' : 'تحديد الحرارة' }} --</option>
-                                                                <option value="hot" @selected($cfVal === 'hot')>🔥 {{ app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)' }}</option>
-                                                                <option value="warm" @selected($cfVal === 'warm')>⚡ {{ app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)' }}</option>
-                                                                <option value="cold" @selected($cfVal === 'cold')>❄️ {{ app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)' }}</option>
-                                                            </select>
-                                                        </form>
-                                                    @endcan
-                                                </div>
-                                            @elseif ($cfVal !== null && $cfVal !== '')
-                                            @if ($cField->type === 'select' || $cField->type === 'multiselect')
-                                                @php
-                                                    $cfOptions = collect($cField->normalizedOptions())->keyBy('value');
-                                                    if (is_array($cfVal)) {
-                                                        $cfDisplay = implode(', ', array_map(fn($v) => (app()->getLocale() === 'en' && !empty($cfOptions->get($v)['label_en'])) ? $cfOptions->get($v)['label_en'] : ($cfOptions->get($v)['label_ar'] ?? $v), $cfVal));
-                                                    } else {
-                                                        $opt = $cfOptions->get($cfVal);
-                                                        $cfDisplay = ($opt && app()->getLocale() === 'en' && !empty($opt['label_en'])) ? $opt['label_en'] : ($opt['label_ar'] ?? $cfVal);
-                                                    }
-                                                @endphp
-                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;">{{ $cfDisplay }}</span>
-                                            @elseif ($cField->type === 'checkbox')
-                                                {{ $cfVal ? __('crm.yes') : __('crm.no') }}
-                                            @else
-                                                {{ is_array($cfVal) ? implode(', ', $cfVal) : $cfVal }}
-                                            @endif
-                                            @else
-                                                <span style="color:var(--muted);font-style:italic;">— {{ __('crm.not_specified') ?: 'غير محدد' }} —</span>
-                                            @endif
-                                        </span>
-                                    </div>
-                                @endif
-                            @endforeach
-                        @endif
-
-                        <!-- ANY UNREGISTERED DYNAMIC DATA FIELDS -->
-                        @php
-                            $registeredKeys = collect($customerFields ?? [])->pluck('key')->all();
-                            $rawCustom = is_array($lead->custom_fields) ? $lead->custom_fields : [];
-                            $unregisteredCustom = array_diff_key($rawCustom, array_flip($registeredKeys));
-                        @endphp
-                        @foreach ($unregisteredCustom as $uKey => $uVal)
-                            @if ($uVal !== null && $uVal !== '')
-                                <div class="info-row">
-                                    <span class="info-label">{{ ucwords(str_replace(['_', '-'], ' ', (string) $uKey)) }}</span>
-                                    <span class="info-value">{{ is_array($uVal) ? implode(', ', $uVal) : $uVal }}</span>
-                                </div>
-                            @endif
-                        @endforeach
-
-                        <div class="info-row">
-                            <span class="info-label">{{ __('crm.registration_date') }}</span>
-                            <span class="info-value">{{ $lead->created_at ? $lead->created_at->format('Y-m-d h:i A') : '—' }}</span>
-                        </div>
-                        @if ($lead->creator || $lead->created_by)
-                            <div class="info-row">
-                                <span class="info-label">{{ __('crm.registered_by') }}</span>
-                                <span class="info-value">{{ $lead->creator?->name ?? $lead->created_by }}</span>
-                            </div>
-                        @endif
-                    </div>
-                </section>
-
-                <!-- STAGE DATA SECTION -->
-                @if (!empty($stageSections))
-                <section class="panel" id="lead-stage-panel">
-                    <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
-                        <h2>
-                            <i class="bi bi-diagram-3-fill" style="color:var(--red);"></i>
-                            <span>{{ __('crm.stage_data') }}</span>
-                        </h2>
-
-                        <!-- Display Filter: All Stages vs Current Stage -->
-                        <div class="stage-view-filter-dock" style="display:inline-flex; align-items:center; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:3px; gap:4px;">
-                            <button type="button" class="btn small stage-filter-btn is-active" data-stage-filter="all" id="btnStageModeAll" style="font-size:12px; padding:4px 12px; border-radius:8px; border:none; background:var(--card); color:var(--dark); font-weight:700; cursor:pointer; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
-                                <i class="bi bi-grid-fill"></i>
-                                <span>{{ app()->getLocale() === 'ar' ? 'عرض جميع المراحل' : 'All Stages' }}</span>
-                            </button>
-                            <button type="button" class="btn small stage-filter-btn" data-stage-filter="current" id="btnStageModeCurrent" style="font-size:12px; padding:4px 12px; border-radius:8px; border:none; background:transparent; color:var(--muted); font-weight:700; cursor:pointer;">
-                                <i class="bi bi-check-circle-fill" style="color:var(--red);"></i>
-                                <span>{{ app()->getLocale() === 'ar' ? 'المرحلة الحالية فقط' : 'Current Stage Only' }}</span>
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Quick Stage Jump Bar -->
-                    <div class="stage-jump-pills-bar" style="display:flex; gap:8px; overflow-x:auto; padding:10px 14px; border-bottom:1px solid var(--line); background:var(--bg); border-radius:10px; margin:12px 0 16px;">
-                        @foreach ($stageSections as $section)
-                            <button
-                                type="button"
-                                class="stage-jump-pill {{ $section['id'] === $currentStageId ? 'is-current' : '' }}"
-                                data-jump-to-stage="{{ $section['id'] }}"
-                                style="display:inline-flex; align-items:center; gap:6px; padding:5px 12px; border-radius:8px; border:1px solid {{ $section['id'] === $currentStageId ? $section['color'] : 'var(--line)' }}; background:{{ $section['id'] === $currentStageId ? 'var(--card)' : 'transparent' }}; font-size:12px; font-weight:700; color:var(--dark); cursor:pointer; white-space:nowrap; flex-shrink:0;"
-                            >
-                                <span style="width:8px; height:8px; border-radius:50%; background:{{ $section['color'] }};"></span>
-                                <span>{{ $section['name'] }}</span>
-                                @if ($section['is_current'])
-                                    <span style="font-size:10px; background:{{ $section['color'] }}; color:#fff; border-radius:4px; padding:1px 4px;">{{ app()->getLocale() === 'en' ? 'Current' : 'الحالية' }}</span>
-                                @elseif ($section['filled_count'] > 0)
-                                    <span style="font-size:10px; background:var(--line); color:var(--muted); border-radius:4px; padding:1px 4px;">{{ $section['filled_count'] }}</span>
-                                @endif
-                            </button>
-                        @endforeach
-                    </div>
-
-                    <!-- All Stages Stacked Cards -->
-                    <div class="stage-panes-wrapper" id="stagePanesWrapper" style="display:grid; gap:16px;">
-                        @foreach ($stageSections as $section)
-                            <div
-                                class="stage-pane stage-card-block {{ $section['id'] === $currentStageId ? 'is-current-stage' : '' }}"
-                                id="stage-card-{{ $section['id'] }}"
-                                data-stage-id="{{ $section['id'] }}"
-                                data-is-current="{{ $section['is_current'] ? '1' : '0' }}"
-                                style="border: 1px solid var(--line); border-radius: 12px; overflow: hidden; background: var(--card); transition: box-shadow 0.2s ease;"
-                            >
-                                <!-- Stage Header Card -->
-                                <div class="stage-pane-header" style="border-inline-start: 5px solid {{ $section['color'] }}; padding: 12px 16px; background: {{ $section['is_current'] ? 'rgba(239, 68, 68, 0.04)' : 'var(--bg)' }}; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;">
-                                    <div class="stage-pane-header-info" style="display:flex; align-items:center; gap:8px;">
-                                        <span class="stage-pane-name" style="color: {{ $section['color'] }}; font-weight:800; font-size:14px; display:inline-flex; align-items:center; gap:6px;">
-                                            <i class="bi bi-layers-half"></i> {{ $section['name'] }}
-                                        </span>
-                                        @if ($section['is_current'])
-                                            <span class="badge active" style="font-size:11px; font-weight:700;">
-                                                <i class="bi bi-check-circle-fill"></i> {{ __('crm.current_stage') }}{{ $section['current_status'] ? ': ' . $section['current_status'] : '' }}
-                                            </span>
-                                        @endif
-                                    </div>
-                                    <div class="stage-pane-header-meta" style="display:flex; align-items:center; gap:8px;">
-                                        <span class="badge {{ $section['filled_count'] > 0 ? 'success' : '' }}" style="font-size: 11px; font-weight:700;">
-                                            {{ $section['filled_count'] }} / {{ $section['fields_count'] }} {{ app()->getLocale() === 'ar' ? 'حقل مكتمل' : 'fields filled' }}
-                                        </span>
-                                    </div>
-                                </div>
-
-                                <!-- Fields List -->
-                                @if (!empty($section['fields']))
-                                    <div class="info-list stage-fields-grid">
-                                        @foreach ($section['fields'] as $field)
-                                            <div class="info-row stage-field-card">
-                                                <span class="info-label" style="display:flex; align-items:center; gap:4px; font-size:11.5px; color:var(--muted); font-weight:700;">
-                                                    <i class="bi bi-dot" style="font-size:18px; color:{{ $section['color'] }}; line-height:0.5;"></i>
-                                                    {{ $field['label'] }}
-                                                </span>
-                                                <span class="info-value {{ $field['has_value'] ? '' : 'text-muted' }}" style="font-size:13px; color:{{ $field['has_value'] ? 'var(--dark)' : 'var(--muted)' }}; font-weight:{{ $field['has_value'] ? '700' : 'normal' }};">
-                                                    {{ $field['value'] }}
-                                                </span>
-                                            </div>
-                                        @endforeach
-                                    </div>
-                                @else
-                                    <div class="stage-empty-box" style="padding: 16px; text-align: center; color: var(--muted); font-size: 12.5px;">
-                                        <i class="bi bi-inbox"></i>
-                                        <span>{{ app()->getLocale() === 'ar' ? 'لا توجد حقول معرفة لهذه المرحلة' : 'No fields defined for this stage' }}</span>
-                                    </div>
-                                @endif
-
-                                <!-- Stage History / Past Submissions if any -->
-                                @if ($section['history']->isNotEmpty())
-                                    <div class="stage-history-subpanel" style="border-top: 1px dashed var(--line); padding: 12px 16px; background: rgba(0,0,0,0.015);">
-                                        <div class="stage-history-subhead" style="font-size: 12px; font-weight: 800; color: var(--muted); margin-bottom: 8px; display: flex; align-items: center; gap: 6px;">
-                                            <i class="bi bi-clock-history"></i>
-                                            <span>{{ app()->getLocale() === 'ar' ? 'سجل الإدخالات السابقة في مرحلة ' . $section['name'] : 'Past submissions in ' . $section['name'] }}</span>
-                                        </div>
-                                        <div class="stage-history-list" style="display: grid; gap: 8px;">
-                                            @foreach ($section['history'] as $historyGroup)
-                                                <div class="stage-history-card" style="background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 8px 12px;">
-                                                    <div class="stage-history-top" style="display:flex; justify-content:space-between; font-size:11.5px; color:var(--muted); margin-bottom:6px;">
-                                                        <span class="stage-history-actor">
-                                                            <i class="bi bi-person"></i> {{ $historyGroup['actor'] }}
-                                                        </span>
-                                                        <span class="stage-history-date">
-                                                            <i class="bi bi-calendar3"></i> {{ $historyGroup['date'] ? $historyGroup['date']->format('Y-m-d h:i A') : '—' }}
-                                                        </span>
-                                                    </div>
-                                                    @if (!empty($historyGroup['values']))
-                                                        <div class="stage-history-values" style="display:flex; flex-wrap:wrap; gap:6px;">
-                                                            @foreach ($historyGroup['values'] as $hVal)
-                                                                <span class="stage-history-pill" style="font-size: 11px; padding: 2px 8px; border-radius: 4px; background: var(--bg); border: 1px solid var(--line);">
-                                                                    <b>{{ $hVal['label'] }}:</b> {{ $hVal['value'] }}
-                                                                </span>
-                                                            @endforeach
-                                                        </div>
-                                                    @endif
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
-                            </div>
-                        @endforeach
-                    </div>
-                </section>
-                @endif
-
-                <!-- PHONE NUMBERS & CONTACTS -->
-                <section class="panel">
-                    <div class="panel-head">
-                        <h2><i class="bi bi-telephone"></i> {{ __('crm.lead_phone_numbers') }}</h2>
-                    </div>
-                    <div class="info-list">
-                        <div class="info-row is-primary-phone">
-                            <div>
-                                <span class="badge active" style="margin-inline-end:6px">{{ __('crm.primary_badge') }}</span>
-                                @if ($lead->phone)
-                                    @can('leads.followups.view')
-                                        @if ($callPhone)
-                                            <a
-                                                class="js-call-followup"
-                                                href="{{ route('v2.leads.followups.index', ['lead' => $lead, 'channel' => 'call']) }}"
-                                                data-call-href="tel:{{ $callPhone }}"
-                                                title="{{ __('crm.open_microsip_followup') }}"
-                                                style="font-weight:900;color:inherit;text-decoration:none"
-                                                dir="ltr"
-                                            >
-                                                {{ $lead->phone }}
-                                            </a>
-                                        @else
-                                            <a href="tel:{{ $lead->phone }}" style="font-weight:900;color:inherit;text-decoration:none" dir="ltr">
-                                                {{ $lead->phone }}
-                                            </a>
-                                        @endif
-                                    @else
-                                        <a href="tel:{{ $lead->phone }}" style="font-weight:900;color:inherit;text-decoration:none" dir="ltr">
-                                            {{ $lead->phone }}
-                                        </a>
-                                    @endcan
-                                @else
-                                    <span style="color:var(--muted)">—</span>
-                                @endif
-                            </div>
-                            <div style="display:flex;gap:6px">
-                                @if ($callPhone)
-                                    @can('leads.followups.view')
-                                        <a
-                                            class="btn small soft js-call-followup"
-                                            href="{{ route('v2.leads.followups.index', ['lead' => $lead, 'channel' => 'call']) }}"
-                                            data-call-href="tel:{{ $callPhone }}"
-                                            title="{{ __('crm.open_microsip_followup') }}"
-                                        >
-                                            <i class="bi bi-telephone"></i>
-                                        </a>
-                                    @else
-                                        <a class="btn small soft" href="tel:{{ $callPhone }}" title="{{ __('crm.call_action') }}">
-                                            <i class="bi bi-telephone"></i>
-                                        </a>
-                                    @endcan
-                                @endif
-                                @if ($whatsappPhone)
-                                    <a href="https://wa.me/{{ $whatsappPhone }}" target="_blank" rel="noopener noreferrer" class="btn small success" title="{{ __('crm.whatsapp') }}">
-                                        <i class="bi bi-whatsapp"></i>
+                            @if ($callPhone)
+                                @can('leads.followups.view')
+                                    <a class="btn small primary js-call-followup" href="{{ route('v2.leads.followups.index', ['lead' => $lead, 'channel' => 'call']) }}" data-call-href="tel:{{ $callPhone }}" title="{{ __('crm.call_action') }}">
+                                        <i class="bi bi-telephone-outbound"></i> {{ __('crm.call') ?? 'اتصال' }}
                                     </a>
-                                @endif
-                            </div>
-                        </div>
-
-                        @if ($lead->email)
-                            <div class="info-row">
-                                <div>
-                                    <span class="badge" style="margin-inline-end:6px">{{ __('crm.email') }}</span>
-                                    <span style="font-weight:700">{{ $lead->email }}</span>
-                                </div>
-                                <a href="mailto:{{ $lead->email }}" class="btn small soft" title="إرسال بريد">
-                                    <i class="bi bi-envelope"></i>
-                                </a>
-                            </div>
-                        @endif
-                    </div>
-                </section>
-
-                <!-- DOCUMENTS & QUOTATIONS SECTION -->
-                @php
-                    $leadDocs = $lead->relationLoaded('documents') ? $lead->documents : $lead->documents()->with('stage', 'uploader')->get();
-                    $quotationDocs = $leadDocs->where('category', \App\Models\LeadDocument::CATEGORY_QUOTATION);
-                    $otherDocs = $leadDocs->where('category', '!=', \App\Models\LeadDocument::CATEGORY_QUOTATION);
-                    $canViewQuotations = auth()->user()?->can('quotations.view');
-                @endphp
-
-                @if (($hasQuotationFile || $quotationDocs->isNotEmpty()) && $canViewQuotations)
-                    <section class="panel">
-                        <div class="panel-head">
-                            <h2><i class="bi bi-file-earmark-pdf"></i> {{ __('crm.price_quotation') }}</h2>
-                            <span class="badge active">{{ $lead->quotation_sent ? 'تم الإرسال' : 'جاهز' }}</span>
-                        </div>
-                        <div class="info-list">
-                            @if ($quotationDocs->isNotEmpty())
-                                @foreach ($quotationDocs as $qDoc)
-                                    <div class="info-row">
-                                        <div>
-                                            <strong style="display:block;font-size:13px">{{ $qDoc->original_name }}</strong>
-                                            <small style="color:var(--muted)">
-                                                {{ $qDoc->formattedSize() }} • {{ $qDoc->created_at?->format('Y-m-d H:i') }}
-                                                @if ($qDoc->stage) • مرحلة: {{ $qDoc->stage->localizedName() }} @endif
-                                                @if ($qDoc->uploader) • بواسطة: {{ $qDoc->uploader->name }} @endif
-                                            </small>
-                                        </div>
-                                        <div style="display:flex;gap:6px">
-                                            <a class="btn small soft" href="{{ route('v2.leads.documents.preview', [$lead, $qDoc]) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
-                                                <i class="bi bi-eye"></i> معاينة
-                                            </a>
-                                            <a class="btn small soft" href="{{ route('v2.leads.documents.download', [$lead, $qDoc]) }}" title="تحميل الملف">
-                                                <i class="bi bi-download"></i> تحميل
-                                            </a>
-                                        </div>
-                                    </div>
-                                @endforeach
-                            @elseif ($hasQuotationFile)
-                                <div class="info-row">
-                                    <div>
-                                        <strong style="display:block;font-size:13px">{{ $quotationFileName ?: 'ملف عرض السعر' }}</strong>
-                                        <small style="color:var(--muted)">ملف عرض السعر الرسمي المرفق للعميل</small>
-                                    </div>
-                                    <div style="display:flex;gap:6px">
-                                        <a class="btn small soft" href="{{ route('v2.leads.quotation.preview', $lead) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
-                                            <i class="bi bi-eye"></i> معاينة
-                                        </a>
-                                        <a class="btn small soft" href="{{ route('v2.leads.quotation.download', $lead) }}" title="تحميل الملف">
-                                            <i class="bi bi-download"></i> تحميل
-                                        </a>
-                                    </div>
-                                </div>
+                                @else
+                                    <a class="btn small primary" href="tel:{{ $callPhone }}" title="{{ __('crm.call_action') }}">
+                                        <i class="bi bi-telephone"></i>
+                                    </a>
+                                @endcan
                             @endif
                         </div>
-                    </section>
-                @endif
 
-                @if ($otherDocs->isNotEmpty())
-                    <section class="panel">
-                        <div class="panel-head">
-                            <h2><i class="bi bi-folder2-open"></i> المستندات والمرفقات</h2>
-                            <span class="badge">{{ $otherDocs->count() }}</span>
-                        </div>
-                        <div class="info-list">
-                            @foreach ($otherDocs as $oDoc)
-                                <div class="info-row">
-                                    <div>
-                                        <strong style="display:block;font-size:13px">{{ $oDoc->original_name }}</strong>
-                                        <small style="color:var(--muted)">
-                                            {{ $oDoc->formattedSize() }} • {{ $oDoc->created_at?->format('Y-m-d H:i') }}
-                                            @if ($oDoc->stage) • مرحلة: {{ $oDoc->stage->localizedName() }} @endif
-                                            @if ($oDoc->uploader) • بواسطة: {{ $oDoc->uploader->name }} @endif
-                                        </small>
-                                    </div>
-                                    <div style="display:flex;gap:6px">
-                                        <a class="btn small soft" href="{{ route('v2.leads.documents.preview', [$lead, $oDoc]) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
-                                            <i class="bi bi-eye"></i> معاينة
-                                        </a>
-                                        <a class="btn small soft" href="{{ route('v2.leads.documents.download', [$lead, $oDoc]) }}" title="تحميل الملف">
-                                            <i class="bi bi-download"></i> تحميل
-                                        </a>
-                                    </div>
-                                </div>
-                            @endforeach
-                        </div>
-                    </section>
-                @endif
-
-                @if ($lead->notes)
-                    <section class="panel">
-                        <div class="panel-head">
-                            <h2><i class="bi bi-chat-left-text"></i> {{ __('crm.notes') }}</h2>
-                        </div>
-                        <div style="background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:14px 16px; line-height:1.7; color:var(--dark); white-space:pre-line;">
-                            {{ $lead->notes }}
-                        </div>
-                    </section>
-                @endif
-            </div>
-
-            <!-- RIGHT COLUMN: VOIP, STAGE ANSWERS & TIMELINE -->
-            <div>
-                @can('voip.view')
-                    <section class="panel" id="leadCallInsights" data-endpoint="{{ route('v2.leads.calls', $lead) }}">
-                        <div class="panel-head">
-                            <div>
-                                <h2><i class="bi bi-soundwave"></i> {{ __('crm.lead_call_insights') }}</h2>
-                                <small style="color:var(--muted)">مكالمات مسجلة ومربوطة مباشرة من خادم الاتصالات VoIP</small>
+                        <div class="profile-summary-rows">
+                            <div class="profile-summary-row">
+                                <span class="label">{{ __('crm.primary_phone') ?? 'الهاتف الأساسي' }}</span>
+                                <span class="value" dir="ltr">{{ $lead->phone ?: '—' }}</span>
                             </div>
-                            <span class="badge active">{{ __('crm.live_from_voip') }}</span>
-                        </div>
-                        <form class="call-filters" id="leadCallFilters">
-                            <div><label for="callStartDate">{{ __('crm.from_date') }}</label><input id="callStartDate" name="start_date" type="date"></div>
-                            <div><label for="callEndDate">{{ __('crm.to_date') }}</label><input id="callEndDate" name="end_date" type="date"></div>
-                            <div><label for="callDirection">{{ __('crm.direction') }}</label><select id="callDirection" name="direction"><option value="">{{ __('crm.all_directions') }}</option><option value="inbound">{{ __('crm.incoming') }}</option><option value="outbound">{{ __('crm.outgoing') }}</option><option value="internal">{{ __('crm.internal') }}</option></select></div>
-                            <button class="btn soft" type="submit"><i class="bi bi-funnel"></i> {{ __('crm.apply_filter') }}</button>
-                        </form>
-                        <div class="call-metrics" hidden data-call-metrics>
-                            <div class="call-metric"><span>{{ __('crm.total_calls') }}</span><strong data-metric="total_calls">0</strong></div>
-                            <div class="call-metric"><span>{{ __('crm.answer_rate') }}</span><strong data-metric="answer_rate_percent">0%</strong></div>
-                            <div class="call-metric"><span>{{ __('crm.total_talk_time') }}</span><strong data-metric="total_talk_seconds">0:00</strong></div>
-                            <div class="call-metric"><span>{{ __('crm.missed_calls') }}</span><strong data-metric="missed_calls">0</strong></div>
-                        </div>
-                        <div class="call-bars" hidden data-call-bars>
-                            @foreach ([['inbound', __('crm.incoming'), '#16a34a'], ['outbound', __('crm.outgoing'), '#0284c7'], ['internal', __('crm.internal'), '#64748b']] as [$key, $label, $color])
-                                <div class="call-bar">
-                                    <span>{{ $label }}</span>
-                                    <span class="call-bar-track"><span class="call-bar-fill" data-direction="{{ $key }}" style="width:0;background:{{ $color }}"></span></span>
-                                    <b data-direction-count="{{ $key }}">0</b>
+                            @if ($lead->branch)
+                                <div class="profile-summary-row">
+                                    <span class="label">{{ __('crm.branch') }}</span>
+                                    <span class="value">{{ $lead->branch->localizedName() }}</span>
                                 </div>
-                            @endforeach
+                            @endif
+                            <div class="profile-summary-row">
+                                <span class="label">{{ __('crm.responsible_employee') ?? 'المسؤول' }}</span>
+                                <span class="value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
+                            </div>
+                            <div class="profile-summary-row">
+                                <span class="label">{{ __('crm.current_stage') ?? 'المرحلة' }}</span>
+                                <span class="value">
+                                    <span class="badge" style="background:transparent; border:1px solid var(--line); font-weight:700;">
+                                        {{ $lead->status?->stage?->localizedName() ?? '—' }}
+                                    </span>
+                                </span>
+                            </div>
+                            <div class="profile-summary-row">
+                                <span class="label">{{ __('crm.next_followup') }}</span>
+                                <span class="value" style="color:{{ $lead->next_follow_up_at ? 'var(--red)' : 'var(--muted)' }};">
+                                    {{ $lead->next_follow_up_at ? $lead->next_follow_up_at->format('Y-m-d h:i A') : __('crm.unspecified') }}
+                                </span>
+                            </div>
                         </div>
-                        <div class="call-state" data-call-state><i class="bi bi-arrow-repeat"></i>{{ __('crm.loading_call_history') }}</div>
-                        <div class="call-list" hidden data-call-list></div>
-                        <div class="call-pagination" hidden data-call-pagination></div>
-                    </section>
-                @endcan
 
-
-                <section class="panel" id="leadAttendanceHistory">
-                    <div class="panel-head">
-                        <h2><i class="bi bi-person-check"></i> {{ __('crm.attendance_history') }}</h2>
-                        <span class="badge">{{ $appointmentAttendanceRecords->count() }}</span>
-                    </div>
-
-                    @if ($appointmentAttendanceRecords->isNotEmpty())
-                        <div class="attendance-history-list">
-                            @foreach ($appointmentAttendanceRecords as $attendance)
-                                @php
-                                    $branchName = app()->getLocale() === 'en'
-                                        ? ($attendance->branch_name_en ?: $attendance->branch_name_ar)
-                                        : ($attendance->branch_name_ar ?: $attendance->branch_name_en);
-                                @endphp
-                                <article class="attendance-history-record">
-                                    <div class="attendance-history-head">
-                                        <span class="attendance-history-outcome {{ $attendance->outcome === 'attended' ? 'attended' : 'no-show' }}">
-                                            <i class="bi {{ $attendance->outcome === 'attended' ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
-                                            {{ $attendance->outcome === 'attended' ? __('crm.attended') : __('crm.no_show') }}
-                                        </span>
-                                        <span class="attendance-history-date">
-                                            {{ $attendance->appointment_date?->format('Y-m-d') ?? __('crm.unspecified') }}
-                                            @if ($attendance->appointment_time)
-                                                · {{ $attendance->appointment_time }}
-                                            @endif
-                                        </span>
-                                    </div>
-                                    <div class="attendance-history-details">
-                                        @if ($attendance->activity)
-                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_activity') }}:</strong> {{ $attendance->activity }}</span>
-                                        @endif
-                                        @if ($branchName)
-                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_branch') }}:</strong> {{ $branchName }}</span>
-                                        @endif
-                                        @if ($attendance->coach)
-                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_coach') }}:</strong> {{ $attendance->coach }}</span>
-                                        @endif
-                                        @if ($attendance->recordedBy?->name)
-                                            <span class="attendance-history-detail"><strong>{{ __('crm.recorded_by') }}</strong> {{ $attendance->recordedBy->name }}</span>
-                                        @endif
-                                        <span class="attendance-history-detail"><strong>{{ __('crm.attendance_recorded_at') }}:</strong> {{ $attendance->created_at?->format('Y-m-d h:i A') ?? '—' }}</span>
-                                    </div>
-                                    @if ($attendance->notes)
-                                        <p class="attendance-history-notes"><strong>{{ __('crm.notes') }}:</strong> {{ $attendance->notes }}</p>
-                                    @endif
-                                </article>
-                            @endforeach
-                        </div>
-                    @else
-                        <div class="attendance-history-record" style="text-align:center;color:var(--muted);">
-                            {{ __('crm.no_attendance_records') }}
-                        </div>
-                    @endif
-                </section>
-
-                <!-- CUSTOMER ACTIVITY TIMELINE -->
-                <section class="panel">
-                    <div class="panel-head">
-                        <div>
-                            <h2><i class="bi bi-clock-history"></i> {{ __('crm.lead_activity_timeline') }}</h2>
-                            <small style="color:var(--muted)">سجل زمني لجميع المتابعات وتغييرات الحالات</small>
-                        </div>
-                        @can('leads.followups.view')
-                            <a
-                             href="{{ route('v2.leads.followups.index', $lead) }}"
-                             class="btn primary small"
-                            >
-                                <i class="bi bi-plus-lg"></i> {{ __('crm.add_followup') }}
-                            </a>
-                        @endcan
-                    </div>
-
-                    @if ($timelineEvents->isNotEmpty())
-                        <div class="timeline">
-                            @foreach ($timelineEvents as $event)
-                                <div class="timeline-item">
-                                    <div class="timeline-dot"></div>
-                                    <div class="timeline-card">
-                                        <div class="timeline-head">
-                                            <div>
-                                                <span class="timeline-employee">
-                                                    <i class="bi bi-person"></i> {{ $event['employee'] }}
-                                                </span>
-                                                @if ($event['type'] === 'followup')
-                                                    @php
-                                                        $commType = $event['communication_type'] ?? 'other';
-                                                        $commLabel = $followupCommunicationTypes[$commType] ?? $commType;
-                                                    @endphp
-                                                    <span class="badge" style="background:#e0f2fe; color:#0369a1; margin-inline-start:6px">
-                                                        <i class="bi bi-telephone"></i> {{ $commLabel }}
-                                                    </span>
-                                                    @if (!empty($event['call_attempt_number']) && $commType === 'call')
-                                                        <span class="badge" style="background:#fef3c7; color:#b45309; margin-inline-start:4px">
-                                                            المحاولة #{{ $event['call_attempt_number'] }}
-                                                        </span>
-                                                    @endif
-                                                    @if (!empty($event['call_status']))
-                                                        @php
-                                                            $csLbl = $callStatuses[$event['call_status']] ?? $event['call_status'];
-                                                        @endphp
-                                                        <span class="badge" style="background:#e0e7ff; color:#4338ca; margin-inline-start:4px">
-                                                            {{ $csLbl }}
-                                                        </span>
-                                                    @endif
-                                                    @if (!empty($event['outcome_category']))
-                                                        @php
-                                                            $ocLbl = $outcomeCategories[$event['outcome_category']] ?? $event['outcome_category'];
-                                                        @endphp
-                                                        <span class="badge" style="background:#dcfce7; color:#15803d; margin-inline-start:4px">
-                                                            {{ $ocLbl }}
-                                                        </span>
-                                                    @endif
-                                                @else
-                                                    <span class="badge" style="background:#fef3c7; color:#92400e; margin-inline-start:6px">
-                                                        <i class="bi bi-arrow-left-right"></i> {{ __('crm.status_change') }}
-                                                    </span>
-                                                @endif
-                                            </div>
-                                            <span class="timeline-date">
-                                                {{ $event['timestamp'] ? $event['timestamp']->format('Y-m-d h:i A') : '—' }}
-                                            </span>
-                                        </div>
-
-                                        @if ($event['from_status'] && $event['to_status'] && $event['from_status'] !== $event['to_status'])
-                                            <div style="margin-bottom:8px; font-size:12px; font-weight:800; color:var(--muted)">
-                                                {{ __('crm.status_changed_to') }} <span style="color:#64748b">{{ $event['from_status'] }}</span> {{ app()->getLocale() === 'ar' ? '←' : '→' }} <strong style="color:var(--dark)">{{ $event['to_status'] }}</strong>
-                                            </div>
-                                        @elseif ($event['to_status'])
-                                            <div style="margin-bottom:8px; font-size:12px; font-weight:800; color:var(--muted)">
-                                                {{ __('crm.status') }} <strong style="color:var(--dark)">{{ $event['to_status'] }}</strong>
-                                            </div>
-                                        @endif
-
-                                        @if ($event['details'])
-                                            <div class="timeline-body">
-                                                {{ $event['details'] }}
-                                            </div>
-                                        @endif
-
-                                        @if (!empty($event['field_changes']))
-                                            <div class="followup-field-changes">
-                                                <strong>التعديلات التي قام بها الموظف</strong>
-                                                <ul class="followup-change-list">
-                                                    @foreach ($event['field_changes'] as $change)
-                                                        <li class="followup-change-item">
-                                                            <span class="followup-change-label">{{ $change['label'] ?? 'تعديل' }}</span>
-                                                            <div>
-                                                                <span class="followup-change-old">{{ $change['old'] ?? '----' }}</span>
-                                                                →
-                                                                <span class="followup-change-new">{{ $change['new'] ?? '----' }}</span>
-                                                            </div>
-                                                        </li>
-                                                    @endforeach
-                                                </ul>
-                                            </div>
-                                        @endif
-
-                                        @if (!empty($event['stage_values']))
-                                            <div style="margin-top:10px; padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:8px;">
-                                                <span style="display:block; font-size:11px; font-weight:800; color:#64748b; margin-bottom:6px;">
-                                                    <i class="bi bi-ui-checks"></i> إجابات أسئلة المرحلة
-                                                </span>
-                                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:6px 12px;">
-                                                    @foreach ($event['stage_values'] as $sVal)
-                                                        <div style="font-size:12px;">
-                                                            <span style="color:var(--muted)">{{ $sVal['label'] }}:</span>
-                                                            <strong style="color:var(--dark)">{{ $sVal['value'] }}</strong>
-                                                        </div>
-                                                    @endforeach
-                                                </div>
-                                            </div>
-                                        @endif
-
-                                        @if ($event['next_follow_up'])
-                                            <div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); font-size:12px; color:var(--muted)">
-                                                <i class="bi bi-calendar-event"></i> المتابعة القادمة: <strong>{{ $event['next_follow_up']->format('Y-m-d h:i A') }}</strong>
-                                            </div>
-                                        @endif
-                                    </div>
+                        @if (!empty($appointmentMeta) && ($appointmentMeta['date'] || $lead->next_follow_up_at))
+                            <div style="margin-top:12px; padding:10px 12px; background:rgba(2, 132, 199, 0.08); border:1px solid rgba(2, 132, 199, 0.25); border-radius:10px; font-size:12px;">
+                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:4px;">
+                                    <strong style="color:#0284c7; display:inline-flex; align-items:center; gap:5px;">
+                                        <i class="bi bi-calendar2-event"></i> {{ __('موعد مجدول') }}
+                                    </strong>
+                                    <span class="badge" style="font-size:11px;">{{ $appointmentMeta['status'] }}</span>
                                 </div>
-                            @endforeach
-                        </div>
-                    @else
-                        <div style="text-align:center; padding:30px 20px; color:var(--muted); background:var(--bg); border-radius:12px;">
-                            <i class="bi bi-chat-square-dots" style="font-size:30px; display:block; margin-bottom:8px"></i>
-                            <p style="margin:0; font-weight:700">لا توجد متابعات أو نشاطات مسجلة لهذا العميل حتى الآن.</p>
+                                <div style="font-weight:800; color:var(--dark);">
+                                    {{ $appointmentMeta['date'] ?: '—' }} {{ $appointmentMeta['time'] ? '· '.$appointmentMeta['time'] : '' }}
+                                </div>
+                                @if ($appointmentMeta['coach'])
+                                    <div style="font-size:11.5px; color:var(--muted); margin-top:2px;">
+                                        <i class="bi bi-person"></i> {{ $appointmentMeta['coach'] }}
+                                    </div>
+                                @endif
+                            </div>
+                        @endif
+
+                        <div style="margin-top:14px; display:flex; flex-direction:column; gap:8px;">
                             @can('leads.followups.view')
-                                <a
-                                 href="{{ route('v2.leads.followups.index', $lead) }}"
-                                 class="btn primary small"
-                                 style="margin-top:12px;"
-                                >
-                                    تسجيل أول متابعة الآن
+                                <a href="{{ route('v2.leads.followups.index', $lead) }}" class="btn soft small" style="width:100%; justify-content:center;">
+                                    <i class="bi bi-chat-left-dots"></i> {{ __('crm.log_new_followup') }}
                                 </a>
                             @endcan
+                            @if (($referralsEnabled ?? true) && auth()->user()?->can('leads.create'))
+                                <button type="button" class="btn soft small" onclick="openReferralModal()" style="width:100%; justify-content:center; color:#059669; border-color:#a7f3d0; background:#ecfdf5;">
+                                    <i class="bi bi-person-plus"></i> {{ __('إحالة صديق جديد') }}
+                                </button>
+                            @endif
                         </div>
-                    @endif
-                </section>
+                    </div>
+                </aside>
+            @endif
+
+            <!-- TABBED WORKSPACE -->
+            <div class="profile-tabs-workspace">
+                <nav class="profile-tabs-nav" id="profileTabsNav" role="tablist">
+                    @foreach($activeProfileTabs as $tab)
+                        @if($tab['key'] === 'voip_calls')
+                            @cannot('voip.view')
+                                @continue
+                            @endcannot
+                        @endif
+                        @php
+                            $badgeCount = $tabCounts[$tab['key']] ?? null;
+                        @endphp
+                        <button
+                            type="button"
+                            class="profile-tab-btn"
+                            role="tab"
+                            id="tab-btn-{{ $tab['key'] }}"
+                            data-tab-key="{{ $tab['key'] }}"
+                            aria-controls="tab-pane-{{ $tab['key'] }}"
+                            aria-selected="false"
+                            onclick="switchProfileTab('{{ $tab['key'] }}')"
+                        >
+                            <i class="bi {{ $tab['icon'] }}"></i>
+                            <span>{{ $tab['label'] }}</span>
+                            @if($badgeCount !== null && $badgeCount > 0)
+                                <span class="tab-badge">{{ $badgeCount }}</span>
+                            @endif
+                        </button>
+                    @endforeach
+                </nav>
+
+                <div class="profile-tabs-content">
+                    @foreach($activeProfileTabs as $tab)
+                        @if($tab['key'] === 'voip_calls')
+                            @cannot('voip.view')
+                                @continue
+                            @endcannot
+                        @endif
+
+                        <div class="profile-tab-pane" id="tab-pane-{{ $tab['key'] }}" role="tabpanel" aria-labelledby="tab-btn-{{ $tab['key'] }}">
+                            {{-- TAB: TIMELINE & ACTIVITY --}}
+                            @if ($tab['key'] === 'timeline')
+                                <section class="panel">
+                                    <div class="panel-head">
+                                        <div>
+                                            <h2><i class="bi bi-clock-history"></i> {{ __('crm.lead_activity_timeline') }}</h2>
+                                            <small style="color:var(--muted)">سجل زمني لجميع المتابعات وتغييرات الحالات</small>
+                                        </div>
+                                        @can('leads.followups.view')
+                                            <a href="{{ route('v2.leads.followups.index', $lead) }}" class="btn primary small">
+                                                <i class="bi bi-plus-lg"></i> {{ __('crm.add_followup') }}
+                                            </a>
+                                        @endcan
+                                    </div>
+
+                                    @if ($timelineEvents->isNotEmpty())
+                                        <div class="timeline">
+                                            @foreach ($timelineEvents as $event)
+                                                <div class="timeline-item">
+                                                    <div class="timeline-dot"></div>
+                                                    <div class="timeline-card">
+                                                        <div class="timeline-head">
+                                                            <div>
+                                                                <span class="timeline-employee">
+                                                                    <i class="bi bi-person"></i> {{ $event['employee'] }}
+                                                                </span>
+                                                                @if ($event['type'] === 'followup')
+                                                                    @php
+                                                                        $commType = $event['communication_type'] ?? 'other';
+                                                                        $commLabel = $followupCommunicationTypes[$commType] ?? $commType;
+                                                                    @endphp
+                                                                    <span class="badge" style="background:#e0f2fe; color:#0369a1; margin-inline-start:6px">
+                                                                        <i class="bi bi-telephone"></i> {{ $commLabel }}
+                                                                    </span>
+                                                                    @if (!empty($event['call_attempt_number']) && $commType === 'call')
+                                                                        <span class="badge" style="background:#fef3c7; color:#b45309; margin-inline-start:4px">
+                                                                            المحاولة #{{ $event['call_attempt_number'] }}
+                                                                        </span>
+                                                                    @endif
+                                                                    @if (!empty($event['call_status']))
+                                                                        @php
+                                                                            $csLbl = $callStatuses[$event['call_status']] ?? $event['call_status'];
+                                                                        @endphp
+                                                                        <span class="badge" style="background:#e0e7ff; color:#4338ca; margin-inline-start:4px">
+                                                                            {{ $csLbl }}
+                                                                        </span>
+                                                                    @endif
+                                                                    @if (!empty($event['outcome_category']))
+                                                                        @php
+                                                                            $ocLbl = $outcomeCategories[$event['outcome_category']] ?? $event['outcome_category'];
+                                                                        @endphp
+                                                                        <span class="badge" style="background:#dcfce7; color:#15803d; margin-inline-start:4px">
+                                                                            {{ $ocLbl }}
+                                                                        </span>
+                                                                    @endif
+                                                                @else
+                                                                    <span class="badge" style="background:#fef3c7; color:#92400e; margin-inline-start:6px">
+                                                                        <i class="bi bi-arrow-left-right"></i> {{ __('crm.status_change') }}
+                                                                    </span>
+                                                                @endif
+                                                            </div>
+                                                            <span class="timeline-date">
+                                                                {{ $event['timestamp'] ? $event['timestamp']->format('Y-m-d h:i A') : '—' }}
+                                                            </span>
+                                                        </div>
+
+                                                        @if ($event['from_status'] && $event['to_status'] && $event['from_status'] !== $event['to_status'])
+                                                            <div style="margin-bottom:8px; font-size:12px; font-weight:800; color:var(--muted)">
+                                                                {{ __('crm.status_changed_to') }} <span style="color:#64748b">{{ $event['from_status'] }}</span> {{ app()->getLocale() === 'ar' ? '←' : '→' }} <strong style="color:var(--dark)">{{ $event['to_status'] }}</strong>
+                                                            </div>
+                                                        @elseif ($event['to_status'])
+                                                            <div style="margin-bottom:8px; font-size:12px; font-weight:800; color:var(--muted)">
+                                                                {{ __('crm.status') }} <strong style="color:var(--dark)">{{ $event['to_status'] }}</strong>
+                                                            </div>
+                                                        @endif
+
+                                                        @if ($event['details'])
+                                                            <div class="timeline-body">
+                                                                {{ $event['details'] }}
+                                                            </div>
+                                                        @endif
+
+                                                        @if (!empty($event['field_changes']))
+                                                            <div class="followup-field-changes">
+                                                                <strong>التعديلات التي قام بها الموظف</strong>
+                                                                <ul class="followup-change-list">
+                                                                    @foreach ($event['field_changes'] as $change)
+                                                                        <li class="followup-change-item">
+                                                                            <span class="followup-change-label">{{ $change['label'] ?? 'تعديل' }}</span>
+                                                                            <div>
+                                                                                <span class="followup-change-old">{{ $change['old'] ?? '----' }}</span>
+                                                                                →
+                                                                                <span class="followup-change-new">{{ $change['new'] ?? '----' }}</span>
+                                                                            </div>
+                                                                        </li>
+                                                                    @endforeach
+                                                                </ul>
+                                                            </div>
+                                                        @endif
+
+                                                        @if (!empty($event['stage_values']))
+                                                            <div style="margin-top:10px; padding:10px 12px; background:var(--card); border:1px solid var(--line); border-radius:8px;">
+                                                                <span style="display:block; font-size:11px; font-weight:800; color:#64748b; margin-bottom:6px;">
+                                                                    <i class="bi bi-ui-checks"></i> إجابات أسئلة المرحلة
+                                                                </span>
+                                                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(180px, 1fr)); gap:6px 12px;">
+                                                                    @foreach ($event['stage_values'] as $sVal)
+                                                                        <div style="font-size:12px;">
+                                                                            <span style="color:var(--muted)">{{ $sVal['label'] }}:</span>
+                                                                            <strong style="color:var(--dark)">{{ $sVal['value'] }}</strong>
+                                                                        </div>
+                                                                    @endforeach
+                                                                </div>
+                                                            </div>
+                                                        @endif
+
+                                                        @if ($event['next_follow_up'])
+                                                            <div style="margin-top:10px; padding-top:8px; border-top:1px dashed var(--line); font-size:12px; color:var(--muted)">
+                                                                <i class="bi bi-calendar-event"></i> المتابعة القادمة: <strong>{{ $event['next_follow_up']->format('Y-m-d h:i A') }}</strong>
+                                                            </div>
+                                                        @endif
+                                                    </div>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div style="text-align:center; padding:30px 20px; color:var(--muted); background:var(--bg); border-radius:12px;">
+                                            <i class="bi bi-chat-square-dots" style="font-size:30px; display:block; margin-bottom:8px"></i>
+                                            <p style="margin:0; font-weight:700">لا توجد متابعات أو نشاطات مسجلة لهذا العميل حتى الآن.</p>
+                                            @can('leads.followups.view')
+                                                <a href="{{ route('v2.leads.followups.index', $lead) }}" class="btn primary small" style="margin-top:12px;">
+                                                    تسجيل أول متابعة الآن
+                                                </a>
+                                            @endcan
+                                        </div>
+                                    @endif
+                                </section>
+
+                            {{-- TAB: CUSTOMER CORE DATA & CONTACTS --}}
+                            @elseif ($tab['key'] === 'client_data')
+                                <section class="panel">
+                                    <div class="panel-head">
+                                        <h2><i class="bi bi-info-circle"></i> {{ __('crm.customer_data') }}</h2>
+                                    </div>
+                                    <div class="info-list">
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.full_name') }}</span>
+                                            <span class="info-value">{{ $lead->name }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.company_name') }}</span>
+                                            <span class="info-value">{{ $lead->company_name ?: '—' }}</span>
+                                        </div>
+                                        @if ($lead->job_title)
+                                            <div class="info-row">
+                                                <span class="info-label">{{ __('crm.job_title') }}</span>
+                                                <span class="info-value">{{ $lead->job_title }}</span>
+                                            </div>
+                                        @endif
+                                        @if ($lead->activity)
+                                            <div class="info-row">
+                                                <span class="info-label">{{ __('crm.activity') }}</span>
+                                                <span class="info-value">{{ $lead->activity }}</span>
+                                            </div>
+                                        @endif
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.birth_date') ?? 'تاريخ الميلاد' }}</span>
+                                            <span class="info-value">
+                                                @if ($lead->birth_date)
+                                                    {{ $lead->birth_date->format('Y-m-d') }}
+                                                    <span class="badge" style="background:#eff6ff;color:#2563eb;border:1px solid #bfdbfe;font-weight:700;margin-inline-start:6px;font-size:12px;">
+                                                        <i class="bi bi-cake2"></i> {{ $lead->age }} {{ __('سنة') }}
+                                                    </span>
+                                                @else
+                                                    —
+                                                @endif
+                                            </span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.age') ?? 'العمر (محسوب تلقائيًا)' }}</span>
+                                            <span class="info-value">
+                                                @if ($lead->age !== null)
+                                                    <strong style="color:var(--dark); font-size:14px;">{{ $lead->age }}</strong> {{ __('سنوات') }}
+                                                @else
+                                                    <span style="color:var(--muted)">{{ __('غير محدد (يتطلب تاريخ الميلاد)') }}</span>
+                                                @endif
+                                            </span>
+                                        </div>
+
+                                        {{-- GUARDIAN & SIBLINGS SECTION --}}
+                                        <div class="info-row" style="flex-direction: column; align-items: stretch; gap: 8px; background: rgba(248, 250, 252, 0.6); border: 1px solid var(--line); border-radius: 10px; padding: 12px; margin: 6px 0;">
+                                            <div style="display:flex; justify-content:space-between; align-items:center;">
+                                                <span class="info-label" style="font-weight:800; color:var(--dark); display:flex; align-items:center; gap:6px;">
+                                                    <i class="bi bi-people-fill" style="color:#4f46e5;"></i> {{ __('ولي الأمر (Guardian)') }}
+                                                </span>
+                                                <div id="guardianActionBtns">
+                                                    @if ($lead->guardian)
+                                                        <button type="button" class="btn small soft" onclick="unlinkGuardian()" style="color:#dc2626; padding:3px 8px; font-size:11px;" title="{{ __('فك ارتباط ولي الأمر') }}">
+                                                            <i class="bi bi-x-circle"></i> {{ __('إلغاء الربط') }}
+                                                        </button>
+                                                    @endif
+                                                </div>
+                                            </div>
+
+                                            <div id="linkedGuardianDisplay" style="{{ $lead->guardian ? 'display:block;' : 'display:none;' }}">
+                                                @if ($lead->guardian)
+                                                    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                                        <span class="badge" style="background:#eef2ff; color:#4338ca; border:1px solid #c7d2fe; font-size:13px; font-weight:700; padding:6px 12px; border-radius:8px; display:inline-flex; align-items:center; gap:6px;">
+                                                            <i class="bi bi-person-check-fill"></i>
+                                                            <span id="guardianDisplayName">{{ $lead->guardian->name }}</span>
+                                                            <small style="color:#6366f1; font-weight:600;">(#ID {{ $lead->guardian->id }})</small>
+                                                            @if ($lead->guardian->relationship)
+                                                                <span style="opacity:0.7;">• {{ $lead->guardian->relationship }}</span>
+                                                            @endif
+                                                            @if ($lead->guardian->phone)
+                                                                <span style="direction:ltr; font-family:var(--font-mono); font-size:12px;">• {{ $lead->guardian->phone }}</span>
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                    @if ($lead->guardian->notes)
+                                                        <div id="guardianNotesWrap" style="display:flex; align-items:flex-start; gap:6px; margin-top:6px; font-size:12px; color:var(--dark); background:#fff; border:1px solid var(--line); border-radius:8px; padding:6px 10px;">
+                                                            <i class="bi bi-card-text" style="color:#4f46e5; margin-top:2px;"></i>
+                                                            <div>
+                                                                <strong style="color:var(--muted); font-size:11px; display:block;">{{ __('ملاحظات الأسرة:') }}</strong>
+                                                                <span id="guardianNotesText">{{ $lead->guardian->notes }}</span>
+                                                            </div>
+                                                        </div>
+                                                    @endif
+                                                @endif
+                                            </div>
+
+                                            <div id="unlinkedGuardianControls" style="{{ $lead->guardian ? 'display:none;' : 'display:block;' }}">
+                                                <div style="display:flex; gap:8px; align-items:center;">
+                                                    <div style="position:relative; flex:1;">
+                                                        <input type="text" id="guardianSearchInput" placeholder="🔍 ابحث عن ولي أمر بالاسم أو الهاتف..." 
+                                                               style="width:100%; height:36px; padding:0 10px; font-size:12.5px; border:1px solid var(--line); border-radius:8px; background:var(--card); color:var(--dark);" autocomplete="off">
+                                                        <div id="guardianSearchResults" style="display:none; position:absolute; top:calc(100% + 4px); inset-inline-start:0; width:100%; max-height:200px; overflow-y:auto; background:var(--card); border:1px solid var(--line); border-radius:8px; z-index:120; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></div>
+                                                    </div>
+                                                    <button type="button" class="btn small primary" onclick="openCreateGuardianModal()" style="height:36px; font-size:12px; white-space:nowrap; padding:0 12px; display:inline-flex; align-items:center; gap:4px;">
+                                                        <i class="bi bi-plus-lg"></i> {{ __('ولي أمر جديد') }}
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            <div id="guardianSiblingsWrap" style="{{ ($lead->guardian && $lead->siblings->isNotEmpty()) ? 'display:block;' : 'display:none;' }} margin-top:6px; border-top:1px dashed var(--line); padding-top:8px;">
+                                                <span style="font-size:11px; font-weight:700; color:var(--muted); display:block; margin-bottom:4px;">
+                                                    <i class="bi bi-diagram-2"></i> {{ __('الأشقاء المسجلون لنفس ولي الأمر:') }}
+                                                </span>
+                                                <div id="siblingsList" style="display:flex; flex-wrap:wrap; gap:6px;">
+                                                    @if ($lead->guardian)
+                                                        @foreach ($lead->siblings as $sibling)
+                                                            <a href="{{ route('v2.leads.show', $sibling) }}" class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-size:11.5px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:3px 8px; border-radius:6px;">
+                                                                <i class="bi bi-person"></i> #{{ $sibling->id }} {{ $sibling->name }}
+                                                                <small style="color:#64748b;">({{ $sibling->status?->stage?->localizedName() ?? '—' }})</small>
+                                                            </a>
+                                                        @endforeach
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.address') }}</span>
+                                            <span class="info-value">{{ trim(($lead->governorate ?? '').' '.($lead->address ?? '')) ?: '—' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.solution_type') }}</span>
+                                            <span class="info-value">{{ $solutionTypeLabel ?: '—' }}</span>
+                                        </div>
+                                        @if ($lead->lines_count)
+                                            <div class="info-row">
+                                                <span class="info-label">عدد الخطوط المطلوبة</span>
+                                                <span class="info-value">{{ $lead->lines_count }} خطوط</span>
+                                            </div>
+                                        @endif
+                                        @if ($lead->extensions)
+                                            <div class="info-row">
+                                                <span class="info-label">التحويلات المطلوبة</span>
+                                                <span class="info-value">{{ $lead->extensions }}</span>
+                                            </div>
+                                        @endif
+                                        @if ($lead->departments)
+                                            <div class="info-row">
+                                                <span class="info-label">الأقسام المطلوبة</span>
+                                                <span class="info-value">{{ $lead->departments }}</span>
+                                            </div>
+                                        @endif
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.lead_source') }}</span>
+                                            <span class="info-value">{{ $lead->source ? __($lead->source) : '—' }}</span>
+                                        </div>
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.assigned_employee') }}</span>
+                                            <span class="info-value">{{ $lead->assignedUser?->name ?? $lead->assigned_employee ?? __('crm.unassigned') }}</span>
+                                        </div>
+
+                                        {{-- DYNAMIC CUSTOMER FIELDS --}}
+                                        @if (!empty($customerFields))
+                                            @foreach ($customerFields as $cField)
+                                                @php
+                                                    $cfVal = $customerFieldValues[$cField->key] ?? null;
+                                                @endphp
+                                                @if (!in_array($cField->lead_attribute, ['first_name', 'last_name', 'phone', 'email', 'company_name', 'job_title', 'activity', 'governorate', 'address'], true))
+                                                    <div class="info-row">
+                                                        <span class="info-label">{{ $cField->localizedLabel() }}</span>
+                                                        <span class="info-value">
+                                                            @if ($cField->key === 'lead_temperature')
+                                                                @php
+                                                                    $cfTempStyle = match($cfVal) {
+                                                                        'hot' => 'background:#fee2e2;color:#dc2626;border:1px solid #fca5a5;',
+                                                                        'warm' => 'background:#fef3c7;color:#d97706;border:1px solid #fcd34d;',
+                                                                        'cold' => 'background:#e0f2fe;color:#0284c7;border:1px solid #7dd3fc;',
+                                                                        default => 'background:var(--bg);color:var(--muted);border:1px dashed var(--line);'
+                                                                    };
+                                                                    $cfDisplay = match($cfVal) {
+                                                                        'hot' => '🔥 ' . (app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)'),
+                                                                        'warm' => '⚡ ' . (app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)'),
+                                                                        'cold' => '❄️ ' . (app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)'),
+                                                                        default => '🔘 ' . (app()->getLocale() === 'en' ? 'Not Set' : 'غير محدد')
+                                                                    };
+                                                                @endphp
+                                                                <div style="display:inline-flex;align-items:center;gap:10px;flex-wrap:wrap;">
+                                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;display:inline-flex;align-items:center;gap:4px;{{ $cfTempStyle }}">
+                                                                        <i class="bi bi-thermometer-half"></i> {{ $cfDisplay }}
+                                                                    </span>
+                                                                    @can('update', $lead)
+                                                                        <form method="POST" action="{{ route('v2.leads.temperature.update', $lead) }}" style="margin:0;display:inline-flex;align-items:center;">
+                                                                            @csrf
+                                                                            @method('PATCH')
+                                                                            <select name="temperature" onchange="this.form.submit()" style="font-size:12px;padding:3px 8px;border-radius:6px;border:1px solid var(--line);background:var(--card);color:var(--dark);cursor:pointer;" title="{{ app()->getLocale() === 'en' ? 'Change Temperature' : 'تغيير درجة الحرارة مباشرة' }}">
+                                                                                <option value="" @selected(empty($cfVal))>-- {{ app()->getLocale() === 'en' ? 'Set Temperature' : 'تحديد الحرارة' }} --</option>
+                                                                                <option value="hot" @selected($cfVal === 'hot')>🔥 {{ app()->getLocale() === 'en' ? 'Hot' : 'حار (Hot)' }}</option>
+                                                                                <option value="warm" @selected($cfVal === 'warm')>⚡ {{ app()->getLocale() === 'en' ? 'Warm' : 'متوسط (Warm)' }}</option>
+                                                                                <option value="cold" @selected($cfVal === 'cold')>❄️ {{ app()->getLocale() === 'en' ? 'Cold' : 'بارد (Cold)' }}</option>
+                                                                            </select>
+                                                                        </form>
+                                                                    @endcan
+                                                                </div>
+                                                            @elseif ($cfVal !== null && $cfVal !== '')
+                                                                @if ($cField->type === 'select' || $cField->type === 'multiselect')
+                                                                    @php
+                                                                        $cfOptions = collect($cField->normalizedOptions())->keyBy('value');
+                                                                        if (is_array($cfVal)) {
+                                                                            $cfDisplay = implode(', ', array_map(fn($v) => (app()->getLocale() === 'en' && !empty($cfOptions->get($v)['label_en'])) ? $cfOptions->get($v)['label_en'] : ($cfOptions->get($v)['label_ar'] ?? $v), $cfVal));
+                                                                        } else {
+                                                                            $opt = $cfOptions->get($cfVal);
+                                                                            $cfDisplay = ($opt && app()->getLocale() === 'en' && !empty($opt['label_en'])) ? $opt['label_en'] : ($opt['label_ar'] ?? $cfVal);
+                                                                        }
+                                                                    @endphp
+                                                                    <span class="badge" style="padding:4px 10px;border-radius:6px;font-weight:700;">{{ $cfDisplay }}</span>
+                                                                @elseif ($cField->type === 'checkbox')
+                                                                    {{ $cfVal ? __('crm.yes') : __('crm.no') }}
+                                                                @else
+                                                                    {{ is_array($cfVal) ? implode(', ', $cfVal) : $cfVal }}
+                                                                @endif
+                                                            @else
+                                                                <span style="color:var(--muted);font-style:italic;">— {{ __('crm.not_specified') ?: 'غير محدد' }} —</span>
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                @endif
+                                            @endforeach
+                                        @endif
+
+                                        {{-- ANY UNREGISTERED DYNAMIC DATA FIELDS --}}
+                                        @php
+                                            $registeredKeys = collect($customerFields ?? [])->pluck('key')->all();
+                                            $rawCustom = is_array($lead->custom_fields) ? $lead->custom_fields : [];
+                                            $unregisteredCustom = array_diff_key($rawCustom, array_flip($registeredKeys));
+                                        @endphp
+                                        @foreach ($unregisteredCustom as $uKey => $uVal)
+                                            @if ($uVal !== null && $uVal !== '')
+                                                <div class="info-row">
+                                                    <span class="info-label">{{ ucwords(str_replace(['_', '-'], ' ', (string) $uKey)) }}</span>
+                                                    <span class="info-value">{{ is_array($uVal) ? implode(', ', $uVal) : $uVal }}</span>
+                                                </div>
+                                            @endif
+                                        @endforeach
+
+                                        <div class="info-row">
+                                            <span class="info-label">{{ __('crm.registration_date') }}</span>
+                                            <span class="info-value">{{ $lead->created_at ? $lead->created_at->format('Y-m-d h:i A') : '—' }}</span>
+                                        </div>
+                                        @if ($lead->creator || $lead->created_by)
+                                            <div class="info-row">
+                                                <span class="info-label">{{ __('crm.registered_by') }}</span>
+                                                <span class="info-value">{{ $lead->creator?->name ?? $lead->created_by }}</span>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </section>
+
+                                {{-- PHONE NUMBERS & CONTACTS --}}
+                                <section class="panel">
+                                    <div class="panel-head">
+                                        <h2><i class="bi bi-telephone"></i> {{ __('crm.lead_phone_numbers') }}</h2>
+                                    </div>
+                                    <div class="info-list">
+                                        <div class="info-row is-primary-phone">
+                                            <div>
+                                                <span class="badge active" style="margin-inline-end:6px">{{ __('crm.primary_badge') }}</span>
+                                                @if ($lead->phone)
+                                                    @can('leads.followups.view')
+                                                        @if ($callPhone)
+                                                            <a class="js-call-followup" href="{{ route('v2.leads.followups.index', ['lead' => $lead, 'channel' => 'call']) }}" data-call-href="tel:{{ $callPhone }}" title="{{ __('crm.open_microsip_followup') }}" style="font-weight:900;color:inherit;text-decoration:none" dir="ltr">
+                                                                {{ $lead->phone }}
+                                                            </a>
+                                                        @else
+                                                            <a href="tel:{{ $lead->phone }}" style="font-weight:900;color:inherit;text-decoration:none" dir="ltr">
+                                                                {{ $lead->phone }}
+                                                            </a>
+                                                        @endif
+                                                    @else
+                                                        <a href="tel:{{ $lead->phone }}" style="font-weight:900;color:inherit;text-decoration:none" dir="ltr">
+                                                            {{ $lead->phone }}
+                                                        </a>
+                                                    @endcan
+                                                @else
+                                                    <span style="color:var(--muted)">—</span>
+                                                @endif
+                                            </div>
+                                            <div style="display:flex;gap:6px">
+                                                @if ($callPhone)
+                                                    @can('leads.followups.view')
+                                                        <a class="btn small soft js-call-followup" href="{{ route('v2.leads.followups.index', ['lead' => $lead, 'channel' => 'call']) }}" data-call-href="tel:{{ $callPhone }}" title="{{ __('crm.open_microsip_followup') }}">
+                                                            <i class="bi bi-telephone"></i>
+                                                        </a>
+                                                    @else
+                                                        <a class="btn small soft" href="tel:{{ $callPhone }}" title="{{ __('crm.call_action') }}">
+                                                            <i class="bi bi-telephone"></i>
+                                                        </a>
+                                                    @endcan
+                                                @endif
+                                                @if ($whatsappPhone)
+                                                    <a href="https://wa.me/{{ $whatsappPhone }}" target="_blank" rel="noopener noreferrer" class="btn small success" title="{{ __('crm.whatsapp') }}">
+                                                        <i class="bi bi-whatsapp"></i>
+                                                    </a>
+                                                @endif
+                                            </div>
+                                        </div>
+
+                                        @if ($lead->email)
+                                            <div class="info-row">
+                                                <div>
+                                                    <span class="badge" style="margin-inline-end:6px">{{ __('crm.email') }}</span>
+                                                    <span style="font-weight:700">{{ $lead->email }}</span>
+                                                </div>
+                                                <a href="mailto:{{ $lead->email }}" class="btn small soft" title="إرسال بريد">
+                                                    <i class="bi bi-envelope"></i>
+                                                </a>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </section>
+
+                            {{-- TAB: STAGE QUESTIONS & FORM --}}
+                            @elseif ($tab['key'] === 'stage_data')
+                                @if (!empty($stageSections))
+                                    <section class="panel" id="lead-stage-panel">
+                                        <div class="panel-head" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+                                            <h2>
+                                                <i class="bi bi-diagram-3-fill" style="color:var(--red);"></i>
+                                                <span>{{ __('crm.stage_data') }}</span>
+                                            </h2>
+                                            <div style="display:inline-flex; align-items:center; gap:8px;">
+                                                <label style="margin:0; font-size:12.5px; font-weight:700; color:var(--dark); cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
+                                                    <input type="checkbox" id="toggleAllStagesCheckbox" onchange="toggleAllStagesView(this.checked)" style="width:16px; height:16px; accent-color:var(--red); cursor:pointer;">
+                                                    <span>{{ __('عرض جميع المراحل') }}</span>
+                                                </label>
+                                                <span class="badge" style="background:#eef2f6; color:#475569; font-size:11px;">
+                                                    {{ __('المرحلة الحالية فقط') }}
+                                                </span>
+                                            </div>
+                                        </div>
+
+                                        @foreach ($stageSections as $sSection)
+                                            @php
+                                                $isCurStage = (int)($sSection['id'] ?? $sSection['stage_id'] ?? 0) === (int)$currentStageId;
+                                            @endphp
+                                            <div class="stage-section-wrapper" data-stage-id="{{ $sSection['id'] ?? $sSection['stage_id'] }}" style="{{ $isCurStage ? 'display:block;' : 'display:none;' }} margin-bottom:18px;">
+                                                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed var(--line);">
+                                                    <strong style="font-size:14px; color:var(--dark); display:inline-flex; align-items:center; gap:6px;">
+                                                        <i class="bi bi-flag-fill" style="color:#0284c7;"></i>
+                                                        {{ $sSection['name'] ?? $sSection['stage_name'] ?? '' }}
+                                                    </strong>
+                                                    @if ($isCurStage)
+                                                        <span class="badge active" style="font-size:11px;">{{ __('المرحلة الحالية') }}</span>
+                                                    @endif
+                                                </div>
+                                                <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(240px, 1fr)); gap:10px;">
+                                                    @foreach ($sSection['fields'] as $fld)
+                                                        <div class="info-row" style="flex-direction:column; align-items:flex-start; gap:4px;">
+                                                            <span class="info-label" style="font-size:11.5px;">{{ $fld['label'] }}</span>
+                                                            <span class="info-value" style="font-size:13px; font-weight:800; color:var(--dark);">
+                                                                {{ $fld['value'] !== null && $fld['value'] !== '' ? $fld['value'] : '—' }}
+                                                            </span>
+                                                        </div>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </section>
+                                @else
+                                    <div class="panel" style="text-align:center; padding:32px 20px; color:var(--muted);">
+                                        <i class="bi bi-ui-checks-grid" style="font-size:32px; display:block; margin-bottom:8px;"></i>
+                                        {{ __('لا توجد أسئلة مرحلية معرفة لهذه المرحلة حالياً.') }}
+                                    </div>
+                                @endif
+
+                            {{-- TAB: APPOINTMENTS & ATTENDANCE --}}
+                            @elseif ($tab['key'] === 'appointments')
+                                @if (!empty($appointmentMeta) && ($appointmentMeta['date'] || $lead->next_follow_up_at))
+                                    <section class="panel" style="margin-bottom:20px;">
+                                        <div class="panel-head">
+                                            <h2><i class="bi bi-calendar2-event"></i> {{ __('الموعد الحالي المحجوز') }}</h2>
+                                            <span class="badge" style="background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; font-size:12px; font-weight:800;">
+                                                {{ $appointmentMeta['status'] }}
+                                            </span>
+                                        </div>
+                                        <div class="info-list" style="margin-bottom:16px;">
+                                            <div class="info-row">
+                                                <span class="info-label">{{ __('crm.appointment_time') }}</span>
+                                                <span class="info-value" style="color:#0284c7; font-weight:800;">
+                                                    {{ $appointmentMeta['date'] ?: __('crm.unspecified') }} {{ $appointmentMeta['time'] ? '· '.$appointmentMeta['time'] : '' }}
+                                                </span>
+                                            </div>
+                                            @if ($lead->activity)
+                                                <div class="info-row">
+                                                    <span class="info-label">{{ __('crm.activity') }}</span>
+                                                    <span class="info-value">{{ $lead->activity }}</span>
+                                                </div>
+                                            @endif
+                                            @if ($lead->branch)
+                                                <div class="info-row">
+                                                    <span class="info-label">{{ __('crm.branch') }}</span>
+                                                    <span class="info-value">{{ $lead->branch->localizedName() }}</span>
+                                                </div>
+                                            @endif
+                                            @if ($appointmentMeta['coach'])
+                                                <div class="info-row">
+                                                    <span class="info-label">{{ __('crm.coach') }}</span>
+                                                    <span class="info-value">{{ $appointmentMeta['coach'] }}</span>
+                                                </div>
+                                            @endif
+                                        </div>
+
+                                        <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+                                            @if(!$appointmentMeta['is_attended'] && !$appointmentMeta['is_no_show'])
+                                                <form action="{{ route('v2.appointments.attended', $lead) }}" method="POST" style="margin:0;">
+                                                    @csrf
+                                                    <button type="submit" class="btn small success" title="{{ __('crm.mark_attended') }}">
+                                                        <i class="bi bi-check-lg"></i> {{ __('crm.mark_attended') }}
+                                                    </button>
+                                                </form>
+                                                <form action="{{ route('v2.appointments.no_show', $lead) }}" method="POST" style="margin:0;">
+                                                    @csrf
+                                                    <button type="submit" class="btn small soft" style="color:#dc2626; border-color:#fecaca;" title="{{ __('crm.mark_no_show') }}">
+                                                        <i class="bi bi-x-lg"></i> {{ __('crm.mark_no_show') }}
+                                                    </button>
+                                                </form>
+                                            @endif
+                                            <button type="button" class="btn small soft" onclick="openRescheduleModal({{ $lead->id }}, '{{ addslashes($lead->name) }}', '{{ $appointmentMeta['date'] }}', '{{ $appointmentMeta['time'] }}')">
+                                                <i class="bi bi-arrow-repeat"></i> {{ __('crm.reschedule') }}
+                                            </button>
+                                        </div>
+                                    </section>
+                                @endif
+
+                                {{-- ATTENDANCE HISTORY LOG --}}
+                                <section class="panel" id="leadAttendanceHistory">
+                                    <div class="panel-head">
+                                        <h2><i class="bi bi-person-check"></i> {{ __('crm.attendance_history') }}</h2>
+                                        <span class="badge">{{ $appointmentAttendanceRecords->count() }}</span>
+                                    </div>
+
+                                    @if ($appointmentAttendanceRecords->isNotEmpty())
+                                        <div class="attendance-history-list">
+                                            @foreach ($appointmentAttendanceRecords as $attendance)
+                                                @php
+                                                    $branchName = app()->getLocale() === 'en'
+                                                        ? ($attendance->branch_name_en ?: $attendance->branch_name_ar)
+                                                        : ($attendance->branch_name_ar ?: $attendance->branch_name_en);
+                                                @endphp
+                                                <article class="attendance-history-record">
+                                                    <div class="attendance-history-head">
+                                                        <span class="attendance-history-outcome {{ $attendance->outcome === 'attended' ? 'attended' : 'no-show' }}">
+                                                            <i class="bi {{ $attendance->outcome === 'attended' ? 'bi-check-circle-fill' : 'bi-x-circle-fill' }}"></i>
+                                                            {{ $attendance->outcome === 'attended' ? __('crm.attended') : __('crm.no_show') }}
+                                                        </span>
+                                                        <span class="attendance-history-date">
+                                                            {{ $attendance->appointment_date?->format('Y-m-d') ?? __('crm.unspecified') }}
+                                                            @if ($attendance->appointment_time)
+                                                                · {{ $attendance->appointment_time }}
+                                                            @endif
+                                                        </span>
+                                                    </div>
+                                                    <div class="attendance-history-details">
+                                                        @if ($attendance->activity)
+                                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_activity') }}:</strong> {{ $attendance->activity }}</span>
+                                                        @endif
+                                                        @if ($branchName)
+                                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_branch') }}:</strong> {{ $branchName }}</span>
+                                                        @endif
+                                                        @if ($attendance->coach)
+                                                            <span class="attendance-history-detail"><strong>{{ __('crm.appointment_coach') }}:</strong> {{ $attendance->coach }}</span>
+                                                        @endif
+                                                        @if ($attendance->recordedBy?->name)
+                                                            <span class="attendance-history-detail"><strong>{{ __('crm.recorded_by') }}</strong> {{ $attendance->recordedBy->name }}</span>
+                                                        @endif
+                                                        <span class="attendance-history-detail"><strong>{{ __('crm.attendance_recorded_at') }}:</strong> {{ $attendance->created_at?->format('Y-m-d h:i A') ?? '—' }}</span>
+                                                    </div>
+                                                    @if ($attendance->notes)
+                                                        <p class="attendance-history-notes"><strong>{{ __('crm.notes') }}:</strong> {{ $attendance->notes }}</p>
+                                                    @endif
+                                                </article>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <div class="attendance-history-record" style="text-align:center;color:var(--muted);">
+                                            {{ __('crm.no_attendance_records') }}
+                                        </div>
+                                    @endif
+                                </section>
+
+                            {{-- TAB: VOIP CALL INSIGHTS --}}
+                            @elseif ($tab['key'] === 'voip_calls')
+                                @can('voip.view')
+                                    <section class="panel" id="leadCallInsights" data-endpoint="{{ route('v2.leads.calls', $lead) }}">
+                                        <div class="panel-head">
+                                            <div>
+                                                <h2><i class="bi bi-soundwave"></i> {{ __('crm.lead_call_insights') }}</h2>
+                                                <small style="color:var(--muted)">مكالمات مسجلة ومربوطة مباشرة من خادم الاتصالات VoIP</small>
+                                            </div>
+                                            <span class="badge active">{{ __('crm.live_from_voip') }}</span>
+                                        </div>
+                                        <form class="call-filters" id="leadCallFilters">
+                                            <div><label for="callStartDate">{{ __('crm.from_date') }}</label><input id="callStartDate" name="start_date" type="date"></div>
+                                            <div><label for="callEndDate">{{ __('crm.to_date') }}</label><input id="callEndDate" name="end_date" type="date"></div>
+                                            <div><label for="callDirection">{{ __('crm.direction') }}</label><select id="callDirection" name="direction"><option value="">{{ __('crm.all_directions') }}</option><option value="inbound">{{ __('crm.incoming') }}</option><option value="outbound">{{ __('crm.outgoing') }}</option><option value="internal">{{ __('crm.internal') }}</option></select></div>
+                                            <button class="btn soft" type="submit"><i class="bi bi-funnel"></i> {{ __('crm.apply_filter') }}</button>
+                                        </form>
+                                        <div class="call-metrics" hidden data-call-metrics>
+                                            <div class="call-metric"><span>{{ __('crm.total_calls') }}</span><strong data-metric="total_calls">0</strong></div>
+                                            <div class="call-metric"><span>{{ __('crm.answer_rate') }}</span><strong data-metric="answer_rate_percent">0%</strong></div>
+                                            <div class="call-metric"><span>{{ __('crm.total_talk_time') }}</span><strong data-metric="total_talk_seconds">0:00</strong></div>
+                                            <div class="call-metric"><span>{{ __('crm.missed_calls') }}</span><strong data-metric="missed_calls">0</strong></div>
+                                        </div>
+                                        <div class="call-bars" hidden data-call-bars>
+                                            @foreach ([['inbound', __('crm.incoming'), '#16a34a'], ['outbound', __('crm.outgoing'), '#0284c7'], ['internal', __('crm.internal'), '#64748b']] as [$key, $label, $color])
+                                                <div class="call-bar">
+                                                    <span>{{ $label }}</span>
+                                                    <span class="call-bar-track"><span class="call-bar-fill" data-direction="{{ $key }}" style="width:0;background:{{ $color }}"></span></span>
+                                                    <b data-direction-count="{{ $key }}">0</b>
+                                                </div>
+                                            @endforeach
+                                        </div>
+                                        <div class="call-state" data-call-state><i class="bi bi-arrow-repeat"></i>{{ __('crm.loading_call_history') }}</div>
+                                        <div class="call-list" hidden data-call-list></div>
+                                        <div class="call-pagination" hidden data-call-pagination></div>
+                                    </section>
+                                @endcan
+
+                            {{-- TAB: DOCUMENTS & QUOTES --}}
+                            @elseif ($tab['key'] === 'documents')
+                                @if (($hasQuotationFile || $quotationDocs->isNotEmpty()) && $canViewQuotations)
+                                    <section class="panel" style="margin-bottom:20px;">
+                                        <div class="panel-head">
+                                            <h2><i class="bi bi-file-earmark-pdf"></i> {{ __('crm.price_quotation') }}</h2>
+                                            <span class="badge active">{{ $lead->quotation_sent ? 'تم الإرسال' : 'جاهز' }}</span>
+                                        </div>
+                                        <div class="info-list">
+                                            @if ($quotationDocs->isNotEmpty())
+                                                @foreach ($quotationDocs as $qDoc)
+                                                    <div class="info-row">
+                                                        <div>
+                                                            <strong style="display:block;font-size:13px">{{ $qDoc->original_name }}</strong>
+                                                            <small style="color:var(--muted)">
+                                                                 {{ $qDoc->formattedSize() }} • {{ $qDoc->created_at?->format('Y-m-d H:i') }}
+                                                                 @if ($qDoc->stage) • مرحلة: {{ $qDoc->stage->localizedName() }} @endif
+                                                                 @if ($qDoc->uploader) • بواسطة: {{ $qDoc->uploader->name }} @endif
+                                                             </small>
+                                                         </div>
+                                                         <div style="display:flex;gap:6px">
+                                                             <a class="btn small soft" href="{{ route('v2.leads.documents.preview', [$lead, $qDoc]) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
+                                                                 <i class="bi bi-eye"></i> معاينة
+                                                             </a>
+                                                             <a class="btn small soft" href="{{ route('v2.leads.documents.download', [$lead, $qDoc]) }}" title="تحميل الملف">
+                                                                 <i class="bi bi-download"></i> تحميل
+                                                             </a>
+                                                         </div>
+                                                     </div>
+                                                 @endforeach
+                                             @elseif ($hasQuotationFile)
+                                                 <div class="info-row">
+                                                     <div>
+                                                         <strong style="display:block;font-size:13px">{{ $quotationFileName ?: 'ملف عرض السعر' }}</strong>
+                                                         <small style="color:var(--muted)">ملف عرض السعر الرسمي المرفق للعميل</small>
+                                                     </div>
+                                                     <div style="display:flex;gap:6px">
+                                                         <a class="btn small soft" href="{{ route('v2.leads.quotation.preview', $lead) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
+                                                             <i class="bi bi-eye"></i> معاينة
+                                                         </a>
+                                                         <a class="btn small soft" href="{{ route('v2.leads.quotation.download', $lead) }}" title="تحميل الملف">
+                                                             <i class="bi bi-download"></i> تحميل
+                                                         </a>
+                                                     </div>
+                                                 </div>
+                                             @endif
+                                         </div>
+                                     </section>
+                                 @endif
+
+                                 <section class="panel">
+                                     <div class="panel-head">
+                                         <h2><i class="bi bi-folder2-open"></i> المستندات والمرفقات</h2>
+                                         <span class="badge">{{ $otherDocs->count() }}</span>
+                                     </div>
+                                     @if ($otherDocs->isNotEmpty())
+                                         <div class="info-list">
+                                             @foreach ($otherDocs as $oDoc)
+                                                 <div class="info-row">
+                                                     <div>
+                                                         <strong style="display:block;font-size:13px">{{ $oDoc->original_name }}</strong>
+                                                         <small style="color:var(--muted)">
+                                                             {{ $oDoc->formattedSize() }} • {{ $oDoc->created_at?->format('Y-m-d H:i') }}
+                                                             @if ($oDoc->stage) • مرحلة: {{ $oDoc->stage->localizedName() }} @endif
+                                                             @if ($oDoc->uploader) • بواسطة: {{ $oDoc->uploader->name }} @endif
+                                                         </small>
+                                                     </div>
+                                                     <div style="display:flex;gap:6px">
+                                                         <a class="btn small soft" href="{{ route('v2.leads.documents.preview', [$lead, $oDoc]) }}" target="_blank" rel="noopener noreferrer" title="معاينة الملف">
+                                                             <i class="bi bi-eye"></i> معاينة
+                                                         </a>
+                                                         <a class="btn small soft" href="{{ route('v2.leads.documents.download', [$lead, $oDoc]) }}" title="تحميل الملف">
+                                                             <i class="bi bi-download"></i> تحميل
+                                                         </a>
+                                                     </div>
+                                                 </div>
+                                             @endforeach
+                                         </div>
+                                     @else
+                                         <div style="text-align:center; padding:24px 16px; color:var(--muted); font-size:13px;">
+                                             لا توجد مستندات إضافية مرفقة لهذا العميل.
+                                         </div>
+                                     @endif
+                                 </section>
+
+                            {{-- TAB: REFERRALS & FAMILY --}}
+                            @elseif ($tab['key'] === 'referrals')
+                                <section class="panel">
+                                    <div class="panel-head">
+                                        <h2><i class="bi bi-people"></i> {{ __('crm.tab_referrals') ?? 'الإحالات والأسرة' }}</h2>
+                                    </div>
+
+                                    <div class="info-list">
+                                        @if ($lead->referredBy)
+                                            <div class="info-row" style="background:rgba(236, 253, 245, 0.6); border:1px solid #a7f3d0;">
+                                                <span class="info-label" style="font-weight:800; color:#065f46;">
+                                                    <i class="bi bi-gift-fill"></i> مُحال من المشترك:
+                                                </span>
+                                                <span class="info-value">
+                                                    <a href="{{ route('v2.leads.show', $lead->referredBy) }}" style="display:inline-flex; align-items:center; gap:6px; font-weight:700; color:#047857; text-decoration:none; background:#fff; padding:4px 10px; border-radius:6px; border:1px solid #6ee7b7; font-size:12px;">
+                                                        <i class="bi bi-person-heart"></i> #{{ $lead->referredBy->id }} {{ $lead->referredBy->name }}
+                                                    </a>
+                                                </span>
+                                            </div>
+                                        @endif
+
+                                        <div class="info-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+                                            <span class="info-label" style="font-weight:800; color:var(--dark);">
+                                                <i class="bi bi-share"></i> إحالات قام بها هذا المشترك ({{ $lead->referrals->count() }}):
+                                            </span>
+                                            @if ($lead->referrals->isNotEmpty())
+                                                <div style="display:flex; flex-wrap:wrap; gap:6px;" id="referralsListContainer">
+                                                    @foreach ($lead->referrals as $refLead)
+                                                        <a href="{{ route('v2.leads.show', $refLead) }}" class="badge" style="background:#fff; color:#065f46; border:1px solid #6ee7b7; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:6px;">
+                                                            <i class="bi bi-person"></i> #{{ $refLead->id }} {{ $refLead->name }}
+                                                            <small style="color:#047857;">({{ $refLead->status?->stage?->localizedName() ?? '—' }})</small>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            @else
+                                                <span style="color:var(--muted); font-size:12.5px;">لم يقم هذا المشترك بإحالة أي عملاء حتى الآن.</span>
+                                            @endif
+                                        </div>
+
+                                        @if ($lead->guardian && $lead->siblings->isNotEmpty())
+                                            <div class="info-row" style="flex-direction:column; align-items:flex-start; gap:8px;">
+                                                <span class="info-label" style="font-weight:800; color:var(--dark);">
+                                                    <i class="bi bi-diagram-2"></i> الأشقاء المسجلون لنفس ولي الأمر ({{ $lead->siblings->count() }}):
+                                                </span>
+                                                <div style="display:flex; flex-wrap:wrap; gap:6px;">
+                                                    @foreach ($lead->siblings as $sibling)
+                                                        <a href="{{ route('v2.leads.show', $sibling) }}" class="badge" style="background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; font-size:12px; font-weight:600; text-decoration:none; display:inline-flex; align-items:center; gap:4px; padding:6px 10px; border-radius:6px;">
+                                                            <i class="bi bi-person"></i> #{{ $sibling->id }} {{ $sibling->name }}
+                                                            <small style="color:#64748b;">({{ $sibling->status?->stage?->localizedName() ?? '—' }})</small>
+                                                        </a>
+                                                    @endforeach
+                                                </div>
+                                            </div>
+                                        @endif
+                                    </div>
+                                </section>
+
+                            {{-- TAB: NOTES --}}
+                            @elseif ($tab['key'] === 'notes')
+                                <section class="panel">
+                                    <div class="panel-head">
+                                        <h2><i class="bi bi-chat-left-text"></i> {{ __('crm.notes') }}</h2>
+                                    </div>
+                                    @if ($lead->notes)
+                                        <div style="background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:16px; line-height:1.7; color:var(--dark); white-space:pre-line;">
+                                            {{ $lead->notes }}
+                                        </div>
+                                    @else
+                                        <div style="text-align:center; padding:32px 20px; color:var(--muted); background:var(--bg); border-radius:10px;">
+                                            <i class="bi bi-chat-square" style="font-size:28px; display:block; margin-bottom:8px;"></i>
+                                            لا توجد ملاحظات مسجلة لهذا العميل.
+                                        </div>
+                                    @endif
+                                </section>
+                            @endif
+                        </div>
+                    @endforeach
+                </div>
             </div>
         </div>
     </main>
@@ -2721,6 +3010,115 @@ function submitCreateGuardian(e) {
         alert('حدث خطأ في الاتصال بالخادم.');
     });
 }
+</script>
+<!-- RESCHEDULE APPOINTMENT MODAL -->
+<div id="rescheduleModal" class="crm-body-modal-shell" onclick="if(event.target.id === 'rescheduleModal') closeRescheduleModal()">
+    <div class="crm-body-modal-dialog" style="max-width: 440px;" onclick="event.stopPropagation()">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; border-bottom:1px solid var(--line); padding-bottom:10px;">
+            <h3 style="margin:0; font-size:16px; font-weight:800; display:flex; align-items:center; gap:8px; color:var(--dark);">
+                <i class="bi bi-calendar2-event" style="color:var(--red);"></i> {{ __('crm.reschedule_appointment') ?? 'إعادة جدولة الموعد' }}
+            </h3>
+            <button type="button" onclick="closeRescheduleModal()" class="btn ghost small" style="padding:4px 8px; font-size:16px;">
+                <i class="bi bi-x-lg"></i>
+            </button>
+        </div>
+
+        <form id="rescheduleForm" action="{{ route('v2.appointments.reschedule', $lead) }}" method="POST">
+            @csrf
+            <div style="display:flex; flex-direction:column; gap:14px;">
+                <div>
+                    <label for="modalLeadName" style="display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px;">{{ __('crm.player_or_client') }}</label>
+                    <input type="text" id="modalLeadName" class="form-control" value="{{ $lead->name }}" readonly style="background:var(--bg); font-weight:700;">
+                </div>
+                <div>
+                    <label for="modalDate" style="display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px;">{{ __('crm.new_appointment_date') ?? 'تاريخ الموعد الجديد' }} *</label>
+                    <input type="date" id="modalDate" name="date" required class="form-control" value="{{ $appointmentMeta['date'] ?? '' }}">
+                </div>
+                <div>
+                    <label for="modalTime" style="display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px;">{{ __('crm.appointment_time') }}</label>
+                    <input type="time" id="modalTime" name="time" class="form-control" value="{{ $appointmentMeta['time'] ?? '' }}">
+                </div>
+                <div>
+                    <label for="modalNotes" style="display:block; font-size:12px; font-weight:700; color:var(--muted); margin-bottom:4px;">{{ __('crm.notes') }}</label>
+                    <textarea id="modalNotes" name="notes" rows="2" class="form-control" placeholder="{{ __('crm.reschedule_notes_placeholder') ?? 'سبب إعادة الجدولة أو ملاحظات إضافية...' }}"></textarea>
+                </div>
+                <div style="display:flex; justify-content:flex-end; gap:8px; margin-top:8px;">
+                    <button type="button" onclick="closeRescheduleModal()" class="btn soft small">{{ __('crm.cancel') }}</button>
+                    <button type="submit" class="btn primary small"><i class="bi bi-check-lg"></i> {{ __('crm.save') ?? 'حفظ' }}</button>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function switchProfileTab(key, updateHash = true) {
+    const nav = document.getElementById('profileTabsNav');
+    if (!nav) return;
+
+    const buttons = nav.querySelectorAll('.profile-tab-btn');
+    const panes = document.querySelectorAll('.profile-tab-pane');
+
+    const targetBtn = document.getElementById('tab-btn-' + key);
+    const targetPane = document.getElementById('tab-pane-' + key);
+
+    if (!targetBtn || !targetPane) return;
+
+    buttons.forEach(btn => {
+        btn.classList.remove('is-active');
+        btn.setAttribute('aria-selected', 'false');
+    });
+    panes.forEach(pane => {
+        pane.classList.remove('is-active');
+    });
+
+    targetBtn.classList.add('is-active');
+    targetBtn.setAttribute('aria-selected', 'true');
+    targetPane.classList.add('is-active');
+
+    if (updateHash && window.history && window.history.replaceState) {
+        history.replaceState(null, '', '#' + key);
+    }
+}
+
+function openRescheduleModal(leadId, leadName, currentDate, currentTime) {
+    const modal = document.getElementById('rescheduleModal');
+    if (!modal) return;
+    document.getElementById('modalLeadName').value = leadName;
+    document.getElementById('modalDate').value = currentDate || '';
+    document.getElementById('modalTime').value = currentTime || '';
+    modal.classList.add('is-open');
+    modal.style.display = 'flex';
+}
+
+function closeRescheduleModal() {
+    const modal = document.getElementById('rescheduleModal');
+    if (!modal) return;
+    modal.classList.remove('is-open');
+    modal.style.display = 'none';
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    const hash = (window.location.hash || '').replace('#', '');
+    const defaultTab = '{{ $defaultTab ?? 'timeline' }}';
+    const initialKey = (hash && document.getElementById('tab-pane-' + hash)) ? hash : defaultTab;
+
+    if (document.getElementById('tab-btn-' + initialKey)) {
+        switchProfileTab(initialKey, false);
+    } else {
+        const firstBtn = document.querySelector('.profile-tab-btn');
+        if (firstBtn && firstBtn.dataset.tabKey) {
+            switchProfileTab(firstBtn.dataset.tabKey, false);
+        }
+    }
+});
+
+window.addEventListener('hashchange', () => {
+    const hash = (window.location.hash || '').replace('#', '');
+    if (hash && document.getElementById('tab-btn-' + hash)) {
+        switchProfileTab(hash, false);
+    }
+});
 </script>
 <script src="{{ asset('crm-notifications.js') }}?v=1.0.0"></script>
 </body>

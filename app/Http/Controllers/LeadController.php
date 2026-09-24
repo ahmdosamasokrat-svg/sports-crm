@@ -7,6 +7,7 @@ use App\Models\Campaign;
 use App\Models\Guardian;
 use App\Models\Lead;
 use App\Models\LeadDocument;
+use App\Models\LeadProfileSetting;
 use App\Models\LeadStatus;
 use App\Models\PipelineStage;
 use App\Models\PipelineStageField;
@@ -14,6 +15,7 @@ use App\Models\User;
 use App\Security\CrmPermission;
 use App\Security\LeadAssignment;
 use App\Services\ActivityLogger;
+use App\Services\AppointmentService;
 use App\Services\LeadTrashService;
 use App\Support\CrmDatabaseGuard;
 use App\Support\FollowupCustomerFieldSchema;
@@ -27,6 +29,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Gate;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
@@ -1086,7 +1089,7 @@ class LeadController extends Controller
 
         $this->assertCrmV2Database();
 
-        $hasAttendanceTable = \Illuminate\Support\Facades\Schema::hasTable('appointment_attendance_records');
+        $hasAttendanceTable = Schema::hasTable('appointment_attendance_records');
         $withRelations = [
             'status.stage.category',
             'parentLead.status.stage.category',
@@ -1557,6 +1560,11 @@ class LeadController extends Controller
             $backQuery['page'] = (int) $page;
         }
 
+        $profileSetting = LeadProfileSetting::current();
+        $activeProfileTabs = $profileSetting->getActiveTabs();
+
+        $appointmentMeta = app(AppointmentService::class)->resolveDetails($leadRecord);
+
         return view(
             'leads.show',
             [
@@ -1586,6 +1594,9 @@ class LeadController extends Controller
                 'referralsEnabled' => ReferralFieldSchema::isEnabled(),
                 'referralFields' => ReferralFieldSchema::getActiveFields(),
                 'allowReferralNotes' => ReferralFieldSchema::allowNotes(),
+                'profileSetting' => $profileSetting,
+                'activeProfileTabs' => $activeProfileTabs,
+                'appointmentMeta' => $appointmentMeta,
             ]
         );
     }
