@@ -212,7 +212,7 @@
                                    id="{{ $inputId }}"
                                    name="{{ $prefix }}[{{ $field->key }}]"
                                    value="{{ is_scalar($val) ? (string) $val : '' }}"
-                                   placeholder="{{ $field->localizedPlaceholder() }}"
+                                   placeholder="{{ $field->localizedPlaceholder() ?: ($field->key === 'company_name' ? (app()->getLocale() === 'en' ? 'Company, institution or academy name' : 'اسم الشركة أو المؤسسة أو الأكاديمية') : '') }}"
                                    class="control"
                                    style="width:100%;"
                                    {{ ($field->is_required && ! $isDisabled) ? 'required' : '' }} {{ $isDisabled ? 'disabled' : '' }}>
@@ -456,7 +456,11 @@
 
         wrap.addEventListener('input', updateConditions);
         wrap.addEventListener('change', updateConditions);
-        wrap.addEventListener('crm:reevaluate-conditions', updateConditions);
+        wrap.addEventListener('crm:reevaluate-conditions', () => {
+            updateConditions();
+            autoCalculateAge();
+            autoCalculatePricing();
+        });
         updateConditions();
     })();
     </script>

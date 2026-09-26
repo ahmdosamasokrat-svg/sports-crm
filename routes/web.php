@@ -255,18 +255,20 @@ Route::middleware(['auth', 'active'])->group(function (): void {
             ->name('v2.birthdays.index');
         Route::get('/appointments', [\App\Http\Controllers\AppointmentController::class, 'index'])
             ->name('v2.appointments.index');
-        Route::post('/appointments/{lead}/attended', [\App\Http\Controllers\AppointmentController::class, 'markAttended'])
-            ->whereNumber('lead')
-            ->name('v2.appointments.attended');
-        Route::post('/appointments/{lead}/no-show', [\App\Http\Controllers\AppointmentController::class, 'markNoShow'])
-            ->whereNumber('lead')
-            ->name('v2.appointments.no_show');
-        Route::post('/appointments/{lead}/reschedule', [\App\Http\Controllers\AppointmentController::class, 'reschedule'])
-            ->whereNumber('lead')
-            ->name('v2.appointments.reschedule');
-        Route::post('/appointments/{lead}/cancel', [\App\Http\Controllers\AppointmentController::class, 'cancel'])
-            ->whereNumber('lead')
-            ->name('v2.appointments.cancel');
+        Route::middleware('can:leads.update')->group(function (): void {
+            Route::post('/appointments/{lead}/attended', [\App\Http\Controllers\AppointmentController::class, 'markAttended'])
+                ->whereNumber('lead')
+                ->name('v2.appointments.attended');
+            Route::post('/appointments/{lead}/no-show', [\App\Http\Controllers\AppointmentController::class, 'markNoShow'])
+                ->whereNumber('lead')
+                ->name('v2.appointments.no_show');
+            Route::post('/appointments/{lead}/reschedule', [\App\Http\Controllers\AppointmentController::class, 'reschedule'])
+                ->whereNumber('lead')
+                ->name('v2.appointments.reschedule');
+            Route::post('/appointments/{lead}/cancel', [\App\Http\Controllers\AppointmentController::class, 'cancel'])
+                ->whereNumber('lead')
+                ->name('v2.appointments.cancel');
+        });
         Route::get('/leads/kanban', [DashboardController::class, 'kanban'])
             ->name('v2.leads.kanban');
         Route::get('/leads/kanban/column', [DashboardController::class, 'kanbanColumn'])
@@ -589,6 +591,7 @@ Route::middleware(['auth', 'active'])->group(function (): void {
                 ->name('.stages.update');
             Route::delete('/stages/{stage}', [PipelineStageController::class, 'destroy'])
                 ->whereNumber('stage')
+                ->middleware('can:pipeline_stages.delete')
                 ->name('.stages.destroy');
 
             Route::get('/stages/{stage}/fields', [StageFieldController::class, 'index'])

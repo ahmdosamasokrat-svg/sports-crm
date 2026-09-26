@@ -1,7 +1,7 @@
 /**
  * SokratCRM Unified Custom Dropdown Engine
  * Automatically upgrades <select class="crm-custom-select"> or <select data-crm-dropdown>
- * into a fully themed, accessible, searchable, custom dropdown.
+ * into a fully themed, accessible, searchable, custom dropdown with single and multiselect support.
  */
 
 (function () {
@@ -15,16 +15,17 @@
     if (select.__crmDropdownActive) return;
     select.__crmDropdownActive = true;
 
-    // Extract leading icon if specified
+    const isMultiple = select.multiple;
     const iconSvg = select.dataset.icon || '';
     const searchable = select.options.length > 5;
     const isRtl = document.documentElement.dir === 'rtl' || document.documentElement.lang === 'ar';
     const searchPlaceholder = isRtl ? 'بحث...' : 'Search...';
     const noResultsText = isRtl ? 'لا توجد نتائج مطابقة' : 'No matching results';
+    const allOptionText = isMultiple ? (select.dataset.placeholder || (isRtl ? 'الكل' : 'All')) : '';
 
     // Create wrapper
     const wrapper = document.createElement('div');
-    wrapper.className = 'crm-dropdown';
+    wrapper.className = 'crm-dropdown' + (isMultiple ? ' is-multiselect' : '');
     if (select.className) {
       wrapper.className += ' ' + select.className.replace(/crm-custom-select/g, '').replace(/filter-control/g, '').trim();
     }
@@ -40,10 +41,6 @@
     select.style.height = '0';
     select.tabIndex = -1;
 
-    // Determine currently selected option
-    const selectedOption = select.options[select.selectedIndex] || select.options[0];
-    const initialText = selectedOption ? selectedOption.textContent.trim() : '';
-
     // Create Trigger
     const trigger = document.createElement('button');
     trigger.type = 'button';
@@ -51,13 +48,36 @@
     trigger.setAttribute('aria-haspopup', 'listbox');
     trigger.setAttribute('aria-expanded', 'false');
 
-    let triggerHtml = '';
-    if (iconSvg) {
-      triggerHtml += `<span class="crm-dropdown-leading-icon">${iconSvg}</span>`;
+    function renderTriggerContent() {
+      let triggerHtml = '';
+      if (iconSvg) {
+        triggerHtml += `<span class="crm-dropdown-leading-icon">${iconSvg}</span>`;
+      }
+
+      if (isMultiple) {
+        const selectedOptions = Array.from(select.options).filter(o => o.selected && o.value !== '');
+        if (selectedOptions.length === 0) {
+          const firstOpt = select.options[0];
+          const defaultLabel = (firstOpt && firstOpt.value === '') ? firstOpt.textContent.trim() : allOptionText;
+          triggerHtml += `<span class="crm-dropdown-text">${escapeHtml(defaultLabel)}</span>`;
+        } else if (selectedOptions.length === 1) {
+          triggerHtml += `<span class="crm-dropdown-text">${escapeHtml(selectedOptions[0].textContent.trim())}</span>`;
+        } else {
+          const firstLabel = selectedOptions[0].textContent.trim();
+          triggerHtml += `<span class="crm-dropdown-text">${escapeHtml(firstLabel)}</span>`;
+          triggerHtml += `<span class="crm-dropdown-count-badge">+${selectedOptions.length - 1}</span>`;
+        }
+      } else {
+        const selectedOption = select.options[select.selectedIndex] || select.options[0];
+        const initialText = selectedOption ? selectedOption.textContent.trim() : '';
+        triggerHtml += `<span class="crm-dropdown-text">${escapeHtml(initialText)}</span>`;
+      }
+
+      triggerHtml += SVG_CHEVRON;
+      trigger.innerHTML = triggerHtml;
     }
-    triggerHtml += `<span class="crm-dropdown-text">${escapeHtml(initialText)}</span>`;
-    triggerHtml += SVG_CHEVRON;
-    trigger.innerHTML = triggerHtml;
+
+    renderTriggerContent();
 
     // Create Dropdown Menu
     const menu = document.createElement('div');
@@ -94,48 +114,120 @@
         }
 
         const item = document.createElement('li');
-        item.className = 'crm-dropdown-item';
+        item.className = 'crm-dropdown-item' + (isMultiple ? ' is-multiselect-checkbox' : '');
         item.setAttribute('role', 'option');
         item.dataset.value = opt.value;
         if (opt.dataset.categoryId) {
           item.dataset.categoryId = opt.dataset.categoryId;
         }
-        if (opt.value === select.value) {
+
+        const isSelected = isMultiple ? opt.selected : opt.value === select.value;
+        if (isSelected) {
           item.classList.add('is-selected');
           item.setAttribute('aria-selected', 'true');
         }
 
-        item.innerHTML = `<span class="crm-dropdown-item-text">${escapeHtml(opt.textContent.trim())}</span>${SVG_CHECK}`;
+        if (isMultiple) {
+          const checkboxHtml = `<span class="crm-dropdown-checkbox-box">${isSelected ? SVG_CHECK : ''}</span>`;
+          item.innerHTML = `${checkboxHtml}<span class="crm-dropdown-item-text">${escapeHtml(opt.textContent.trim())}</span>`;
+        } else {
+          item.innerHTML = `<span class="crm-dropdown-item-text">${escapeHtml(opt.textContent.trim())}</span>${SVG_CHECK}`;
+        }
 
-        item.addEventListener('click', () => {
-          selectItem(opt.value, opt.textContent.trim());
+        item.addEventListener('click', (e) => {
+          if (isMultiple) {
+            e.preventDefault();
+            e.stopPropagation();
+            toggleMultiItem(opt, item);
+          } else {
+            selectItem(opt.value, opt.textContent.trim());
+          }
         });
 
         list.appendChild(item);
       });
 
-      const selectedOpt = select.options[select.selectedIndex];
-      const textEl = trigger.querySelector('.crm-dropdown-text');
-      if (textEl && selectedOpt) {
-        textEl.textContent = selectedOpt.textContent.trim();
+      renderTriggerContent();
+    }
+
+    function toggleMultiItem(opt, item) {
+      if (opt.value === '') {
+        // "All" / Clear Option clicked
+        Array.from(select.options).forEach(o => o.selected = false);
+        opt.selected = true;
+      } else {
+        // Normal option toggled
+        const firstOpt = select.options[0];
+        if (firstOpt && firstOpt.value === '') {
+          firstOpt.selected = false;
+        }
+        opt.selected = !opt.selected;
+
+        // If nothing is selected, re-select the "All" option if present
+        const anySelected = Array.from(select.options).some(o => o.selected && o.value !== '');
+        if (!anySelected && firstOpt && firstOpt.value === '') {
+          firstOpt.selected = true;
+        }
       }
+
+      // Update item visual state
+      list.querySelectorAll('.crm-dropdown-item').forEach(it => {
+        const option = Array.from(select.options).find(o => o.value === it.dataset.value);
+        const sel = option ? option.selected : false;
+        it.classList.toggle('is-selected', sel);
+        it.setAttribute('aria-selected', sel ? 'true' : 'false');
+        const box = it.querySelector('.crm-dropdown-checkbox-box');
+        if (box) box.innerHTML = sel ? SVG_CHECK : '';
+      });
+
+      renderTriggerContent();
+      select.dispatchEvent(new Event('change', { bubbles: true }));
     }
 
     syncDropdownItems();
     select.addEventListener('crm-dropdown:update', syncDropdownItems);
     select.addEventListener('change', () => {
-      const selectedOpt = select.options[select.selectedIndex];
-      const textEl = trigger.querySelector('.crm-dropdown-text');
-      if (textEl && selectedOpt) {
-        textEl.textContent = selectedOpt.textContent.trim();
+      renderTriggerContent();
+      if (!isMultiple) {
+        list.querySelectorAll('.crm-dropdown-item').forEach((it) => {
+          const isMatch = it.dataset.value === select.value;
+          it.classList.toggle('is-selected', isMatch);
+          it.setAttribute('aria-selected', isMatch ? 'true' : 'false');
+        });
       }
-      list.querySelectorAll('.crm-dropdown-item').forEach((it) => {
-        const isMatch = it.dataset.value === select.value;
-        it.classList.toggle('is-selected', isMatch);
-        it.setAttribute('aria-selected', isMatch ? 'true' : 'false');
-      });
     });
     menu.appendChild(list);
+
+    // Multiselect Footer Actions (Clear / Done)
+    if (isMultiple) {
+      const footer = document.createElement('div');
+      footer.className = 'crm-dropdown-menu-footer';
+      footer.innerHTML = `
+        <button type="button" class="crm-dropdown-menu-footer-btn js-clear-multi">${isRtl ? 'إلغاء التحديد' : 'Clear All'}</button>
+        <button type="button" class="crm-dropdown-menu-footer-btn js-close-multi" style="color:var(--red,#ef4444);font-weight:800;">${isRtl ? 'تم' : 'Done'}</button>
+      `;
+
+      footer.querySelector('.js-clear-multi').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        Array.from(select.options).forEach(o => o.selected = false);
+        const firstOpt = select.options[0];
+        if (firstOpt && firstOpt.value === '') {
+          firstOpt.selected = true;
+        }
+        syncDropdownItems();
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+      });
+
+      footer.querySelector('.js-close-multi').addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        closeMenu();
+        trigger.focus();
+      });
+
+      menu.appendChild(footer);
+    }
 
     // Insert wrapper into DOM
     select.parentNode.insertBefore(wrapper, select);
@@ -153,25 +245,20 @@
       const mRect = menu.getBoundingClientRect();
       const isRtl = document.documentElement.getAttribute('dir') === 'rtl';
 
-      // Check if menu overflows viewport or container boundaries
       if (isRtl) {
         if (mRect.left < 8) {
-          // In RTL, if it overflows the left edge of viewport/container, flip to align to inline-end
           menu.style.insetInlineStart = 'auto';
           menu.style.insetInlineEnd = '0';
         }
       } else {
         if (mRect.right > window.innerWidth - 8) {
-          // In LTR, if it overflows the right edge of viewport/container, flip to align to inline-end
           menu.style.insetInlineStart = 'auto';
           menu.style.insetInlineEnd = '0';
         }
       }
     }
 
-    // State management
     function openMenu() {
-      // Close any other open dropdowns
       document.querySelectorAll('.crm-dropdown.is-open').forEach((d) => {
         if (d !== wrapper) d.classList.remove('is-open');
       });
@@ -188,7 +275,6 @@
         trigger.focus();
       }
 
-      // Scroll selected item into view inside menu without shifting the page
       const selectedItem = list.querySelector('.is-selected');
       if (selectedItem) {
         selectedItem.scrollIntoView({ block: 'nearest', inline: 'nearest' });
@@ -213,18 +299,14 @@
     }
 
     function selectItem(value, labelText) {
-      // Update original select value
       if (select.value !== value) {
         select.value = value;
-        // Trigger native change event (and form submit if attached)
         select.dispatchEvent(new Event('change', { bubbles: true }));
       }
 
-      // Update trigger label
       const textEl = trigger.querySelector('.crm-dropdown-text');
       if (textEl) textEl.textContent = labelText;
 
-      // Update selected class
       list.querySelectorAll('.crm-dropdown-item').forEach((it) => {
         const isMatch = it.dataset.value === value;
         it.classList.toggle('is-selected', isMatch);
@@ -325,7 +407,7 @@
     mutations.forEach((mutation) => {
       mutation.addedNodes.forEach((node) => {
         if (node.nodeType === Node.ELEMENT_NODE) {
-          if (node.matches && node.matches('select:not([data-no-crm-dropdown]):not(.flatpickr-monthDropdown-months):not(.swal2-select):not(.fc-select)')) {
+          if (node.matches && node.matches('select:not([data-no-crm-dropdown])')) {
             buildCustomDropdown(node);
           } else if (node.querySelectorAll) {
             initAllDropdowns(node);

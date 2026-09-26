@@ -20,10 +20,12 @@ class LeadProfileSettingController extends Controller
 
         $setting = LeadProfileSetting::current();
         $tabs = $setting->getOrderedTabs();
+        $filters = $setting->getOrderedFilters();
 
         return view('settings.lead-profile.index', [
             'setting' => $setting,
             'tabs' => $tabs,
+            'filters' => $filters,
         ]);
     }
 
@@ -40,6 +42,13 @@ class LeadProfileSettingController extends Controller
             'tabs.*.is_enabled' => ['nullable'],
             'tabs.*.label_ar' => ['nullable', 'string', 'max:150'],
             'tabs.*.label_en' => ['nullable', 'string', 'max:150'],
+            'filters' => ['nullable', 'array'],
+            'filters.*.key' => ['required', 'string'],
+            'filters.*.position' => ['required', 'integer', 'min:1', 'max:50'],
+            'filters.*.is_enabled' => ['nullable'],
+            'filters.*.is_multiselect' => ['nullable'],
+            'filters.*.label_ar' => ['nullable', 'string', 'max:150'],
+            'filters.*.label_en' => ['nullable', 'string', 'max:150'],
         ]);
 
         $defaultIcons = LeadProfileSetting::defaultIcons();
@@ -94,12 +103,40 @@ class LeadProfileSettingController extends Controller
             $defaultTab = $enabledKeys[0] ?? 'timeline';
         }
 
+        $defaultFiltersConfig = collect(LeadProfileSetting::defaultFiltersConfig())->keyBy('key');
+        $updatedFilters = [];
+        if (! empty($validated['filters'])) {
+            foreach ($validated['filters'] as $fInput) {
+                $fKey = (string) ($fInput['key'] ?? '');
+                if (! $defaultFiltersConfig->has($fKey)) {
+                    continue;
+                }
+                $fDefault = $defaultFiltersConfig->get($fKey);
+                $fEnabled = isset($fInput['is_enabled']) && (bool) $fInput['is_enabled'];
+                $fMulti = isset($fInput['is_multiselect']) && (bool) $fInput['is_multiselect'];
+                $updatedFilters[] = [
+                    'key' => $fKey,
+                    'is_enabled' => $fEnabled,
+                    'is_multiselect' => $fMulti,
+                    'position' => (int) ($fInput['position'] ?? $fDefault['position']),
+                    'label_ar' => trim((string) ($fInput['label_ar'] ?? '')) ?: $fDefault['label_ar'],
+                    'label_en' => trim((string) ($fInput['label_en'] ?? '')) ?: $fDefault['label_en'],
+                    'icon' => $fDefault['icon'],
+                ];
+            }
+            usort($updatedFilters, static fn (array $a, array $b): int => $a['position'] <=> $b['position']);
+        }
+
         $setting = LeadProfileSetting::current();
-        $setting->update([
+        $updatePayload = [
             'layout_mode' => $validated['layout_mode'],
             'default_tab' => $defaultTab,
             'tabs_config' => $updatedTabs,
-        ]);
+        ];
+        if (! empty($updatedFilters)) {
+            $updatePayload['filters_config'] = $updatedFilters;
+        }
+        $setting->update($updatePayload);
 
         LeadProfileSetting::flushCache();
 

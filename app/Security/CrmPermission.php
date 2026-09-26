@@ -151,22 +151,25 @@ enum CrmPermission: string
      */
     public static function moduleLabels(): array
     {
+        $isEn = app()->getLocale() === 'en';
+
         return [
-            'dashboard' => 'لوحة التحكم',
-            'settings' => 'الإعدادات',
-            'notifications' => 'الإشعارات',
-            'leads' => 'العملاء والمتابعات',
-            'tasks' => 'المهام',
-            'quotations' => 'عروض الأسعار',
-            'campaigns' => 'الحملات',
-            'reports' => 'التقارير',
-            'users' => 'المستخدمون',
-            'groups' => 'المجموعات والصلاحيات',
-            'voip' => 'اتصالات السنترال (VoIP)',
-            'calendar' => 'التقويم والأحداث',
-            'technical_support' => 'الدعم الفني',
-            'audit_logs' => 'سجل العمليات والنشاطات',
-            'branches' => 'الفروع والمواقع',
+            'dashboard' => $isEn ? 'Dashboard' : 'لوحة التحكم',
+            'settings' => $isEn ? 'Settings' : 'الإعدادات',
+            'notifications' => $isEn ? 'Notifications' : 'الإشعارات',
+            'leads' => $isEn ? 'Leads & Follow-ups' : 'العملاء والمتابعات',
+            'pipeline_stages' => $isEn ? 'Pipelines & Stages' : 'المسارات والمراحل',
+            'tasks' => $isEn ? 'Tasks' : 'المهام',
+            'quotations' => $isEn ? 'Price Quotations' : 'عروض الأسعار',
+            'campaigns' => $isEn ? 'Campaigns' : 'الحملات',
+            'reports' => $isEn ? 'Reports' : 'التقارير',
+            'users' => $isEn ? 'Users' : 'المستخدمون',
+            'groups' => $isEn ? 'Groups & Permissions' : 'المجموعات والصلاحيات',
+            'voip' => $isEn ? 'VoIP Telephony' : 'اتصالات السنترال (VoIP)',
+            'calendar' => $isEn ? 'Calendar & Events' : 'التقويم والأحداث',
+            'technical_support' => $isEn ? 'Technical Support' : 'الدعم الفني',
+            'audit_logs' => $isEn ? 'Activity & Audit Logs' : 'سجل العمليات والنشاطات',
+            'branches' => $isEn ? 'Branches & Locations' : 'الفروع والمواقع',
         ];
     }
 }

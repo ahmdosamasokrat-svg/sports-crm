@@ -77,12 +77,30 @@ class LeadController extends Controller
             $status->leads_count = (int) ($leadsByStatus[$status->id] ?? 0);
         }
 
+        $rawSource = $request->query('source');
+        $selectedSources = is_array($rawSource)
+            ? array_values(array_filter(array_map('trim', $rawSource)))
+            : (trim((string) $rawSource) !== '' ? [trim((string) $rawSource)] : []);
+
+        $rawStatus = $request->query('status');
+        $selectedStatuses = is_array($rawStatus)
+            ? array_values(array_filter(array_map('trim', $rawStatus)))
+            : (trim((string) $rawStatus) !== '' ? [trim((string) $rawStatus)] : []);
+
+        $rawEmployee = $request->query('employee');
+        $selectedEmployees = is_array($rawEmployee)
+            ? array_values(array_filter(array_map('trim', $rawEmployee)))
+            : (trim((string) $rawEmployee) !== '' ? [trim((string) $rawEmployee)] : []);
+
         $filters = [
             'q' => mb_substr(trim((string) $request->query('q', '')), 0, 150),
             'stage' => mb_substr(trim((string) $request->query('stage', '')), 0, 50),
-            'status' => mb_substr(trim((string) $request->query('status', '')), 0, 50),
-            'employee' => mb_substr(trim((string) $request->query('employee', '')), 0, 150),
-            'source' => mb_substr(trim((string) $request->query('source', '')), 0, 100),
+            'status' => $selectedStatuses[0] ?? '',
+            'statuses' => $selectedStatuses,
+            'employee' => $selectedEmployees[0] ?? '',
+            'employees' => $selectedEmployees,
+            'source' => $selectedSources[0] ?? '',
+            'sources' => $selectedSources,
             'temperature' => mb_substr(trim((string) $request->query('temperature', '')), 0, 50),
             'follow_up' => mb_substr(trim((string) $request->query('follow_up', '')), 0, 20),
             'sort' => mb_substr(trim((string) $request->query('sort', 'latest')), 0, 20),
@@ -97,14 +115,17 @@ class LeadController extends Controller
             }
         }
 
-        $selectedStatus = null;
-        if ($filters['status'] !== '') {
-            $selectedStatus = $statuses->firstWhere('code', $filters['status'])
-                ?? $statuses->firstWhere('id', (int) $filters['status']);
-            if ($selectedStatus === null) {
-                $filters['status'] = '';
+        $resolvedStatusIds = [];
+        if (! empty($filters['statuses'])) {
+            foreach ($filters['statuses'] as $stCodeOrId) {
+                $stObj = $statuses->firstWhere('code', $stCodeOrId)
+                    ?? $statuses->firstWhere('id', (int) $stCodeOrId);
+                if ($stObj) {
+                    $resolvedStatusIds[] = (int) $stObj->id;
+                }
             }
         }
+        $selectedStatus = $statuses->firstWhere('id', $resolvedStatusIds[0] ?? 0);
 
         [
             $availableStageFields,
@@ -180,15 +201,10 @@ class LeadController extends Controller
 
         $sources = LeadSourceHelper::getAllSources($user);
 
-        if (
-            $filters['source'] !== ''
-            && ! in_array(
-                $filters['source'],
-                $sources->all(),
-                true
-            )
-        ) {
-            $filters['source'] = '';
+        if (! empty($filters['sources'])) {
+            $validSources = $sources->all();
+            $filters['sources'] = array_values(array_intersect($filters['sources'], $validSources));
+            $filters['source'] = $filters['sources'][0] ?? '';
         }
 
         $query = Lead::query()
@@ -225,42 +241,34 @@ class LeadController extends Controller
         if ($selectedStage !== null) {
             $stageStatusIds = $selectedStage->statuses->pluck('id')->all();
             $query->whereIn('lead_status_id', $stageStatusIds);
-        } elseif ($selectedStatus !== null) {
-            $query->where('lead_status_id', $selectedStatus->id);
+        } elseif (! empty($resolvedStatusIds)) {
+            $query->whereIn('lead_status_id', $resolvedStatusIds);
         }
 
-        if ($filters['employee'] !== '') {
+        if (! empty($filters['employees'])) {
+            $empList = $filters['employees'];
             $query->where(
-                function ($employeeQuery) use ($filters): void {
+                function ($employeeQuery) use ($empList): void {
                     $employeeQuery
                         ->whereHas(
                             'assignedUser',
-                            function ($userQuery) use ($filters): void {
-                                $userQuery->where(
-                                    'name',
-                                    $filters['employee']
-                                );
+                            function ($userQuery) use ($empList): void {
+                                $userQuery->whereIn('name', $empList);
                             }
                         )
                         ->orWhere(
-                            function ($legacyQuery) use ($filters): void {
+                            function ($legacyQuery) use ($empList): void {
                                 $legacyQuery
                                     ->whereNull('assigned_user_id')
-                                    ->where(
-                                        'assigned_employee',
-                                        $filters['employee']
-                                    );
+                                    ->whereIn('assigned_employee', $empList);
                             }
                         );
                 }
             );
         }
 
-        if ($filters['source'] !== '') {
-            $query->where(
-                'source',
-                $filters['source']
-            );
+        if (! empty($filters['sources'])) {
+            $query->whereIn('source', $filters['sources']);
         }
 
         $selectedGuardianId = $request->filled('guardian_id') ? (int) $request->query('guardian_id') : null;
@@ -366,8 +374,12 @@ class LeadController extends Controller
 
         $activeQuery = array_filter(
             $filters,
-            static fn (string $value): bool => $value !== ''
-                && $value !== 'latest'
+            static function (mixed $value): bool {
+                if (is_array($value)) {
+                    return ! empty($value);
+                }
+                return $value !== '' && $value !== 'latest';
+            }
         );
 
         if ($selectedStageFieldIds !== []) {
@@ -393,7 +405,8 @@ class LeadController extends Controller
             ? Branch::query()->active()->orderBy('name_ar')->get()
             : collect();
         $guardians = Guardian::query()->orderBy('name')->get(['id', 'name', 'phone']);
-
+        $leadProfileSetting = LeadProfileSetting::current();
+        $configuredFilters = $leadProfileSetting->getActiveFilters();
         return view(
             'leads.index',
             compact(
@@ -417,7 +430,9 @@ class LeadController extends Controller
                 'branches',
                 'selectedBranchId',
                 'guardians',
-                'selectedGuardianId'
+                'selectedGuardianId',
+                'configuredFilters',
+                'leadProfileSetting'
             )
         );
     }

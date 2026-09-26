@@ -29,6 +29,7 @@
             'settings' => 'bi-gear-wide-connected',
             'notifications' => 'bi-bell-fill',
             'leads' => 'bi-people-fill',
+            'pipeline_stages' => 'bi-diagram-3-fill',
             'tasks' => 'bi-check2-square',
             'quotations' => 'bi-file-earmark-text-fill',
             'campaigns' => 'bi-megaphone-fill',

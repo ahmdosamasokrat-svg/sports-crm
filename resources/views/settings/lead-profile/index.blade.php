@@ -221,6 +221,116 @@ input:checked + .profile-slider:before { transform: translateX(20px); }
                     </tbody>
                 </table>
             </div>
+            </div>
+        </div>
+
+        <!-- 3. LEAD FILTERS PANEL CONFIGURATION -->
+        <div class="profile-card">
+            <div class="profile-card-header">
+                <div>
+                    <h3 class="profile-card-title">
+                        <i class="bi bi-funnel" style="color:var(--red);"></i>
+                        {{ __('crm.lead_filters_panel_settings') ?? 'إعدادات وترتيب فلاتر العملاء (Filter Panel)' }}
+                    </h3>
+                    <p style="margin: 4px 0 0; color: var(--muted); font-size: 12px;">
+                        {{ __('crm.lead_filters_panel_desc') ?? 'تخصيص ظهور وترتيب فلاتر شريط البحث، وتحديد الفلاتر التي تدعم الاختيار المتعدد (Multiselect)' }}
+                    </p>
+                </div>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="tab-config-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px; text-align: center;">{{ __('crm.status') ?? 'التفعيل' }}</th>
+                            <th style="width: 80px; text-align: center;">{{ __('crm.order') ?? 'الترتيب' }}</th>
+                            <th style="width: 100px; text-align: center;">{{ __('crm.multiselect') ?? 'متعدد (Multi)' }}</th>
+                            <th style="width: 200px;">{{ __('crm.filter_key') ?? 'رمز الفلتر' }}</th>
+                            <th>{{ __('crm.label_ar') ?? 'الاسم بالعربية' }}</th>
+                            <th>{{ __('crm.label_en') ?? 'الاسم بالإنجليزية' }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach($filters as $fIndex => $filter)
+                            <tr id="filter-row-{{ $filter['key'] }}" class="{{ $filter['is_enabled'] ? '' : 'is-disabled' }}">
+                                <td style="text-align: center;">
+                                    <label class="profile-toggle-switch" style="display:inline-block;">
+                                        <input type="hidden" name="filters[{{ $fIndex }}][key]" value="{{ $filter['key'] }}">
+                                        <input
+                                            type="checkbox"
+                                            name="filters[{{ $fIndex }}][is_enabled]"
+                                            value="1"
+                                            {{ $filter['is_enabled'] ? 'checked' : '' }}
+                                            onchange="toggleFilterRow('{{ $filter['key'] }}', this.checked)"
+                                        >
+                                        <span class="profile-slider"></span>
+                                    </label>
+                                </td>
+                                <td style="text-align: center;">
+                                    <input
+                                        type="number"
+                                        name="filters[{{ $fIndex }}][position]"
+                                        value="{{ $filter['position'] }}"
+                                        min="1"
+                                        max="50"
+                                        style="width: 60px; text-align: center; min-height: 38px;"
+                                    >
+                                </td>
+                                <td style="text-align: center;">
+                                    @if(in_array($filter['key'], ['status', 'source', 'employee'], true))
+                                        <label class="profile-toggle-switch" style="display:inline-block;" title="{{ __('crm.enable_multiselect') ?? 'تفعيل الاختيار المتعدد' }}">
+                                            <input
+                                                type="checkbox"
+                                                name="filters[{{ $fIndex }}][is_multiselect]"
+                                                value="1"
+                                                {{ $filter['is_multiselect'] ? 'checked' : '' }}
+                                            >
+                                            <span class="profile-slider"></span>
+                                        </label>
+                                    @else
+                                        <span style="color:var(--muted); font-size:11px;">—</span>
+                                        <input type="hidden" name="filters[{{ $fIndex }}][is_multiselect]" value="0">
+                                    @endif
+                                </td>
+                                <td>
+                                    <div style="display: flex; align-items: center; gap: 8px;">
+                                        <span class="tab-icon-badge">
+                                            <i class="bi {{ $filter['icon'] }}"></i>
+                                        </span>
+                                        <div>
+                                            <strong style="display:block; font-size: 13px; color: var(--dark);">
+                                                {{ $filter['label'] }}
+                                            </strong>
+                                            <code style="font-size: 11px; color: var(--muted); background: var(--bg); padding: 2px 6px; border-radius: 4px;">
+                                                {{ $filter['key'] }}
+                                            </code>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <input
+                                        type="text"
+                                        name="filters[{{ $fIndex }}][label_ar]"
+                                        value="{{ $filter['label_ar'] }}"
+                                        placeholder="{{ $filter['label_ar'] }}"
+                                        style="min-height: 38px;"
+                                    >
+                                </td>
+                                <td>
+                                    <input
+                                        type="text"
+                                        name="filters[{{ $fIndex }}][label_en]"
+                                        value="{{ $filter['label_en'] }}"
+                                        placeholder="{{ $filter['label_en'] }}"
+                                        style="min-height: 38px;"
+                                        dir="ltr"
+                                    >
+                                </td>
+                            </tr>
+                        @endforeach
+                    </tbody>
+                </table>
+            </div>
 
             <div style="margin-top: 24px; display: flex; align-items: center; justify-content: flex-end; gap: 12px;">
                 <a href="{{ route('v2.settings') }}" class="btn soft">
@@ -244,6 +354,17 @@ function updateLayoutHighlight(radio) {
 
 function toggleTabRow(key, isChecked) {
     const row = document.getElementById('tab-row-' + key);
+    if (row) {
+        if (isChecked) {
+            row.classList.remove('is-disabled');
+        } else {
+            row.classList.add('is-disabled');
+        }
+    }
+}
+
+function toggleFilterRow(key, isChecked) {
+    const row = document.getElementById('filter-row-' + key);
     if (row) {
         if (isChecked) {
             row.classList.remove('is-disabled');

@@ -365,8 +365,8 @@ body.kanban-followup-popup .crm-side {
             <!-- CARD 1: PRIMARY CONTACT & IDENTITY -->
             <section class="form-card">
                 <div class="section-head">
-                    <h2><i class="bi bi-person-badge"></i> {{ __('crm.primary_lead_data') ?? (app()->getLocale() === 'en' ? 'Primary Customer & Contact Information' : 'بيانات العميل والتواصل الأساسية') }}</h2>
-                    <p>{{ __('crm.primary_lead_data_desc') ?? (app()->getLocale() === 'en' ? 'Name, phone number, source and assigned sales representative' : 'الاسم ورقم الهاتف والمصدر وموظف المبيعات المسؤول') }}</p>
+                    <h2><i class="bi bi-person-badge"></i> {{ __('crm.lead_contact_assignment') }}</h2>
+                    <p>{{ __('crm.lead_contact_assignment_desc') }}</p>
                 </div>
 
                 <div class="form-grid">
@@ -530,8 +530,8 @@ body.kanban-followup-popup .crm-side {
             @if (isset($customerFields) && $customerFields->isNotEmpty())
                 <section class="form-card">
                     <div class="section-head">
-                        <h2><i class="bi bi-card-checklist"></i> {{ __("crm.customer_data") ?: "بيانات وتصنيف العميل" }}</h2>
-                        <p>{{ __("crm.followup_customer_fields_employee_desc") ?: "بيانات وتصنيفات ديناميكية إضافية خاصة بالعميل يتم إدارتها من الإعدادات" }}</p>
+                        <h2><i class="bi bi-card-checklist"></i> {{ __('crm.customer_demographics_profile') }}</h2>
+                        <p>{{ __('crm.customer_demographics_profile_desc') }}</p>
                     </div>
 
                     @include("partials.stage-field-inputs", [
@@ -565,6 +565,11 @@ body.kanban-followup-popup .crm-side {
                             @foreach ($statusGroups as $stageName => $stageStatuses)
                                 <optgroup label="{{ $stageName }}">
                                     @foreach ($stageStatuses as $status)
+                                        @php
+                                            $stageHasFollowups = (bool) ($status->stage?->has_followups ?? true);
+                                            $isExemptCode = in_array((string) $status->code, ['new', 'no_answer', 'not_interested', 'execution'], true);
+                                            $statusNeedsFollowup = $stageHasFollowups && ! $isExemptCode;
+                                        @endphp
                                         <option
                                             value="{{ $status->id }}"
                                             data-code="{{ $status->code }}"
@@ -573,7 +578,8 @@ body.kanban-followup-popup .crm-side {
                                             data-stage-color="{{ $status->stage?->color ?? '#3478f6' }}"
                                             data-status-name="{{ $status->name_ar }}"
                                             data-status-color="{{ $status->color ?? '#3478f6' }}"
-                                            data-has-followups="{{ ($status->stage?->has_followups ?? true) ? '1' : '0' }}"
+                                            data-has-followups="{{ $statusNeedsFollowup ? '1' : '0' }}"
+                                            data-needs-followup="{{ $statusNeedsFollowup ? '1' : '0' }}"
                                             @selected((string) old('lead_status_id') === (string) $status->id)
                                         >
                                             {{ $status->name_ar }}
@@ -730,9 +736,9 @@ function setNextDate(daysAhead, hour) {
         syncStageQuestions(stageId);
 
         // Next Followup Date
-        const needsFollowup = opt.dataset.hasFollowups !== undefined
-            ? (opt.dataset.hasFollowups === '1')
-            : !noFollowupStatuses.includes(code);
+        const needsFollowup = opt.dataset.needsFollowup !== undefined
+            ? (opt.dataset.needsFollowup === '1')
+            : (opt.dataset.hasFollowups === '1');
         if (nextFollowupSection) {
             nextFollowupSection.classList.toggle('is-hidden', !needsFollowup);
         }
@@ -790,6 +796,110 @@ function setNextDate(daysAhead, hour) {
 
     statusSelect?.addEventListener('change', updateFormVisibility);
 
+    const campaignSelect = document.getElementById('campaignId');
+    const assigneeSelect = document.getElementById('assignedUserId');
+
+    function syncCampaignAssignees() {
+        if (!campaignSelect || !assigneeSelect || assigneeSelect.tagName.toLowerCase() !== 'select') {
+            return;
+        }
+
+        const selectedOpt = campaignSelect.selectedOptions?.[0];
+        const userIdsRaw = selectedOpt ? selectedOpt.getAttribute('data-user-ids') : null;
+        const allowedIds = userIdsRaw ? userIdsRaw.split(',').map(s => s.trim()).filter(Boolean) : null;
+
+        let hasSelectedValid = false;
+        Array.from(assigneeSelect.options).forEach(opt => {
+            const uid = String(opt.value);
+            const isAllowed = !allowedIds || allowedIds.length === 0 || allowedIds.includes(uid);
+            opt.hidden = !isAllowed;
+            opt.disabled = !isAllowed;
+            if (!isAllowed) {
+                opt.style.display = 'none';
+            } else {
+                opt.style.display = '';
+                if (opt.selected) {
+                    hasSelectedValid = true;
+                }
+            }
+        });
+
+        if (!hasSelectedValid) {
+            const firstValid = Array.from(assigneeSelect.options).find(o => !o.disabled && o.value);
+            if (firstValid) {
+                assigneeSelect.value = firstValid.value;
+            }
+        }
+
+        assigneeSelect.dispatchEvent(new CustomEvent('crm-dropdown:update'));
+        assigneeSelect.dispatchEvent(new Event('change'));
+    }
+
+    campaignSelect?.addEventListener('change', syncCampaignAssignees);
+    syncCampaignAssignees();
+    // Cross-card auto-sync to avoid re-entering duplicate information (Name, Birth Date, Activity)
+    function syncCrossCardFields() {
+        const fName = document.getElementById('firstName')?.value.trim() || '';
+        const lName = document.getElementById('lastName')?.value.trim() || '';
+        const fullName = `${fName} ${lName}`.trim();
+
+        const birthInput = document.querySelector('[data-sf-key="birth_date"] input, input[name*="[birth_date]"]');
+        const birthVal = birthInput?.value || '';
+
+        const activityInput = document.querySelector('[data-sf-key="activity"] input, input[name="customer_fields[activity]"]');
+        const activityVal = activityInput?.value.trim() || '';
+
+        // 1. Sync Customer Name -> Player Name in stage questions
+        document.querySelectorAll('[data-sf-key="player_name"] input, input[name*="[player_name]"]').forEach(input => {
+            if (fullName) {
+                input.placeholder = `${fullName} (نفس اسم العميل)`;
+                if (!input.value || input.dataset.autoFilled === '1') {
+                    input.value = fullName;
+                    input.dataset.autoFilled = '1';
+                }
+            }
+            input.addEventListener('input', () => {
+                delete input.dataset.autoFilled;
+            }, { once: true });
+        });
+
+        // 2. Sync Birth Date -> Date of Birth in stage questions
+        if (birthVal) {
+            document.querySelectorAll('[data-sf-key="date_of_birth"] input, input[name*="[date_of_birth]"]').forEach(input => {
+                if (!input.value || input.dataset.autoFilled === '1') {
+                    input.value = birthVal;
+                    input.dataset.autoFilled = '1';
+                    input.dispatchEvent(new Event('input', { bubbles: true }));
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                input.addEventListener('input', () => {
+                    delete input.dataset.autoFilled;
+                }, { once: true });
+            });
+        }
+
+        // 3. Sync Activity -> Requested Activity in stage questions
+        if (activityVal) {
+            document.querySelectorAll('[data-sf-key="requested_activity"] input, [data-sf-key="requested_activity"] select, input[name*="[requested_activity]"]').forEach(input => {
+                if (!input.value || input.dataset.autoFilled === '1') {
+                    input.value = activityVal;
+                    input.dataset.autoFilled = '1';
+                    input.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+                input.addEventListener('input', () => {
+                    delete input.dataset.autoFilled;
+                }, { once: true });
+            });
+        }
+    }
+
+    document.getElementById('firstName')?.addEventListener('input', syncCrossCardFields);
+    document.getElementById('lastName')?.addEventListener('input', syncCrossCardFields);
+    document.querySelector('[data-sf-key="birth_date"] input, input[name*="[birth_date]"]')?.addEventListener('change', syncCrossCardFields);
+    document.querySelector('[data-sf-key="activity"] input, input[name="customer_fields[activity]"]')?.addEventListener('input', syncCrossCardFields);
+    statusSelect?.addEventListener('change', () => {
+        setTimeout(syncCrossCardFields, 50);
+    });
     updateFormVisibility();
 })();
 </script>

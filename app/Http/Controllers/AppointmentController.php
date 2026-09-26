@@ -13,6 +13,7 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Gate;
 
 class AppointmentController extends Controller
 {
@@ -65,6 +66,7 @@ class AppointmentController extends Controller
         CrmDatabaseGuard::ensureConnected();
         $setting = AppointmentSetting::current();
         abort_unless($setting->is_enabled, 403);
+        Gate::authorize('update', $lead);
 
         $notes = $request->filled('notes') ? (string) $request->input('notes') : null;
         $this->appointmentService->markAttended($lead, $request->user(), $notes);
@@ -81,6 +83,7 @@ class AppointmentController extends Controller
         CrmDatabaseGuard::ensureConnected();
         $setting = AppointmentSetting::current();
         abort_unless($setting->is_enabled, 403);
+        Gate::authorize('update', $lead);
 
         $reason = $request->filled('reason') ? (string) $request->input('reason') : null;
         $this->appointmentService->markNoShow($lead, $request->user(), $reason);
@@ -97,6 +100,7 @@ class AppointmentController extends Controller
         CrmDatabaseGuard::ensureConnected();
         $setting = AppointmentSetting::current();
         abort_unless($setting->is_enabled, 403);
+        Gate::authorize('update', $lead);
 
         $validated = $request->validate([
             'date' => ['required', 'date'],
@@ -124,6 +128,7 @@ class AppointmentController extends Controller
         CrmDatabaseGuard::ensureConnected();
         $setting = AppointmentSetting::current();
         abort_unless($setting->is_enabled, 403);
+        Gate::authorize('update', $lead);
 
         $reason = $request->filled('reason') ? (string) $request->input('reason') : null;
         $this->appointmentService->cancel($lead, $request->user(), $reason);

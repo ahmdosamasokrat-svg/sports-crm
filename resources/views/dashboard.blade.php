@@ -2901,7 +2901,7 @@ html.dark-mode .toast {
             <!-- Funnel Progress Bar -->
             <div style="background:#f1f5f9; border-radius:8px; height:24px; position:relative; overflow:hidden; display:flex; align-items:center; padding:0 8px;">
               <div style="position:absolute; left:0; top:0; bottom:0; width:{{ $widthPct }}%; background:linear-gradient(90deg, {{ $step['color'] }}dd, {{ $step['color'] }}); border-radius:8px; transition:width 0.5s ease;"></div>
-              <span style="position:relative; z-index:1; font-weight:800; font-size:12px; color:#fff; text-shadow:0 1px 2px rgba(0,0,0,0.35);">
+              <span style="position:relative; z-index:1; font-weight:800; font-size:12px; color:#0f172a;">
                 {{ number_format($step['count']) }} لاعب
               </span>
             </div>

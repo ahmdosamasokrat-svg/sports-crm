@@ -111,6 +111,74 @@
   color: #ef4444;
 }
 
+.crm-dropdown-count-badge {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 18px !important;
+  height: 18px !important;
+  padding: 0 5px !important;
+  border-radius: 999px !important;
+  background-color: var(--red, #ef4444) !important;
+  color: #ffffff !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  margin-inline-start: 6px !important;
+  line-height: 1 !important;
+}
+
+.crm-dropdown-item.is-multiselect-checkbox {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.crm-dropdown-checkbox-box {
+  width: 16px !important;
+  height: 16px !important;
+  border: 1.5px solid #cbd5e1 !important;
+  border-radius: 4px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  flex-shrink: 0 !important;
+  transition: all 0.15s ease !important;
+  background: #ffffff !important;
+}
+
+.crm-dropdown-item.is-selected .crm-dropdown-checkbox-box {
+  border-color: var(--red, #ef4444) !important;
+  background-color: var(--red, #ef4444) !important;
+  color: #ffffff !important;
+}
+
+.crm-dropdown-menu-footer {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 6px 8px 2px !important;
+  border-top: 1px solid #e5e7eb !important;
+  margin-top: 4px !important;
+}
+
+.crm-dropdown-menu-footer-btn {
+  background: transparent !important;
+  border: none !important;
+  color: #64748b !important;
+  font-size: 11px !important;
+  font-weight: 700 !important;
+  cursor: pointer !important;
+  padding: 3px 6px !important;
+  border-radius: 4px !important;
+  transition: color 0.15s ease !important;
+}
+
+.crm-dropdown-menu-footer-btn:hover {
+  color: var(--red, #ef4444) !important;
+  background: #f1f5f9 !important;
+}
+
 .crm-dropdown-menu {
   position: absolute;
   top: calc(100% + 6px);

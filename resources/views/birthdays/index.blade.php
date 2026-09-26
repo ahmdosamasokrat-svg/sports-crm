@@ -303,20 +303,35 @@ a { color: inherit; text-decoration: none; }
 }
 .bday-ribbon-today {
   position: absolute;
-  top: 10px;
-  inset-inline-end: -28px;
+  top: 12px;
   background: #f43f5e;
   color: #fff;
-  font-size: 10px;
+  font-size: 10.5px;
   font-weight: 800;
-  padding: 3px 28px;
-  transform: rotate(45deg);
-  box-shadow: 0 2px 6px rgba(244, 63, 94, 0.3);
+  padding: 4px 30px;
+  box-shadow: 0 2px 8px rgba(244, 63, 94, 0.35);
+  text-align: center;
+  z-index: 2;
+  white-space: nowrap;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
 }
+html[dir="rtl"] .bday-ribbon-today,
+body[dir="rtl"] .bday-ribbon-today,
 [dir="rtl"] .bday-ribbon-today {
-  inset-inline-end: auto;
-  inset-inline-start: -28px;
+  left: -28px;
+  right: auto;
   transform: rotate(-45deg);
+}
+html[dir="ltr"] .bday-ribbon-today,
+body[dir="ltr"] .bday-ribbon-today,
+[dir="ltr"] .bday-ribbon-today {
+  right: -28px;
+  left: auto;
+  transform: rotate(45deg);
 }
 
 .bday-athlete-header {
@@ -646,7 +661,7 @@ a { color: inherit; text-decoration: none; }
 
                             @if($athlete->phone)
                             <div class="bday-info-item">
-                                <span class="bday-info-label"><i class="bi bi-telephone"></i> {{ __('crm.contact_phone') }}</span>
+                                <span class="bday-info-label"><i class="bi bi-telephone"></i> {{ __('crm.phone') }}</span>
                                 <span class="bday-info-val" dir="ltr" style="font-family:monospace;">{{ $athlete->phone }}</span>
                             </div>
                             @endif

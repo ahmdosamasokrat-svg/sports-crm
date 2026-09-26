@@ -133,53 +133,87 @@ html.dark-mode .btn.soft:hover {
 }
 
 /* Stats Summary Cards */
-/* Filters Panel */
+/* Filters Panel Modernized */
 .filter-panel {
   background: var(--card);
   border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 10px 14px;
+  border-radius: 16px;
+  padding: 16px 18px;
   box-shadow: none !important;
-  margin-bottom: 16px;
+  margin-bottom: 20px;
 }
 .filter-form-grid {
   display: grid;
-  grid-template-columns: minmax(180px, 1.4fr) minmax(120px, 0.9fr) minmax(120px, 0.9fr) minmax(150px, 1.1fr) minmax(120px, 0.9fr) minmax(110px, 0.8fr) minmax(150px, 1fr) auto;
-  gap: 8px 10px;
-  align-items: end;
+  grid-template-columns: repeat(6, minmax(0, 1fr));
+  gap: 12px 14px;
+  align-items: flex-end;
 }
 .filter-field {
   display: flex;
   flex-direction: column;
-  gap: 3px;
+  gap: 6px;
   min-width: 0;
   width: 100%;
 }
 .filter-field.col-search {
-  min-width: 180px;
-}
-.filter-field.col-employee {
-  min-width: 150px;
+  grid-column: span 2;
 }
 .filter-actions-col {
   display: flex;
-  align-items: center;
+  flex-direction: column;
+  justify-content: flex-end;
   gap: 6px;
-  height: 38px;
-  min-height: 38px;
-  justify-self: start;
-  align-self: end;
-  white-space: nowrap;
+  width: 100%;
+  min-width: 0;
 }
-.filter-field label {
-  display: flex;
+.filter-actions-col .filter-actions-label {
+  display: inline-flex;
   align-items: center;
   gap: 4px;
-  font-size: 11px;
-  font-weight: 700;
+  font-size: 11.5px;
+  font-weight: 800;
   color: var(--muted);
+  line-height: 1.2;
+}
+.filter-actions-col .btn {
+  width: 100% !important;
+  height: 40px !important;
+  min-height: 40px !important;
+  justify-content: center !important;
+  box-sizing: border-box !important;
+}
+@media (max-width: 1400px) {
+  .filter-form-grid {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+}
+@media (max-width: 1024px) {
+  .filter-form-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 640px) {
+  .filter-form-grid {
+    grid-template-columns: 1fr;
+  }
+  .filter-field.col-search {
+    grid-column: span 1;
+  }
+}
+.filter-field label {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  font-weight: 800;
+  color: var(--dark);
+  letter-spacing: 0.2px;
   white-space: nowrap;
   line-height: 1.2;
+}
+.filter-field label i {
+  color: var(--muted);
+  font-size: 13px;
 }
 .filter-input-wrap {
   position: relative;
@@ -196,17 +230,17 @@ html.dark-mode .btn.soft:hover {
 }
 .filter-control {
   width: 100%;
-  height: 38px;
-  min-height: 38px;
+  height: 40px;
+  min-height: 40px;
   border: 1px solid var(--line);
-  border-radius: 9px;
-  padding: 0 10px;
+  border-radius: 10px;
+  padding: 0 12px;
   background: var(--card);
   color: var(--dark);
   font-size: 12.5px;
   font-weight: 600;
   outline: none;
-  transition: border-color 0.15s ease;
+  transition: all 0.15s ease;
   box-sizing: border-box;
 }
 .filter-control.with-icon {
@@ -377,14 +411,14 @@ html.dark-mode .crm-select-wrap select.crm-select option {
 }
 .dynamic-field-picker-toggle {
   width: 100% !important;
-  height: 38px !important;
-  min-height: 38px !important;
+  height: 40px !important;
+  min-height: 40px !important;
   display: flex !important;
   align-items: center !important;
   justify-content: space-between !important;
-  padding: 0 10px !important;
+  padding: 0 12px !important;
   border: 1px solid var(--line, #e2e8f0) !important;
-  border-radius: 9px !important;
+  border-radius: 10px !important;
   background: var(--card, #ffffff) !important;
   color: var(--dark, #172033) !important;
   font-family: 'Plus Jakarta Sans', 'Cairo', sans-serif !important;
@@ -969,150 +1003,239 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                     <input type="hidden" name="stage" value="{{ $filters['stage'] }}">
                 @endif
 
-                <!-- Search Input -->
-                <div class="filter-field col-search">
-                    <label for="searchQuery"><i class="bi bi-search"></i> {{ __('crm.search_query_label') }}</label>
-                    <div class="filter-input-wrap">
-                        <i class="bi bi-search filter-input-icon"></i>
-                        <input type="text" id="searchQuery" name="q" value="{{ $filters['q'] }}" class="filter-control with-icon" placeholder="{{ __('crm.lead_search_placeholder') }}">
-                    </div>
-                </div>
-
-                <!-- Status Filter -->
-                <div class="filter-field">
-                    <label for="leadStatus"><i class="bi bi-tag"></i> {{ __('crm.status') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadStatus" name="status" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>'>
-                            <option value="">{{ __('crm.all_states') }}</option>
-                            @foreach ($statuses as $status)
-                                <option value="{{ $status->code }}" data-stage-id="{{ $status->pipeline_stage_id }}" @selected($filters['status'] === $status->code)>
-                                    {{ $status->name_ar }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                <!-- Source Filter -->
-                <div class="filter-field">
-                    <label for="leadSource"><i class="bi bi-diagram-2"></i> {{ __('crm.source') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadSource" name="source" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.022c.416 0 .816.165 1.11.459l1.41 1.41c.294.294.458.694.458 1.11V12a1.5 1.5 0 0 1-1.5 1.5h-.5a2.5 2.5 0 0 1-4.996 0H6.496a2.5 2.5 0 0 1-4.996 0H1.5A1.5 1.5 0 0 1 0 12V3.5zM4 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>'>
-                            <option value="">{{ __('crm.all_sources') }}</option>
-                            @foreach ($sources as $source)
-                                <option value="{{ $source }}" @selected($filters['source'] === $source)>
-                                    {{ $source }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-
-                @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
-                <!-- Branch Filter -->
-                <div class="filter-field">
-                    <label for="leadBranch"><i class="bi bi-geo-alt"></i> {{ __('crm.branch') ?: 'الفرع' }}</label>
-                    <div style="width:100%;">
-                        <select id="leadBranch" name="branch" class="crm-custom-select filter-control" data-crm-dropdown>
-                            <option value="">{{ __('crm.all_branches') ?: 'جميع الفروع' }}</option>
-                            @foreach ($branches as $br)
-                                <option value="{{ $br->id }}" @selected((int) ($selectedBranchId ?? 0) === (int) $br->id)>
-                                    {{ $br->localizedName() }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Guardian (Parent) Filter -->
-                @if (isset($guardians) && $guardians->isNotEmpty())
-                <div class="filter-field">
-                    <label for="leadGuardian"><i class="bi bi-people"></i> {{ __('ولي الأمر (Guardian)') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadGuardian" name="guardian_id" class="crm-custom-select filter-control" data-crm-dropdown>
-                            <option value="">{{ __('جميع أولياء الأمور') }}</option>
-                            @foreach ($guardians as $g)
-                                <option value="{{ $g->id }}" @selected((int) ($selectedGuardianId ?? 0) === (int) $g->id)>
-                                    {{ $g->name }} @if ($g->phone) ({{ $g->phone }}) @endif
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                @endif
-
-                <!-- Temperature Filter -->
                 @php
                     $dynamicCustomerFields = ($customerFields ?? collect())->filter(fn ($cf) => empty($cf->lead_attribute) || $cf->lead_attribute !== 'company_name');
-                    $tempField = ($customerFields ?? collect())->firstWhere('key', 'lead_temperature');
-                    $tempOptions = $tempField ? $tempField->normalizedOptions() : [
-                        ['value' => 'hot', 'label_ar' => '🔥 حار (Hot)', 'label_en' => 'Hot'],
-                        ['value' => 'warm', 'label_ar' => '⚡ متوسط (Warm)', 'label_en' => 'Warm'],
-                        ['value' => 'cold', 'label_ar' => '❄️ بارد (Cold)', 'label_en' => 'Cold'],
+                    $filterItemsMap = collect($configuredFilters ?? [])->keyBy('key');
+                    $allFilterDefinitions = $configuredFilters ?? [
+                        ['key' => 'q', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('crm.search_query_label'), 'icon' => 'bi-search'],
+                        ['key' => 'status', 'is_enabled' => true, 'is_multiselect' => true, 'label' => __('crm.status'), 'icon' => 'bi-tag'],
+                        ['key' => 'source', 'is_enabled' => true, 'is_multiselect' => true, 'label' => __('crm.source'), 'icon' => 'bi-diagram-2'],
+                        ['key' => 'branch', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('crm.branch') ?: 'الفرع', 'icon' => 'bi-geo-alt'],
+                        ['key' => 'employee', 'is_enabled' => true, 'is_multiselect' => true, 'label' => __('crm.assigned_employee'), 'icon' => 'bi-person-check'],
+                        ['key' => 'temperature', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('حرارة العميل'), 'icon' => 'bi-thermometer-half'],
+                        ['key' => 'guardian_id', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('ولي الأمر (Guardian)'), 'icon' => 'bi-people'],
+                        ['key' => 'follow_up', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('crm.next_followup'), 'icon' => 'bi-calendar-event'],
+                        ['key' => 'sort', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('crm.sort'), 'icon' => 'bi-sort-down'],
+                        ['key' => 'choose_fields', 'is_enabled' => true, 'is_multiselect' => false, 'label' => __('تحديد الأعمدة والفلاتر'), 'icon' => 'bi-layout-three-columns'],
                     ];
                 @endphp
-                @if ($tempField || count($tempOptions) > 0)
-                <div class="filter-field">
-                    <label for="leadTemperature"><i class="bi bi-thermometer-half"></i> {{ $tempField ? $tempField->localizedLabel() : __('حرارة العميل') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadTemperature" name="temperature" class="crm-custom-select filter-control" data-crm-dropdown>
-                            <option value="">{{ __('جميع التصنيفات') }}</option>
-                            @foreach ($tempOptions as $tOpt)
-                                <option value="{{ $tOpt['value'] }}" @selected(($filters['temperature'] ?? '') === $tOpt['value'])>
-                                    {{ app()->getLocale() === 'en' && !empty($tOpt['label_en']) ? $tOpt['label_en'] : $tOpt['label_ar'] }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
-                @endif
 
-                <!-- Employee Filter -->
-                <div class="filter-field col-employee">
-                    <label for="leadEmployee"><i class="bi bi-person-check"></i> {{ __('crm.assigned_employee') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadEmployee" name="employee" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10.02 12c.005-.184.02-.375.034-.555.056-.704.14-1.282.266-1.745A4.9 4.9 0 0 0 8 9c-1.378 0-2.496.53-2.92 1.077-.184.238-.309.522-.387.828a.5.5 0 0 0 .97.234c.05-.195.13-.38.252-.538C6.27 10.158 7.08 9.8 8 9.8c.92 0 1.73.358 2.085.801.074.092.127.202.164.321.037.119.06.252.073.403.014.16.023.325.027.475H3.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 .5-.5c0-.368-.008-.687-.02-1z"/></svg>'>
-                            <option value="">{{ __('كل الموظفين') }}</option>
-                            @foreach ($employees as $employee)
-                                <option value="{{ $employee }}" @selected($filters['employee'] === $employee)>
-                                    {{ $employee }}
-                                </option>
-                            @endforeach
-                        </select>
-                    </div>
-                </div>
+                @foreach ($allFilterDefinitions as $fDef)
+                    @if (! ($fDef['is_enabled'] ?? true))
+                        @continue
+                    @endif
 
-                <!-- Follow Up Filter -->
-                <div class="filter-field">
-                    <label for="leadFollowUp"><i class="bi bi-calendar-event"></i> {{ __('crm.next_followup') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadFollowUp" name="follow_up" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>'>
-                            <option value="">{{ __('crm.all_appointments') }}</option>
-                            <option value="today" @selected($filters['follow_up'] === 'today')>{{ __('اليوم') }}</option>
-                            <option value="upcoming" @selected($filters['follow_up'] === 'upcoming')>{{ __('crm.upcoming') }}</option>
-                            <option value="overdue" @selected($filters['follow_up'] === 'overdue')>{{ __('crm.overdue') }}</option>
-                            <option value="none" @selected($filters['follow_up'] === 'none')>{{ __('crm.no_date') }}</option>
-                        </select>
-                    </div>
-                </div>
+                    @switch ($fDef['key'])
+                        @case('q')
+                            <!-- 1. Quick Search -->
+                            <div class="filter-field col-search">
+                                <label for="searchQuery"><i class="bi {{ $fDef['icon'] ?? 'bi-search' }}"></i> {{ $fDef['label'] }}</label>
+                                <div class="filter-input-wrap">
+                                    <i class="bi bi-search filter-input-icon"></i>
+                                    <input type="text" id="searchQuery" name="q" value="{{ $filters['q'] }}" class="filter-control with-icon" placeholder="{{ __('crm.lead_search_placeholder') }}">
+                                </div>
+                            </div>
+                            @break
 
-                <!-- Sort Filter -->
-                <div class="filter-field">
-                    <label for="leadSort"><i class="bi bi-sort-down"></i> {{ __('crm.sort') }}</label>
-                    <div style="width:100%;">
-                        <select id="leadSort" name="sort" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/></svg>'>
-                            <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('crm.newest_first') }}</option>
-                            <option value="oldest" @selected($filters['sort'] === 'oldest')>{{ __('crm.oldest_first') }}</option>
-                            <option value="name" @selected($filters['sort'] === 'name')>{{ __('crm.by_name') }}</option>
-                            <option value="followup" @selected($filters['sort'] === 'followup')>{{ __('crm.by_followup') }}</option>
-                        </select>
-                    </div>
-                </div>
+                        @case('status')
+                            <!-- 2. Status Filter -->
+                            @php
+                                $isStatusMulti = (bool) ($fDef['is_multiselect'] ?? true);
+                                $activeStatuses = (array) ($filters['statuses'] ?? []);
+                            @endphp
+                            <div class="filter-field">
+                                <label for="leadStatus"><i class="bi {{ $fDef['icon'] ?? 'bi-tag' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select
+                                        id="leadStatus"
+                                        name="{{ $isStatusMulti ? 'status[]' : 'status' }}"
+                                        class="crm-custom-select filter-control"
+                                        data-crm-dropdown
+                                        @if($isStatusMulti) multiple data-placeholder="{{ __('crm.all_states') }}" @endif
+                                        data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M2 2a1 1 0 0 1 1-1h4.586a1 1 0 0 1 .707.293l7 7a1 1 0 0 1 0 1.414l-4.586 4.586a1 1 0 0 1-1.414 0l-7-7A1 1 0 0 1 2 6.586V2zm3.5 4a1.5 1.5 0 1 0 0-3 1.5 1.5 0 0 0 0 3z"/></svg>'
+                                    >
+                                        @if(!$isStatusMulti)
+                                            <option value="">{{ __('crm.all_states') }}</option>
+                                        @endif
+                                        @foreach ($statuses as $status)
+                                            <option
+                                                value="{{ $status->code }}"
+                                                data-stage-id="{{ $status->pipeline_stage_id }}"
+                                                @selected(in_array((string)$status->code, $activeStatuses, true) || in_array((string)$status->id, $activeStatuses, true) || ($filters['status'] === $status->code))
+                                            >
+                                                {{ $status->name_ar }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @break
 
-                <!-- Choose Fields / Column Chooser Dropdown -->
+                        @case('source')
+                            <!-- 3. Source Filter -->
+                            @php
+                                $isSourceMulti = (bool) ($fDef['is_multiselect'] ?? true);
+                                $activeSources = (array) ($filters['sources'] ?? []);
+                            @endphp
+                            <div class="filter-field">
+                                <label for="leadSource"><i class="bi {{ $fDef['icon'] ?? 'bi-diagram-2' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select
+                                        id="leadSource"
+                                        name="{{ $isSourceMulti ? 'source[]' : 'source' }}"
+                                        class="crm-custom-select filter-control"
+                                        data-crm-dropdown
+                                        @if($isSourceMulti) multiple data-placeholder="{{ __('crm.all_sources') }}" @endif
+                                        data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M0 3.5A1.5 1.5 0 0 1 1.5 2h9A1.5 1.5 0 0 1 12 3.5V5h1.022c.416 0 .816.165 1.11.459l1.41 1.41c.294.294.458.694.458 1.11V12a1.5 1.5 0 0 1-1.5 1.5h-.5a2.5 2.5 0 0 1-4.996 0H6.496a2.5 2.5 0 0 1-4.996 0H1.5A1.5 1.5 0 0 1 0 12V3.5zM4 11a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3zm7.5 0a1.5 1.5 0 1 0 0 3 1.5 1.5 0 0 0 0-3z"/></svg>'
+                                    >
+                                        @if(!$isSourceMulti)
+                                            <option value="">{{ __('crm.all_sources') }}</option>
+                                        @endif
+                                        @foreach ($sources as $source)
+                                            <option value="{{ $source }}" @selected(in_array((string)$source, $activeSources, true) || ($filters['source'] === $source))>
+                                                {{ $source }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @break
+
+                        @case('branch')
+                            <!-- 4. Branch Filter -->
+                            @if(auth()->user()?->hasPermission(\App\Security\CrmPermission::BRANCHES_SCOPE_ALL) && isset($branches) && $branches->isNotEmpty())
+                            <div class="filter-field">
+                                <label for="leadBranch"><i class="bi {{ $fDef['icon'] ?? 'bi-geo-alt' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select id="leadBranch" name="branch" class="crm-custom-select filter-control" data-crm-dropdown>
+                                        <option value="">{{ __('crm.all_branches') ?: 'جميع الفروع' }}</option>
+                                        @foreach ($branches as $br)
+                                            <option value="{{ $br->id }}" @selected((int) ($selectedBranchId ?? 0) === (int) $br->id)>
+                                                {{ $br->localizedName() }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @endif
+                            @break
+
+                        @case('employee')
+                            <!-- 5. Employee Filter -->
+                            @php
+                                $isEmpMulti = (bool) ($fDef['is_multiselect'] ?? true);
+                                $activeEmployees = (array) ($filters['employees'] ?? []);
+                            @endphp
+                            <div class="filter-field col-employee">
+                                <label for="leadEmployee"><i class="bi {{ $fDef['icon'] ?? 'bi-person-check' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select
+                                        id="leadEmployee"
+                                        name="{{ $isEmpMulti ? 'employee[]' : 'employee' }}"
+                                        class="crm-custom-select filter-control"
+                                        data-crm-dropdown
+                                        @if($isEmpMulti) multiple data-placeholder="{{ __('كل الموظفين') }}" @endif
+                                        data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M6.5 2a.5.5 0 0 0 0 1h3a.5.5 0 0 0 0-1zM11 8a3 3 0 1 1-6 0 3 3 0 0 1 6 0"/><path d="M4.5 0A2.5 2.5 0 0 0 2 2.5V14a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V2.5A2.5 2.5 0 0 0 11.5 0zM3 2.5A1.5 1.5 0 0 1 4.5 1h7A1.5 1.5 0 0 1 13 2.5V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1z"/><path d="M10.02 12c.005-.184.02-.375.034-.555.056-.704.14-1.282.266-1.745A4.9 4.9 0 0 0 8 9c-1.378 0-2.496.53-2.92 1.077-.184.238-.309.522-.387.828a.5.5 0 0 0 .97.234c.05-.195.13-.38.252-.538C6.27 10.158 7.08 9.8 8 9.8c.92 0 1.73.358 2.085.801.074.092.127.202.164.321.037.119.06.252.073.403.014.16.023.325.027.475H3.5a.5.5 0 0 0 0 1h9a.5.5 0 0 0 .5-.5c0-.368-.008-.687-.02-1z"/></svg>'
+                                    >
+                                        @if(!$isEmpMulti)
+                                            <option value="">{{ __('كل الموظفين') }}</option>
+                                        @endif
+                                        @foreach ($employees as $employee)
+                                            <option value="{{ $employee }}" @selected(in_array((string)$employee, $activeEmployees, true) || ($filters['employee'] === $employee))>
+                                                {{ $employee }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @break
+
+                        @case('temperature')
+                            <!-- 6. Temperature Filter -->
+                            @php
+                                $tempField = ($customerFields ?? collect())->firstWhere('key', 'lead_temperature');
+                                $tempOptions = $tempField ? $tempField->normalizedOptions() : [
+                                    ['value' => 'hot', 'label_ar' => '🔥 حار (Hot)', 'label_en' => 'Hot'],
+                                    ['value' => 'warm', 'label_ar' => '⚡ متوسط (Warm)', 'label_en' => 'Warm'],
+                                    ['value' => 'cold', 'label_ar' => '❄️ بارد (Cold)', 'label_en' => 'Cold'],
+                                ];
+                            @endphp
+                            @if ($tempField || count($tempOptions) > 0)
+                            <div class="filter-field">
+                                <label for="leadTemperature"><i class="bi {{ $fDef['icon'] ?? 'bi-thermometer-half' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select id="leadTemperature" name="temperature" class="crm-custom-select filter-control" data-crm-dropdown>
+                                        <option value="">{{ __('جميع التصنيفات') }}</option>
+                                        @foreach ($tempOptions as $tOpt)
+                                            <option value="{{ $tOpt['value'] }}" @selected(($filters['temperature'] ?? '') === $tOpt['value'])>
+                                                {{ app()->getLocale() === 'en' && !empty($tOpt['label_en']) ? $tOpt['label_en'] : $tOpt['label_ar'] }}
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @endif
+                            @break
+
+                        @case('guardian_id')
+                            <!-- 7. Guardian (Parent) Filter -->
+                            @if (isset($guardians) && $guardians->isNotEmpty())
+                            <div class="filter-field">
+                                <label for="leadGuardian"><i class="bi {{ $fDef['icon'] ?? 'bi-people' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select id="leadGuardian" name="guardian_id" class="crm-custom-select filter-control" data-crm-dropdown>
+                                        <option value="">{{ __('جميع أولياء الأمور') }}</option>
+                                        @foreach ($guardians as $g)
+                                            <option value="{{ $g->id }}" @selected((int) ($selectedGuardianId ?? 0) === (int) $g->id)>
+                                                {{ $g->name }} @if ($g->phone) ({{ $g->phone }}) @endif
+                                            </option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            @endif
+                            @break
+
+                        @case('follow_up')
+                            <!-- 8. Follow Up Filter -->
+                            <div class="filter-field">
+                                <label for="leadFollowUp"><i class="bi {{ $fDef['icon'] ?? 'bi-calendar-event' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select id="leadFollowUp" name="follow_up" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path d="M11 6.5a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-1a.5.5 0 0 1-.5-.5v-1z"/><path d="M3.5 0a.5.5 0 0 1 .5.5V1h8V.5a.5.5 0 0 1 1 0V1h1a2 2 0 0 1 2 2v11a2 2 0 0 1-2 2H2a2 2 0 0 1-2-2V3a2 2 0 0 1 2-2h1V.5a.5.5 0 0 1 .5-.5zM1 4v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V4H1z"/></svg>'>
+                                        <option value="">{{ __('crm.all_appointments') }}</option>
+                                        <option value="today" @selected($filters['follow_up'] === 'today')>{{ __('اليوم') }}</option>
+                                        <option value="upcoming" @selected($filters['follow_up'] === 'upcoming')>{{ __('crm.upcoming') }}</option>
+                                        <option value="overdue" @selected($filters['follow_up'] === 'overdue')>{{ __('crm.overdue') }}</option>
+                                        <option value="none" @selected($filters['follow_up'] === 'none')>{{ __('crm.no_date') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            @break
+
+                        @case('sort')
+                            <!-- 9. Sort Filter -->
+                            <div class="filter-field">
+                                <label for="leadSort"><i class="bi {{ $fDef['icon'] ?? 'bi-sort-down' }}"></i> {{ $fDef['label'] }}</label>
+                                <div style="width:100%;">
+                                    <select id="leadSort" name="sort" class="crm-custom-select filter-control" data-crm-dropdown data-icon='<svg width="15" height="15" viewBox="0 0 16 16" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M11.5 15a.5.5 0 0 0 .5-.5V2.707l3.146 3.147a.5.5 0 0 0 .708-.708l-4-4a.5.5 0 0 0-.708 0l-4 4a.5.5 0 1 0 .708.708L11 2.707V14.5a.5.5 0 0 0 .5.5zm-7-14a.5.5 0 0 1 .5.5v11.793l3.146-3.147a.5.5 0 0 1 .708.708l-4 4a.5.5 0 0 1-.708 0l-4-4a.5.5 0 0 1 .708-.708L4 13.293V1.5a.5.5 0 0 1 .5-.5z"/></svg>'>
+                                        <option value="latest" @selected($filters['sort'] === 'latest')>{{ __('crm.newest_first') }}</option>
+                                        <option value="oldest" @selected($filters['sort'] === 'oldest')>{{ __('crm.oldest_first') }}</option>
+                                        <option value="name" @selected($filters['sort'] === 'name')>{{ __('crm.by_name') }}</option>
+                                        <option value="followup" @selected($filters['sort'] === 'followup')>{{ __('crm.by_followup') }}</option>
+                                    </select>
+                                </div>
+                            </div>
+                            @break
+                    @endswitch
+                @endforeach
+
+                @php
+                    $chooseFieldsDef = $filterItemsMap->get('choose_fields', ['is_enabled' => true, 'label' => __('تحديد الأعمدة والفلاتر')]);
+                @endphp
+                @if ($chooseFieldsDef['is_enabled'] ?? true)
+                <!-- 10. Choose Fields / Column Chooser Dropdown -->
                 <div class="filter-field col-choose-fields" data-dynamic-field-picker style="position:relative;">
-                    <label for="chooseFieldsToggle" style="font-size:12px;"><i class="bi bi-layout-three-columns"></i> {{ __('تحديد الأعمدة والفلاتر') }}</label>
+                    <label for="chooseFieldsToggle" style="font-size:12px;"><i class="bi bi-layout-three-columns"></i> {{ $chooseFieldsDef['label'] }}</label>
                     <button
                         id="chooseFieldsToggle"
                         class="dynamic-field-picker-toggle"
@@ -1317,11 +1440,12 @@ html.dark-mode #bulkAssignModal .crm-dropdown-menu {
                         </div>
                     </div>
                 </div>
+                @endif
 
                 <!-- Reset Filters Button -->
                 <div class="filter-actions-col">
-                    <label style="font-size:12px; visibility:hidden;">Reset</label>
-                    <a href="{{ route('v2.leads') }}" class="btn soft small" id="resetFiltersBtn" title="{{ __('crm.reset') }}" style="height:40px; display:inline-flex; align-items:center; gap:6px; font-weight:700;">
+                    <span class="filter-actions-label"><i class="bi bi-arrow-counterclockwise"></i> {{ __('crm.reset') }}</span>
+                    <a href="{{ route('v2.leads') }}" class="btn soft" id="resetFiltersBtn" title="{{ __('crm.reset') }}" style="height:40px; min-height:40px; display:inline-flex; align-items:center; gap:6px; font-weight:700; border-radius:10px; padding:0 14px;">
                         <i class="bi bi-arrow-counterclockwise"></i> {{ __('crm.reset') }}
                     </a>
                 </div>

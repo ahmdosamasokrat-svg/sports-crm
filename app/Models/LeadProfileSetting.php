@@ -17,12 +17,14 @@ class LeadProfileSetting extends Model
         'layout_mode',
         'default_tab',
         'tabs_config',
+        'filters_config',
     ];
 
     protected function casts(): array
     {
         return [
             'tabs_config' => 'array',
+            'filters_config' => 'array',
         ];
     }
 
@@ -67,6 +69,7 @@ class LeadProfileSetting extends Model
                 'layout_mode' => 'hybrid',
                 'default_tab' => 'timeline',
                 'tabs_config' => self::defaultTabsConfig(),
+                'filters_config' => self::defaultFiltersConfig(),
             ]);
         }
 
@@ -147,6 +150,159 @@ class LeadProfileSetting extends Model
                 'icon' => 'bi-chat-left-text',
             ],
         ];
+    }
+
+    /**
+     * Default filters configuration in the recommended logical CRM order.
+     *
+     * @return array<int, array{key: string, is_enabled: bool, is_multiselect: bool, position: int, label_ar: string, label_en: string, icon: string}>
+     */
+    public static function defaultFiltersConfig(): array
+    {
+        return [
+            [
+                'key' => 'q',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 1,
+                'label_ar' => 'بحث سريع',
+                'label_en' => 'Quick Search',
+                'icon' => 'bi-search',
+            ],
+            [
+                'key' => 'status',
+                'is_enabled' => true,
+                'is_multiselect' => true,
+                'position' => 2,
+                'label_ar' => 'الحالة',
+                'label_en' => 'Status',
+                'icon' => 'bi-tag',
+            ],
+            [
+                'key' => 'source',
+                'is_enabled' => true,
+                'is_multiselect' => true,
+                'position' => 3,
+                'label_ar' => 'المصدر',
+                'label_en' => 'Source',
+                'icon' => 'bi-diagram-2',
+            ],
+            [
+                'key' => 'branch',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 4,
+                'label_ar' => 'الفرع',
+                'label_en' => 'Branch',
+                'icon' => 'bi-geo-alt',
+            ],
+            [
+                'key' => 'employee',
+                'is_enabled' => true,
+                'is_multiselect' => true,
+                'position' => 5,
+                'label_ar' => 'الموظف المسند إليه',
+                'label_en' => 'Assigned Employee',
+                'icon' => 'bi-person-check',
+            ],
+            [
+                'key' => 'temperature',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 6,
+                'label_ar' => 'حرارة العميل',
+                'label_en' => 'Lead Temperature',
+                'icon' => 'bi-thermometer-half',
+            ],
+            [
+                'key' => 'guardian_id',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 7,
+                'label_ar' => 'ولي الأمر (Guardian)',
+                'label_en' => 'Guardian',
+                'icon' => 'bi-people',
+            ],
+            [
+                'key' => 'follow_up',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 8,
+                'label_ar' => 'المتابعة القادمة',
+                'label_en' => 'Next Follow-up',
+                'icon' => 'bi-calendar-event',
+            ],
+            [
+                'key' => 'sort',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 9,
+                'label_ar' => 'الترتيب',
+                'label_en' => 'Sort Order',
+                'icon' => 'bi-sort-down',
+            ],
+            [
+                'key' => 'choose_fields',
+                'is_enabled' => true,
+                'is_multiselect' => false,
+                'position' => 10,
+                'label_ar' => 'تحديد الأعمدة والفلاتر',
+                'label_en' => 'Columns & Field Chooser',
+                'icon' => 'bi-layout-three-columns',
+            ],
+        ];
+    }
+
+    /**
+     * Get all ordered filters with normalized attributes.
+     *
+     * @return array<int, array{key: string, is_enabled: bool, is_multiselect: bool, position: int, label_ar: string, label_en: string, label: string, icon: string}>
+     */
+    public function getOrderedFilters(?string $locale = null): array
+    {
+        $locale = $locale ?? app()->getLocale();
+        $stored = is_array($this->filters_config) ? $this->filters_config : [];
+        $defaults = self::defaultFiltersConfig();
+        $defaultsByKey = collect($defaults)->keyBy('key');
+        $storedByKey = collect($stored)->keyBy('key');
+
+        $merged = collect();
+
+        foreach ($defaultsByKey as $key => $defaultFilter) {
+            $userFilter = $storedByKey->get($key, []);
+            $labelAr = ! empty($userFilter['label_ar']) ? (string) $userFilter['label_ar'] : $defaultFilter['label_ar'];
+            $labelEn = ! empty($userFilter['label_en']) ? (string) $userFilter['label_en'] : $defaultFilter['label_en'];
+            $icon = ! empty($userFilter['icon']) ? (string) $userFilter['icon'] : $defaultFilter['icon'];
+            $position = isset($userFilter['position']) ? (int) $userFilter['position'] : (int) $defaultFilter['position'];
+            $isEnabled = isset($userFilter['is_enabled']) ? (bool) $userFilter['is_enabled'] : (bool) $defaultFilter['is_enabled'];
+            $isMultiselect = isset($userFilter['is_multiselect']) ? (bool) $userFilter['is_multiselect'] : (bool) $defaultFilter['is_multiselect'];
+
+            $merged->push([
+                'key' => $key,
+                'is_enabled' => $isEnabled,
+                'is_multiselect' => $isMultiselect,
+                'position' => $position,
+                'label_ar' => $labelAr,
+                'label_en' => $labelEn,
+                'label' => $locale === 'en' ? $labelEn : $labelAr,
+                'icon' => $icon,
+            ]);
+        }
+
+        return $merged->sortBy('position')->values()->all();
+    }
+
+    /**
+     * Get only active (enabled) filters ordered by position.
+     *
+     * @return array<int, array{key: string, is_enabled: bool, is_multiselect: bool, position: int, label_ar: string, label_en: string, label: string, icon: string}>
+     */
+    public function getActiveFilters(?string $locale = null): array
+    {
+        return array_values(array_filter(
+            $this->getOrderedFilters($locale),
+            static fn (array $filter): bool => $filter['is_enabled'] === true
+        ));
     }
 
     /**

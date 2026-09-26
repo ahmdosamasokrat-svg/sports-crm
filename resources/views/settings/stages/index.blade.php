@@ -169,19 +169,21 @@
                                                 <i class="bi bi-pencil-square" style="font-size:14px;"></i>
                                             </button>
 
-                                            @if ($stage->leads_count === 0)
-                                                <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0; display:inline-flex; flex-shrink:0;">
-                                                    @csrf
-                                                    @method('DELETE')
-                                                    <button type="submit" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
+                                            @can('pipeline_stages.delete')
+                                                @if ($stage->leads_count === 0)
+                                                    <form method="POST" action="{{ route('v2.settings.stages.destroy', $stage) }}" onsubmit="return confirm(@json(__('crm.confirm_delete_stage')))" style="margin:0; display:inline-flex; flex-shrink:0;">
+                                                        @csrf
+                                                        @method('DELETE')
+                                                        <button type="submit" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" title="{{ __('crm.delete') }}" aria-label="{{ __('crm.delete') }}">
+                                                            <i class="bi bi-trash" style="font-size:14px;"></i>
+                                                        </button>
+                                                    </form>
+                                                @else
+                                                    <button type="button" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
                                                         <i class="bi bi-trash" style="font-size:14px;"></i>
                                                     </button>
-                                                </form>
-                                            @else
-                                                <button type="button" class="btn small danger" style="width:34px; height:34px; min-height:34px; padding:0; display:inline-flex; align-items:center; justify-content:center; flex-shrink:0;" onclick='openSafeDeleteStageModal(@json($stage), {{ (int) $stage->leads_count }})' title="حذف المرحلة ونقل/أرشفة العملاء" aria-label="{{ __('crm.delete') }}">
-                                                    <i class="bi bi-trash" style="font-size:14px;"></i>
-                                                </button>
-                                            @endif
+                                                @endif
+                                            @endcan
                                         </div>
                                     </td>
                                 </tr>
