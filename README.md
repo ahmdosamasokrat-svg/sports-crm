@@ -189,6 +189,12 @@ sporttime-crm/
 
 ---
 
+## Changelog
+
+### 2026-09-24
+- Made appointment and lead profile layouts adapt to narrow screens; overflowing profile tabs now display a horizontal scrollbar.
+- Added a working stage-questions toggle for all stages, with current-stage-only as the default.
+
 ## License & Support
 
 Developed for SportTime CRM systems. Licensed under the MIT License.

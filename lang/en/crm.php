@@ -575,6 +575,7 @@ return [
     'email' => 'Email',
     'current_status' => 'Current Status',
     'current_stage' => 'Current Stage',
+    'current_stage_only' => 'Current stage only',
     'review_followup_data' => 'Review the following data:',
     'new_followup_data' => 'New Follow-up Data',
     'recorded_by' => 'Recorded By:',

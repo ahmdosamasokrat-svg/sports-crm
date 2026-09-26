@@ -263,6 +263,55 @@
         .attendance-history-detail strong{color:var(--dark)}
         .attendance-history-notes{margin:8px 0 0;padding-top:7px;border-top:1px solid var(--line);font-size:12px;line-height:1.6;color:var(--dark);white-space:pre-line}
 
+        .attendance-history-list,
+        .attendance-history-record,
+        .attendance-history-details,
+        .attendance-history-detail,
+        .attendance-history-notes {
+            box-sizing: border-box;
+            min-width: 0;
+            max-width: 100%;
+        }
+        .attendance-history-record {
+            overflow-wrap: anywhere;
+        }
+        .attendance-history-head > * {
+            min-width: 0;
+            max-width: 100%;
+        }
+        .attendance-history-date {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            text-align: end;
+        }
+        .attendance-history-details {
+            width: 100%;
+            align-items: baseline;
+        }
+        .attendance-history-detail {
+            flex: 1 1 180px;
+            overflow-wrap: anywhere;
+        }
+        .attendance-history-notes {
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        @media (max-width: 480px) {
+            .attendance-history-head {
+                align-items: flex-start;
+            }
+            .attendance-history-date {
+                text-align: start;
+            }
+            .attendance-history-details {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            .attendance-history-detail {
+                flex-basis: auto;
+            }
+        }
+
         /* Configurable Lead Profile Tab Navigation */
         .profile-tabs-wrapper { margin-top: 6px; }
         .profile-tabs-nav {
@@ -274,11 +323,18 @@
             border-radius: 14px;
             padding: 6px;
             margin-bottom: 20px;
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
             overflow-x: auto;
-            scrollbar-width: none;
+            overflow-y: hidden;
+            scrollbar-width: thin;
+            scrollbar-color: var(--red) var(--line);
             box-shadow: 0 2px 8px rgba(15, 23, 42, 0.02);
         }
-        .profile-tabs-nav::-webkit-scrollbar { display: none; }
+        .profile-tabs-nav::-webkit-scrollbar { height: 8px; }
+        .profile-tabs-nav::-webkit-scrollbar-track { background: var(--line); border-radius: 999px; }
+        .profile-tabs-nav::-webkit-scrollbar-thumb { background: var(--red); border: 2px solid var(--card); border-radius: 999px; }
         .profile-tab-btn {
             display: inline-flex;
             align-items: center;
@@ -292,6 +348,7 @@
             font-weight: 800;
             cursor: pointer;
             white-space: nowrap;
+            flex: 0 0 auto;
             transition: all .15s ease;
             text-decoration: none;
             user-select: none;
@@ -340,14 +397,25 @@
         /* Profile Layout Grid */
         .profile-hybrid-grid {
             display: grid;
-            grid-template-columns: 340px 1fr;
+            grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
             gap: 20px;
             align-items: start;
         }
         @media (max-width: 1080px) {
             .profile-hybrid-grid {
-                grid-template-columns: 1fr;
+                grid-template-columns: minmax(0, 1fr);
             }
+        }
+        .profile-tabs-workspace,
+        .profile-tabs-content,
+        .profile-tab-pane {
+            min-width: 0;
+            max-width: 100%;
+            box-sizing: border-box;
+        }
+        .profile-tabs-workspace,
+        .profile-tabs-content {
+            width: 100%;
         }
         .profile-persistent-sidebar {
             display: flex;
@@ -355,6 +423,12 @@
             gap: 16px;
             position: sticky;
             top: 20px;
+        }
+        @media (max-width: 1080px) {
+            .profile-persistent-sidebar {
+                position: static;
+                top: auto;
+            }
         }
         .profile-summary-card {
             background: var(--card);
@@ -1820,10 +1894,12 @@
                                             <div style="display:inline-flex; align-items:center; gap:8px;">
                                                 <label style="margin:0; font-size:12.5px; font-weight:700; color:var(--dark); cursor:pointer; display:inline-flex; align-items:center; gap:6px;">
                                                     <input type="checkbox" id="toggleAllStagesCheckbox" onchange="toggleAllStagesView(this.checked)" style="width:16px; height:16px; accent-color:var(--red); cursor:pointer;">
-                                                    <span>{{ __('عرض جميع المراحل') }}</span>
+                                                    <span>{{ __('crm.all_stages') }}</span>
                                                 </label>
-                                                <span class="badge" style="background:#eef2f6; color:#475569; font-size:11px;">
-                                                    {{ __('المرحلة الحالية فقط') }}
+                                                <span id="stageViewModeLabel" class="badge" style="background:#eef2f6; color:#475569; font-size:11px;"
+                                                      data-current-label="{{ __('crm.current_stage_only') }}"
+                                                      data-all-label="{{ __('crm.all_stages') }}">
+                                                    {{ __('crm.current_stage_only') }}
                                                 </span>
                                             </div>
                                         </div>
@@ -1832,7 +1908,7 @@
                                             @php
                                                 $isCurStage = (int)($sSection['id'] ?? $sSection['stage_id'] ?? 0) === (int)$currentStageId;
                                             @endphp
-                                            <div class="stage-section-wrapper" data-stage-id="{{ $sSection['id'] ?? $sSection['stage_id'] }}" style="{{ $isCurStage ? 'display:block;' : 'display:none;' }} margin-bottom:18px;">
+                                            <div class="stage-section-wrapper" data-stage-id="{{ $sSection['id'] ?? $sSection['stage_id'] }}" data-is-current="{{ $isCurStage ? '1' : '0' }}" style="{{ $isCurStage ? 'display:block;' : 'display:none;' }} margin-bottom:18px;">
                                                 <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; padding-bottom:6px; border-bottom:1px dashed var(--line);">
                                                     <strong style="font-size:14px; color:var(--dark); display:inline-flex; align-items:center; gap:6px;">
                                                         <i class="bi bi-flag-fill" style="color:#0284c7;"></i>
@@ -1855,6 +1931,22 @@
                                             </div>
                                         @endforeach
                                     </section>
+                                    <script>
+                                        function toggleAllStagesView(showAll) {
+                                            document.querySelectorAll('#lead-stage-panel .stage-section-wrapper').forEach((section) => {
+                                                section.style.display = showAll || section.dataset.isCurrent === '1'
+                                                    ? 'block'
+                                                    : 'none';
+                                            });
+
+                                            const modeLabel = document.getElementById('stageViewModeLabel');
+                                            if (modeLabel) {
+                                                modeLabel.textContent = showAll
+                                                    ? modeLabel.dataset.allLabel
+                                                    : modeLabel.dataset.currentLabel;
+                                            }
+                                        }
+                                    </script>
                                 @else
                                     <div class="panel" style="text-align:center; padding:32px 20px; color:var(--muted);">
                                         <i class="bi bi-ui-checks-grid" style="font-size:32px; display:block; margin-bottom:8px;"></i>

@@ -404,6 +404,130 @@ a { color: inherit; text-decoration: none; }
   border-color: #0284c7;
   box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.12);
 }
+/* Responsive containment */
+.apt-table-wrap {
+  max-width: 100%;
+  overflow-x: auto;
+  overflow-y: hidden;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-inline: contain;
+}
+.apt-search-form,
+.apt-tabs,
+.apt-filter-shell {
+  min-width: 0;
+  max-width: 100%;
+}
+.apt-search-input-wrap {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+.apt-select-control {
+  min-width: 0;
+  max-width: 100%;
+}
+.apt-modal-date-time-grid,
+.apt-modal-date-time-grid > div {
+  min-width: 0;
+}
+
+@media (max-width: 1024px) {
+  .crm-main {
+    padding: 16px;
+  }
+  .apt-filter-shell {
+    align-items: stretch;
+    padding: 14px;
+  }
+  .apt-tabs,
+  .apt-search-form {
+    width: 100%;
+    flex: 1 1 100%;
+  }
+  .apt-search-form {
+    justify-content: flex-start;
+  }
+  .apt-select-control {
+    flex: 1 1 180px;
+  }
+  .apt-table {
+    min-width: 980px;
+  }
+}
+
+@media (max-width: 600px) {
+  .crm-main {
+    padding: 12px;
+  }
+  .apt-stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 10px;
+  }
+  .apt-stat-card {
+    min-width: 0;
+    gap: 10px;
+    padding: 12px;
+  }
+  .apt-stat-title {
+    overflow-wrap: anywhere;
+  }
+  .apt-filter-shell {
+    gap: 12px;
+    padding: 12px;
+  }
+  .apt-tabs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+  }
+  .apt-tab-btn {
+    min-width: 0;
+    height: auto;
+    min-height: 40px;
+    justify-content: space-between;
+    padding: 8px 10px;
+    white-space: normal;
+  }
+  .apt-tab-btn:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .apt-search-form {
+    align-items: stretch;
+    gap: 8px;
+  }
+  .apt-search-form .apt-select-control {
+    flex: 1 1 100%;
+  }
+  .apt-search-input-wrap {
+    flex: 1 1 180px;
+  }
+  .apt-modal-backdrop {
+    padding: 12px;
+  }
+  .apt-modal {
+    max-height: calc(100vh - 24px);
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .apt-modal-date-time-grid {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+  .apt-modal-actions {
+    flex-wrap: wrap;
+  }
+  .apt-modal-actions > button {
+    flex: 1 1 130px;
+    min-width: 0;
+  }
+}
+
+@media (max-width: 400px) {
+  .apt-stats-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
 </style>
 </head>
 <body>
@@ -614,7 +738,7 @@ a { color: inherit; text-decoration: none; }
 
                                 @if($setting->allow_quick_actions)
                                 <td style="text-align:end;">
-                                    <div style="display:inline-flex; align-items:center; gap:6px;">
+                                    <div class="apt-action-group" style="display:inline-flex; align-items:center; gap:6px;">
                                         @if(!$meta['is_attended'])
                                             <form action="{{ route('v2.appointments.attended', $lead) }}" method="POST" style="margin:0;">
                                                 @csrf
@@ -686,7 +810,7 @@ a { color: inherit; text-decoration: none; }
                 <input type="text" id="modalLeadName" class="apt-modal-input" readonly>
             </div>
 
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
+            <div class="apt-modal-date-time-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:14px;">
                 <div>
                     <label style="display:block; font-size:12.5px; font-weight:700; margin-bottom:4px; color:var(--dark);">
                         {{ __('crm.new_date') }} <span style="color:var(--red);">*</span>
@@ -708,7 +832,7 @@ a { color: inherit; text-decoration: none; }
                 <textarea name="notes" id="modalNotes" rows="2" class="apt-modal-textarea"></textarea>
             </div>
 
-            <div style="display:flex; justify-content:flex-end; gap:8px;">
+            <div class="apt-modal-actions" style="display:flex; justify-content:flex-end; gap:8px;">
                 <button type="button" onclick="closeRescheduleModal()" class="btn soft" style="min-height:38px;">
                     {{ __('crm.cancel') }}
                 </button>

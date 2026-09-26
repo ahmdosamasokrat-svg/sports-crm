@@ -575,6 +575,7 @@ return [
     'email' => 'البريد الإلكتروني',
     'current_status' => 'الحالة الحالية',
     'current_stage' => 'المرحلة الحالية',
+    'current_stage_only' => 'المرحلة الحالية فقط',
     'review_followup_data' => 'راجع البيانات التالية:',
     'new_followup_data' => 'بيانات المتابعة الجديدة',
     'recorded_by' => 'الموظف المسجل:',
